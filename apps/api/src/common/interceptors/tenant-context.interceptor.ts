@@ -8,10 +8,23 @@ import {
 import { Observable } from 'rxjs';
 import { JwtPayload } from '@ims/types';
 import { tenantContext } from '../context/tenant.context';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class TenantContextInterceptor implements NestInterceptor {
+  constructor(private readonly reflector: Reflector) {}
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return next.handle();
+    }
+
     const request = context.switchToHttp().getRequest();
     const user: JwtPayload | undefined = request.user;
 
