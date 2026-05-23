@@ -94,4 +94,8 @@ The project is executed in the following phases. Always consult the active Task 
 - Set up GitHub actions to enforce immutable tests and run test suites.
 - Deploy to Vercel (Frontend) and Railway (API).
 
-At last, update AGENTS, RULES, SYMBOLS matching the current condition of the project and also push the new changes to GitHub
+### Phase Completion Protocol
+Upon completing any phase of implementation, you MUST:
+1. **Update Documentation:** Update `AGENTS.md`, `RULES.md`, and `SYMBOLS.md` to accurately reflect the newly implemented features, ensuring documentation stays perfectly in sync with the current architecture.
+2. **Trim Plan:** Update `implementation_plan.md` to remove completed tasks and keep only current and future steps.
+3. **Push to GitHub:** Commit your changes and run `git push` to trigger the CI/CD deployment pipeline.
