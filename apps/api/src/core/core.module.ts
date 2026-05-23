@@ -2,20 +2,13 @@ import { Module, Global } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
-import { RECIPE_SERVICE_TOKEN } from '../sales/interfaces/i-recipe.service';
 import { LEDGER_SERVICE_TOKEN } from '../sales/interfaces/i-ledger.service';
 import { STORAGE_SERVICE_TOKEN } from '../sales/interfaces/i-storage.service';
 import * as WebSocket from 'ws';
 
-const mockRecipeService = {
-  expandBOM: async (recipeId: string, soldQty: number) => {
-    return [{ itemId: 'mock-item-id', consumedQty: soldQty * 2 }];
-  },
-};
-
 const mockLedgerService = {
   record: async (trx: any, entry: any) => {
-    // just mock
+    // TODO: remove when InventoryModule is wired
   },
 };
 
@@ -49,10 +42,6 @@ const mockLedgerService = {
       },
     },
     {
-      provide: RECIPE_SERVICE_TOKEN,
-      useValue: mockRecipeService,
-    },
-    {
       provide: LEDGER_SERVICE_TOKEN,
       useValue: mockLedgerService,
     },
@@ -74,9 +63,9 @@ const mockLedgerService = {
   exports: [
     'SUPABASE_ADMIN_CLIENT',
     'DB_CLIENT',
-    RECIPE_SERVICE_TOKEN,
     LEDGER_SERVICE_TOKEN,
     STORAGE_SERVICE_TOKEN,
   ],
 })
 export class CoreModule {}
+

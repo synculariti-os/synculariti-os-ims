@@ -5,6 +5,9 @@ import { SalesService } from './sales.service';
 import { SalesRepository } from './sales.repository';
 import { SALES_SERVICE_TOKEN } from './interfaces/i-sales.service';
 import { SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
+import { RECIPE_SERVICE_TOKEN as SALES_RECIPE_TOKEN } from './interfaces/i-recipe.service';
+import { RECIPE_SERVICE_TOKEN } from '../recipe/interfaces/i-recipe.service';
+import { RecipeModule } from '../recipe/recipe.module';
 
 import { SalesImportProcessor } from './sales.processor';
 
@@ -13,6 +16,7 @@ import { SalesImportProcessor } from './sales.processor';
     BullModule.registerQueue({
       name: 'sales_import',
     }),
+    RecipeModule,
   ],
   controllers: [SalesController],
   providers: [
@@ -24,8 +28,17 @@ import { SalesImportProcessor } from './sales.processor';
       provide: SALES_REPOSITORY_TOKEN,
       useClass: SalesRepository,
     },
+    /**
+     * The processor uses the local SALES_RECIPE_TOKEN symbol.
+     * We alias it to the real RecipeService exported by RecipeModule.
+     */
+    {
+      provide: SALES_RECIPE_TOKEN,
+      useExisting: RECIPE_SERVICE_TOKEN,
+    },
     SalesImportProcessor,
   ],
   exports: [SALES_SERVICE_TOKEN],
 })
 export class SalesModule {}
+
