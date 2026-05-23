@@ -1,6 +1,6 @@
 import { supabase } from './supabase';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 type FetchOptions = Omit<RequestInit, 'body'> & {
   params?: Record<string, string | number | boolean | undefined>;
