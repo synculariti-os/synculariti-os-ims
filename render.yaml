@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: ims-api-prod
+    env: docker
+    dockerfilePath: ./apps/api/Dockerfile
+    dockerContext: .
+    region: frankfurt
+    plan: free
+    branch: production
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_PRIVATE_KEY
+        sync: false
+      - key: JWT_PUBLIC_KEY
+        sync: false

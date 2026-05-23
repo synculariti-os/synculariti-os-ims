@@ -1,0 +1,30 @@
+# Koyeb Staging Infrastructure Blueprint
+# You can deploy this via the Koyeb CLI (`koyeb app init`) or by importing the repo in the Koyeb UI
+services:
+  - name: ims-api-staging
+    app: ims-staging
+    type: web
+    github:
+      repository: synculariti-os/synculariti-os-ims
+      branch: main
+      no_deploy_on_push: false
+      builder: docker
+      docker:
+        dockerfile: apps/api/Dockerfile
+    ports:
+      - port: 3000
+        protocol: http
+    regions:
+      - fra
+    env:
+      - key: NODE_ENV
+        value: staging
+      - key: PORT
+        value: "3000"
+      # IMPORTANT: Define the following secrets securely in the Koyeb dashboard:
+      # SUPABASE_URL
+      # SUPABASE_SERVICE_ROLE_KEY
+      # DATABASE_URL
+      # REDIS_URL
+      # JWT_PRIVATE_KEY
+      # JWT_PUBLIC_KEY
