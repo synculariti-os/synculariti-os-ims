@@ -6,3 +6,4 @@ export * from './domain/recipe';
 export * from './domain/inventory';
 export * from './domain/sales';
 export * from './constants/index';
+export * from './database.types';

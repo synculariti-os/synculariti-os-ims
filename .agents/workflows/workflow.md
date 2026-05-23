@@ -93,3 +93,5 @@ The project is executed in the following phases. Always consult the active Task 
 ### Phase 4: CI/CD & Deployment
 - Set up GitHub actions to enforce immutable tests and run test suites.
 - Deploy to Vercel (Frontend) and Railway (API).
+
+At last, update AGENTS, RULES, SYMBOLS matching the current condition of the project and also push the new changes to GitHub
