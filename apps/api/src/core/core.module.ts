@@ -5,6 +5,7 @@ import { Pool } from 'pg';
 import { RECIPE_SERVICE_TOKEN } from '../sales/interfaces/i-recipe.service';
 import { LEDGER_SERVICE_TOKEN } from '../sales/interfaces/i-ledger.service';
 import { STORAGE_SERVICE_TOKEN } from '../sales/interfaces/i-storage.service';
+import * as WebSocket from 'ws';
 
 const mockRecipeService = {
   expandBOM: async (recipeId: string, soldQty: number) => {
@@ -24,6 +25,11 @@ const mockLedgerService = {
     {
       provide: 'SUPABASE_ADMIN_CLIENT',
       useFactory: () => {
+        // Fix for Node.js 20 lacking native WebSocket support
+        if (typeof globalThis.WebSocket === 'undefined') {
+          (globalThis as any).WebSocket = WebSocket;
+        }
+        
         return createClient(
           process.env.SUPABASE_URL || 'http://localhost:54321',
           process.env.SUPABASE_SERVICE_ROLE_KEY || 'dummy-key'
