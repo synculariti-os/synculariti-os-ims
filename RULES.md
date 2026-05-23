@@ -14,7 +14,7 @@
 ### R-DB-02 — Tenant Context is Mandatory
 Every Kysely query that touches a tenant-scoped table (anything with `restaurant_id` or `franchise_group_id`) **must** run after `set_tenant_context(p_restaurant_id, p_franchise_id)` has been called in the same connection/transaction.
 
-**Enforcement**: `TenantContextInterceptor` calls this automatically for every HTTP request. BullMQ workers must call it manually at job start.
+**Enforcement**: `TenantContextInterceptor` populates the `tenantContext` via `AsyncLocalStorage`. The custom Kysely `TenantContextDriver` automatically executes this for every checked-out connection. BullMQ workers must wrap their execution inside `tenantContext.run(...)` to ensure the driver can read the context.
 
 ### R-DB-03 — No Raw SQL Strings
 All database queries must use **Kysely** query builder. Raw SQL strings (`db.execute(sql\`...\``) are forbidden except in:
@@ -78,7 +78,7 @@ Zod schemas are defined once in `packages/validators/`. NestJS DTOs use `ZodVali
 ## 3. Security Rules
 
 ### R-SEC-01 — JWT Verification on Every Protected Route
-All NestJS routes (except `/auth/login` and `/auth/refresh`) must be protected by `JwtAuthGuard`. Apply globally in `AppModule`; use `@Public()` decorator on the two exceptions.
+All NestJS routes must be protected by `SupabaseAuthGuard` (registered globally via `APP_GUARD` in `AppModule`). Use `@Public()` decorator on routes that should not require authentication (e.g., health checks). JWT issuance is delegated entirely to Supabase Auth — NestJS never issues tokens.
 
 ### R-SEC-02 — Permission Guard is Mandatory for Mutations
 Every mutating endpoint (POST, PUT, PATCH, DELETE) must carry a `@RequirePermission('MODULE.ACTION')` decorator. The guard verifies the permission is present in the JWT `permissions` array.
@@ -102,8 +102,8 @@ Sales import files must be validated:
 ### R-SEC-05 — Never Log Sensitive Fields
 The following fields must never appear in application logs: `password_hash`, JWT `sub` in plaintext, `source_ip` beyond INFO level, full `audit_log.new_value` if it contains PII.
 
-### R-SEC-06 — HTTPS-Only Cookies
-The refresh token must be stored as an `HttpOnly; Secure; SameSite=Strict` cookie. It must never be accessible to JavaScript.
+### R-SEC-06 — HTTPS-Only Cookies (Frontend Responsibility)
+Token refresh and storage are handled entirely by the Supabase Auth client on the frontend. The refresh token is automatically managed by `@supabase/ssr` (Next.js) / `@supabase/auth-js` and stored in an `HttpOnly; Secure; SameSite=Strict` cookie. NestJS never receives or stores refresh tokens.
 
 ---
 
@@ -216,6 +216,8 @@ Unit test files are co-located with the source: `procurement.service.spec.ts` li
 | `apps/api/src/` | 80% | 85% |
 | `packages/validators/` | 100% | 100% |
 | `packages/types/` | N/A | N/A |
+
+Coverage enforcement is configured in `vitest.config.ts` and executed via `pnpm test -- --coverage` in CI.
 
 ---
 

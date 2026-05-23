@@ -39,8 +39,8 @@ export class ItemService implements IItemWriteService {
     return qty * conversion.multiplierFactor;
   }
 
-  async listParLevels(restaurantId: RestaurantId): Promise<ItemWithOverride[]> {
-    return this.itemRepo.listParLevels(restaurantId);
+  async listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
+    return this.itemRepo.listParLevels(restaurantId, page, limit);
   }
 
   async createItem(dto: CreateItemDto): Promise<Item> {

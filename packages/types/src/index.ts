@@ -1,5 +1,6 @@
 export * from './branded';
 export * from './domain/auth';
+export * from './domain/tenant';
 export * from './domain/item';
 export * from './domain/procurement';
 export * from './domain/recipe';

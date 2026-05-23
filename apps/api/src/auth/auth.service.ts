@@ -12,7 +12,7 @@ import type { IAuthService } from './interfaces/i-auth.service';
 import type { IUserRepository, UpdateProfileInput } from './interfaces/i-user.repository';
 import type { IPermissionRepository } from './interfaces/i-permission.repository';
 
-export const SUPABASE_ADMIN_CLIENT = Symbol('SUPABASE_ADMIN_CLIENT');
+export const SUPABASE_ADMIN_CLIENT = 'SUPABASE_ADMIN_CLIENT';
 export const USER_REPOSITORY_TOKEN = Symbol('IUserRepository');
 export const PERMISSION_REPOSITORY_TOKEN = Symbol('IPermissionRepository');
 

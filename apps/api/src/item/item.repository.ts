@@ -1,16 +1,18 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IItemRepository } from './interfaces/i-item.repository';
 import { Kysely } from 'kysely';
-import { Database, ItemWithOverride, ItemId, RestaurantId, UomConversion } from '@ims/types';
+import { Database, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride, Item, asRestaurantId, asItemId, asCategoryId, asFranchiseGroupId } from '@ims/types';
+import { v4 as uuidv4 } from 'uuid';
+import { CreateItemDto, UpdateItemDto, CreateCategoryDto, UpdateCategoryDto, CreateUomConversionDto, UpdateItemOverrideDto } from '@ims/validators';
 
 @Injectable()
 export class ItemRepository implements IItemRepository {
   constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
 
   async findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride | null> {
-    const item = await (this.db as Kysely<any>)
+    const item = await this.db
       .selectFrom('items')
-      .leftJoin('item_restaurant_overrides', (join: any) =>
+      .leftJoin('item_restaurant_overrides', (join) =>
         join.onRef('item_restaurant_overrides.item_id', '=', 'items.id')
             .on('item_restaurant_overrides.restaurant_id', '=', restaurantId)
       )
@@ -43,42 +45,42 @@ export class ItemRepository implements IItemRepository {
     const hasOverride = item.overrideId != null;
 
     const result: ItemWithOverride = {
-      id: item.id as ItemId,
-      franchiseGroupId: item.franchiseGroupId as any,
-      restaurantId: item.itemRestaurantId as RestaurantId | null,
-      categoryId: item.categoryId as any,
-      name: item.name,
-      sku: item.sku,
-      type: item.type as any,
-      purchasingUom: item.purchasingUom,
-      inventoryUom: item.inventoryUom,
+      id: asItemId(item.id as string),
+      franchiseGroupId: item.franchiseGroupId ? asFranchiseGroupId(item.franchiseGroupId as string) : null,
+      restaurantId: item.itemRestaurantId ? asRestaurantId(item.itemRestaurantId as string) : null,
+      categoryId: asCategoryId(item.categoryId as string),
+      name: item.name as string,
+      sku: item.sku as string,
+        type: item.type as import('@ims/types').ItemType,
+      purchasingUom: item.purchasingUom as string,
+      inventoryUom: item.inventoryUom as string,
       recipeUom: item.recipeUom,
       invToRecipeRatio: Number(item.invToRecipeRatio),
-      isActive: item.itemIsActive,
-      createdAt: item.itemCreatedAt,
-      updatedAt: item.itemUpdatedAt,
+      isActive: Boolean(item.itemIsActive),
+      createdAt: item.itemCreatedAt as string,
+      updatedAt: item.itemUpdatedAt as string,
       ...(hasOverride
         ? {
             override: {
-              id: item.overrideId,
-              itemId: item.id as ItemId,
+              id: item.overrideId as string,
+              itemId: asItemId(item.id as string),
               restaurantId: restaurantId,
               parLevel: Number(item.overrideParLevel),
-              isActive: item.overrideIsActive,
-              createdAt: item.itemUpdatedAt,
-              updatedAt: item.itemUpdatedAt,
+              isActive: Boolean(item.overrideIsActive),
+              createdAt: item.itemUpdatedAt as string,
+              updatedAt: item.itemUpdatedAt as string,
             }
           }
         : {}),
       effectiveParLevel: hasOverride ? Number(item.overrideParLevel) : 0,
-      effectiveIsActive: hasOverride ? item.overrideIsActive : item.itemIsActive,
+      effectiveIsActive: hasOverride ? Boolean(item.overrideIsActive) : Boolean(item.itemIsActive),
     };
 
     return result;
   }
 
   async getUomConversion(itemId: ItemId, fromUom: string, toUom: string): Promise<UomConversion | null> {
-    const conversion = await (this.db as Kysely<any>)
+    const conversion = await this.db
       .selectFrom('uom_conversions')
       .selectAll()
       .where('item_id', '=', itemId)
@@ -90,19 +92,29 @@ export class ItemRepository implements IItemRepository {
 
     return {
       id: conversion.id,
-      itemId: conversion.item_id as ItemId,
+      itemId: asItemId(conversion.item_id as string),
       fromUom: conversion.from_uom,
       toUom: conversion.to_uom,
       multiplierFactor: Number(conversion.multiplier_factor),
-      createdAt: conversion.created_at,
-      updatedAt: conversion.updated_at,
+      createdAt: conversion.created_at as string,
+      updatedAt: conversion.updated_at as string,
     };
   }
 
-  async listParLevels(restaurantId: RestaurantId): Promise<ItemWithOverride[]> {
-    const items = await (this.db as Kysely<any>)
+  async listParLevels(restaurantId: RestaurantId, page = 1, limit = 50): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
+    const offset = (page - 1) * limit;
+
+    const [{ count }] = await this.db
       .selectFrom('items')
-      .leftJoin('item_restaurant_overrides', (join: any) =>
+      .select(({ fn }) => fn.count<number>('id').as('count'))
+      .execute();
+
+    const total = Number(count);
+    const totalPages = Math.ceil(total / limit);
+
+    const rawItems = await this.db
+      .selectFrom('items')
+      .leftJoin('item_restaurant_overrides', (join) =>
         join.onRef('item_restaurant_overrides.item_id', '=', 'items.id')
             .on('item_restaurant_overrides.restaurant_id', '=', restaurantId)
       )
@@ -125,68 +137,77 @@ export class ItemRepository implements IItemRepository {
         'item_restaurant_overrides.par_level as overrideParLevel',
         'item_restaurant_overrides.is_active as overrideIsActive',
       ])
+      .limit(limit)
+      .offset(offset)
       .execute();
 
-    return items.map((item: any) => {
+    const data = rawItems.map((item) => {
       const hasOverride = item.overrideId != null;
       return {
-        id: item.id as ItemId,
-        franchiseGroupId: item.franchiseGroupId as any,
-        restaurantId: item.itemRestaurantId as RestaurantId | null,
-        categoryId: item.categoryId as any,
-        name: item.name,
-        sku: item.sku,
-        type: item.type as any,
-        purchasingUom: item.purchasingUom,
-        inventoryUom: item.inventoryUom,
-        recipeUom: item.recipeUom,
+        id: asItemId(item.id as string),
+        franchiseGroupId: item.franchiseGroupId ? asFranchiseGroupId(item.franchiseGroupId as string) : null,
+        restaurantId: item.itemRestaurantId ? asRestaurantId(item.itemRestaurantId as string) : null,
+        categoryId: asCategoryId(item.categoryId as string),
+        name: item.name as string,
+        sku: item.sku as string,
+      type: item.type as import('@ims/types').ItemType,
+        purchasingUom: item.purchasingUom as string,
+        inventoryUom: item.inventoryUom as string,
+        recipeUom: item.recipeUom as string,
         invToRecipeRatio: Number(item.invToRecipeRatio),
-        isActive: item.itemIsActive,
-        createdAt: item.itemCreatedAt,
-        updatedAt: item.itemUpdatedAt,
+        isActive: Boolean(item.itemIsActive),
+        createdAt: item.itemCreatedAt as string,
+        updatedAt: item.itemUpdatedAt as string,
       ...(hasOverride
         ? {
             override: {
-              id: item.overrideId,
-              itemId: item.id as ItemId,
+              id: item.overrideId as string,
+              itemId: asItemId(item.id as string),
               restaurantId: restaurantId,
               parLevel: Number(item.overrideParLevel),
-              isActive: item.overrideIsActive,
-              createdAt: item.itemUpdatedAt,
-              updatedAt: item.itemUpdatedAt,
+              isActive: Boolean(item.overrideIsActive),
+              createdAt: item.itemUpdatedAt as string,
+              updatedAt: item.itemUpdatedAt as string,
             }
           }
         : {}),
         effectiveParLevel: hasOverride ? Number(item.overrideParLevel) : 0,
-        effectiveIsActive: hasOverride ? item.overrideIsActive : item.itemIsActive,
+        effectiveIsActive: hasOverride ? Boolean(item.overrideIsActive) : Boolean(item.itemIsActive),
       };
     });
+
+    return {
+      data,
+      meta: { total, page, limit, totalPages }
+    };
   }
 
-  async createItem(data: any): Promise<any> {
-    const [item] = await (this.db as Kysely<any>)
+  async createItem(data: CreateItemDto): Promise<Item> {
+    const [item] = await this.db
       .insertInto('items')
       .values({
-        franchise_group_id: data.franchiseGroupId,
-        restaurant_id: data.restaurantId,
-        category_id: data.categoryId,
+        id: uuidv4() as ItemId,
+        franchise_group_id: data.franchiseGroupId ? asFranchiseGroupId(data.franchiseGroupId) : null,
+        restaurant_id: data.restaurantId ? asRestaurantId(data.restaurantId) : null,
+        category_id: asCategoryId(data.categoryId),
         name: data.name,
         sku: data.sku,
         type: data.type,
         purchasing_uom: data.purchasingUom,
         inventory_uom: data.inventoryUom,
-        recipe_uom: data.recipeUom,
+        recipe_uom: data.recipeUom ?? null,
         inv_to_recipe_ratio: data.invToRecipeRatio,
         is_active: data.isActive,
       })
       .returningAll()
       .execute();
 
+    if (!item) throw new Error('Failed to create item');
     return this.mapItemRecord(item);
   }
 
-  async updateItem(itemId: ItemId, data: any): Promise<any> {
-    const updateData: any = {};
+  async updateItem(itemId: ItemId, data: UpdateItemDto): Promise<Item> {
+    const updateData: Record<string, unknown> = {};
     if (data.categoryId !== undefined) updateData.category_id = data.categoryId;
     if (data.name !== undefined) updateData.name = data.name;
     if (data.sku !== undefined) updateData.sku = data.sku;
@@ -198,55 +219,60 @@ export class ItemRepository implements IItemRepository {
     if (data.isActive !== undefined) updateData.is_active = data.isActive;
     updateData.updated_at = new Date().toISOString();
 
-    const [item] = await (this.db as Kysely<any>)
+    const [item] = await this.db
       .updateTable('items')
       .set(updateData)
       .where('id', '=', itemId)
       .returningAll()
       .execute();
 
+    if (!item) throw new Error('Failed to update item');
     return this.mapItemRecord(item);
   }
 
-  async createCategory(data: any): Promise<any> {
-    const [category] = await (this.db as Kysely<any>)
+  async createCategory(data: CreateCategoryDto): Promise<Category> {
+    const [category] = await this.db
       .insertInto('categories')
       .values({
-        franchise_group_id: data.franchiseGroupId,
-        restaurant_id: data.restaurantId,
+        id: uuidv4() as import('@ims/types').CategoryId,
+        franchise_group_id: data.franchiseGroupId ? asFranchiseGroupId(data.franchiseGroupId) : null,
+        restaurant_id: data.restaurantId ? asRestaurantId(data.restaurantId) : null,
         name: data.name,
         description: data.description,
       })
       .returningAll()
       .execute();
+    if (!category) throw new Error('Failed to create category');
     return this.mapCategoryRecord(category);
   }
 
-  async updateCategory(categoryId: string, data: any): Promise<any> {
-    const updateData: any = {};
+  async updateCategory(categoryId: string, data: UpdateCategoryDto): Promise<Category> {
+    const updateData: Record<string, unknown> = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.description !== undefined) updateData.description = data.description;
     updateData.updated_at = new Date().toISOString();
 
-    const [category] = await (this.db as Kysely<any>)
+    const [category] = await this.db
       .updateTable('categories')
       .set(updateData)
-      .where('id', '=', categoryId)
+      .where('id', '=', asCategoryId(categoryId))
       .returningAll()
       .execute();
+    if (!category) throw new Error('Failed to update category');
     return this.mapCategoryRecord(category);
   }
 
-  async upsertUomConversion(data: any): Promise<any> {
-    const [conversion] = await (this.db as Kysely<any>)
+  async upsertUomConversion(data: CreateUomConversionDto): Promise<UomConversion> {
+    const [conversion] = await this.db
       .insertInto('uom_conversions')
       .values({
-        item_id: data.itemId,
+        id: uuidv4(),
+        item_id: asItemId(data.itemId),
         from_uom: data.fromUom,
         to_uom: data.toUom,
         multiplier_factor: data.multiplierFactor,
       })
-      .onConflict((oc: any) => oc
+      .onConflict((oc) => oc
         .columns(['item_id', 'from_uom', 'to_uom'])
         .doUpdateSet({
           multiplier_factor: data.multiplierFactor,
@@ -258,17 +284,17 @@ export class ItemRepository implements IItemRepository {
     
     return {
       id: conversion.id,
-      itemId: conversion.item_id as ItemId,
+      itemId: asItemId(conversion.item_id as string),
       fromUom: conversion.from_uom,
       toUom: conversion.to_uom,
       multiplierFactor: Number(conversion.multiplier_factor),
-      createdAt: conversion.created_at,
-      updatedAt: conversion.updated_at,
+      createdAt: conversion.created_at as string,
+      updatedAt: conversion.updated_at as string,
     };
   }
 
-  async upsertItemOverride(itemId: ItemId, restaurantId: RestaurantId, data: any): Promise<any> {
-    const existing = await (this.db as Kysely<any>)
+  async upsertItemOverride(itemId: ItemId, restaurantId: RestaurantId, data: UpdateItemOverrideDto): Promise<ItemRestaurantOverride> {
+    const existing = await this.db
       .selectFrom('item_restaurant_overrides')
       .selectAll()
       .where('item_id', '=', itemId)
@@ -276,11 +302,11 @@ export class ItemRepository implements IItemRepository {
       .executeTakeFirst();
 
     if (existing) {
-      const updateData: any = { updated_at: new Date().toISOString() };
+      const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (data.parLevel !== undefined) updateData.par_level = data.parLevel;
       if (data.isActive !== undefined) updateData.is_active = data.isActive;
 
-      const [updated] = await (this.db as Kysely<any>)
+      const [updated] = await this.db
         .updateTable('item_restaurant_overrides')
         .set(updateData)
         .where('id', '=', existing.id)
@@ -288,9 +314,10 @@ export class ItemRepository implements IItemRepository {
         .execute();
       return this.mapOverrideRecord(updated);
     } else {
-      const [inserted] = await (this.db as Kysely<any>)
+      const [inserted] = await this.db
         .insertInto('item_restaurant_overrides')
         .values({
+          id: uuidv4(),
           item_id: itemId,
           restaurant_id: restaurantId,
           par_level: data.parLevel ?? 0,
@@ -302,49 +329,48 @@ export class ItemRepository implements IItemRepository {
     }
   }
 
-  private mapItemRecord(item: any) {
-    if (!item) return null;
+  private mapItemRecord(row: Record<string, unknown>): Item {
     return {
-      id: item.id as ItemId,
-      franchiseGroupId: item.franchise_group_id as any,
-      restaurantId: item.restaurant_id as RestaurantId | null,
-      categoryId: item.category_id as any,
-      name: item.name,
-      sku: item.sku,
-      type: item.type as any,
-      purchasingUom: item.purchasing_uom,
-      inventoryUom: item.inventory_uom,
-      recipeUom: item.recipe_uom,
-      invToRecipeRatio: Number(item.inv_to_recipe_ratio),
-      isActive: item.is_active,
-      createdAt: item.created_at,
-      updatedAt: item.updated_at,
+      id: asItemId(row.id as string),
+      franchiseGroupId: row.franchise_group_id ? asFranchiseGroupId(row.franchise_group_id as string) : null,
+      restaurantId: row.restaurant_id ? asRestaurantId(row.restaurant_id as string) : null,
+      categoryId: asCategoryId(row.category_id as string),
+      name: row.name as string,
+      sku: row.sku as string,
+      type: row.type as import('@ims/types').ItemType,
+      purchasingUom: row.purchasing_uom as string,
+      inventoryUom: row.inventory_uom as string,
+      recipeUom: row.recipe_uom as string | null,
+      invToRecipeRatio: Number(row.inv_to_recipe_ratio),
+      isActive: Boolean(row.is_active),
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
     };
   }
 
-  private mapCategoryRecord(category: any) {
-    if (!category) return null;
+  private mapCategoryRecord(row: Record<string, unknown>): Category {
+    if (!row) throw new Error('Failed to map category record');
     return {
-      id: category.id,
-      franchiseGroupId: category.franchise_group_id,
-      restaurantId: category.restaurant_id,
-      name: category.name,
-      description: category.description,
-      createdAt: category.created_at,
-      updatedAt: category.updated_at,
+      id: asCategoryId(row.id as string),
+      franchiseGroupId: row.franchise_group_id ? asFranchiseGroupId(row.franchise_group_id as string) : null,
+      restaurantId: row.restaurant_id ? asRestaurantId(row.restaurant_id as string) : null,
+      name: row.name as string,
+      description: row.description as string | null,
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
     };
   }
 
-  private mapOverrideRecord(override: any) {
-    if (!override) return null;
+  private mapOverrideRecord(row: Record<string, unknown>): ItemRestaurantOverride {
+    if (!row) throw new Error('Failed to map override record');
     return {
-      id: override.id,
-      itemId: override.item_id,
-      restaurantId: override.restaurant_id,
-      parLevel: Number(override.par_level),
-      isActive: override.is_active,
-      createdAt: override.created_at,
-      updatedAt: override.updated_at,
+      id: row.id as string,
+      itemId: asItemId(row.item_id as string),
+      restaurantId: asRestaurantId(row.restaurant_id as string),
+      parLevel: Number(row.par_level),
+      isActive: Boolean(row.is_active),
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
     };
   }
 }

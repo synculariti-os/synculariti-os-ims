@@ -113,10 +113,12 @@ describe('ItemService', () => {
   });
 
   describe('listParLevels', () => {
-    it('should return list of items with their par levels', async () => {
-      repo.listParLevels.mockResolvedValue([mockItem]);
-      const result = await service.listParLevels(mockRestaurantId);
-      expect(result).toEqual([mockItem]);
+    it('should return paginated list of items with their par levels', async () => {
+      const paginatedResult = { data: [mockItem], meta: { total: 1, page: 1, limit: 50, totalPages: 1 } };
+      repo.listParLevels.mockResolvedValue(paginatedResult);
+      const result = await service.listParLevels(mockRestaurantId, 1, 50);
+      expect(result).toEqual(paginatedResult);
+      expect(repo.listParLevels).toHaveBeenCalledWith(mockRestaurantId, 1, 50);
     });
   });
 });

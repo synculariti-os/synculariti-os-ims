@@ -5,6 +5,7 @@ export interface ISalesService {
     file: Express.Multer.File,
     dto: { businessDate: string },
     restaurantId: string,
+    franchiseId: string,
     userId: string,
-  ): Promise<any>;
+  ): Promise<{ batchId: string }>;
 }

@@ -8,6 +8,7 @@ import {
 import type { Kysely } from 'kysely';
 
 import type {
+  Database,
   PurchaseOrder,
   PurchaseOrderId,
   RestaurantId,
@@ -26,7 +27,8 @@ export const PROCUREMENT_REPOSITORY_TOKEN = Symbol('IProcurementRepository');
 @Injectable()
 export class ProcurementService {
   constructor(
-    private readonly db: Kysely<any>,
+    @Inject('DB_CLIENT')
+    private readonly db: Kysely<Database>,
     @Inject(PROCUREMENT_REPOSITORY_TOKEN)
     private readonly procurementRepo: IProcurementRepository,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledger: ILedgerService,
@@ -68,7 +70,7 @@ export class ProcurementService {
 
     await this.db.transaction().execute(async (trx) => {
       for (const receiveLine of dto.lineItems) {
-        const lineItem = lineItems.find((l) => l.id === receiveLine.lineItemId);
+        const lineItem = lineItems.find((l) => l.itemId === receiveLine.itemId);
         if (!lineItem) continue;
 
         const landedUnitCost = lineItem.rawUnitPrice + proratedFreight / lineItem.quantityOrdered;
@@ -76,7 +78,7 @@ export class ProcurementService {
         // 1. Update quantity received on the line item
         await this.procurementRepo.updateLineItemReceived(
           trx,
-          receiveLine.lineItemId,
+          lineItem.id,
           receiveLine.quantityReceived,
         );
 

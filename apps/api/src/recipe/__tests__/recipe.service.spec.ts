@@ -37,6 +37,7 @@ const mockRecipeRepo: IRecipeRepository = {
   findByProducesItemId: vi.fn(),
   findIngredients: vi.fn(),
   resolveByPosString: vi.fn(),
+  resolveRecipesByPosStrings: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
   upsertMapping: vi.fn(),

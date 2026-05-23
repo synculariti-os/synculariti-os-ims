@@ -14,7 +14,7 @@ export class SalesService implements ISalesService {
     @Inject('SUPABASE_ADMIN_CLIENT') private readonly supabase: SupabaseClient,
   ) {}
 
-  async uploadSalesFile(file: Express.Multer.File, dto: { businessDate: string }, restaurantId: string, userId: string): Promise<any> {
+  async uploadSalesFile(file: Express.Multer.File, dto: { businessDate: string }, restaurantId: string, franchiseId: string, userId: string): Promise<{ batchId: string }> {
     const fileExt = file.originalname.split('.').pop();
     const fileName = `${restaurantId}/${dto.businessDate}-${uuidv4()}.${fileExt}`;
 
@@ -39,8 +39,8 @@ export class SalesService implements ISalesService {
       uploadedBy: userId,
     });
 
-    await this.salesQueue.add('process-sales', { batchId: batch.id });
+    await this.salesQueue.add('process-sales', { batchId: batch.id, restaurantId, franchiseId, filePath: fileName });
 
-    return batch;
+    return { batchId: batch.id };
   }
 }

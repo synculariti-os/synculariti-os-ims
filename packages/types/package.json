@@ -4,13 +4,16 @@
   "private": true,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "exports": { ".": "./dist/index.js" },
-  "scripts": { 
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
     "build": "tsc",
-    "type-check": "tsc --noEmit" 
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@ims/config": "workspace:*",
+    "kysely": "^0.27.4",
     "typescript": "^5.6.3"
   }
 }

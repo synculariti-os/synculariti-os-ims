@@ -5,6 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, Clock, AlertTriangle, Loader2 } from 'lucide-react';
 
+// TODO: Once frontend routes through NestJS API (not direct Supabase), import from @ims/types
+// The types package uses camelCase, but direct Supabase queries return snake_case.
 export type ImportStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
 
 export interface SalesImportBatch {

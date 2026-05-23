@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Put, Patch, Param, Body, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Param, Body, Inject, Query } from '@nestjs/common';
 import { ITEM_WRITE_SERVICE_TOKEN, IItemWriteService } from './interfaces/i-item.service';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { PERMISSION_CODES } from '@ims/types';
+import { PERMISSION_CODES, asItemId } from '@ims/types';
 import type { ItemId, RestaurantId, JwtPayload } from '@ims/types';
 import { 
   CreateItemDto, 
@@ -21,14 +21,20 @@ export class ItemController {
 
   @Get('below-par')
   @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
-  async listParLevels(@CurrentUser() user: JwtPayload) {
-    return this.itemService.listParLevels(user.restaurantId);
+  async listParLevels(
+    @CurrentUser() user: JwtPayload,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 50;
+    return this.itemService.listParLevels(user.restaurantId, pageNum, limitNum);
   }
 
   @Get(':id')
   @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async findById(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.itemService.findById(id as ItemId, user.restaurantId);
+    return this.itemService.findById(asItemId(id), user.restaurantId);
   }
 
   @Post()
@@ -40,7 +46,7 @@ export class ItemController {
   @Put(':id')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async updateItem(@Param('id') id: string, @Body() dto: UpdateItemDto) {
-    return this.itemService.updateItem(id as ItemId, dto);
+    return this.itemService.updateItem(asItemId(id), dto);
   }
 
   @Post('categories')
@@ -68,6 +74,6 @@ export class ItemController {
     @CurrentUser() user: JwtPayload,
     @Body() dto: UpdateItemOverrideDto
   ) {
-    return this.itemService.updateOverride(id as ItemId, user.restaurantId, dto);
+    return this.itemService.updateOverride(asItemId(id), user.restaurantId, dto);
   }
 }

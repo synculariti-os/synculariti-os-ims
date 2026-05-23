@@ -58,6 +58,13 @@ export class RecipeService implements IRecipeService {
     return this.recipeRepo.resolveByPosString(restaurantId, rawString);
   }
 
+  async resolveRecipesByPosStrings(
+    restaurantId: RestaurantId,
+    rawStrings: string[],
+  ): Promise<import('@ims/types').MenuItemMapping[]> {
+    return this.recipeRepo.resolveRecipesByPosStrings(restaurantId, rawStrings);
+  }
+
   async getIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]> {
     return this.recipeRepo.findIngredients(recipeId);
   }

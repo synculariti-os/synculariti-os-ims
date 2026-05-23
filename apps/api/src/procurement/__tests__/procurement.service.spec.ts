@@ -46,6 +46,7 @@ const MOCK_LINE_ITEM = {
 };
 
 const CREATE_PO_DTO: CreatePoDto = {
+  restaurantId: RESTAURANT_ID,
   vendorId: VENDOR_ID,
   freightCharge: 10,
   taxAmount: 5,
@@ -54,7 +55,7 @@ const CREATE_PO_DTO: CreatePoDto = {
 };
 
 const RECEIVE_PO_DTO: ReceivePoDto = {
-  lineItems: [{ lineItemId: LINE_ITEM_ID, quantityReceived: 100 }],
+  lineItems: [{ itemId: ITEM_ID, quantityReceived: 100 }],
 };
 
 // ---------------------------------------------------------------------------

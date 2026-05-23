@@ -108,9 +108,9 @@ interface IAuthService {
 ### Contracts Exposed
 ```typescript
 interface ITenantService {
-  getRestaurant(restaurantId: string): Promise<Restaurant>;
-  getFranchiseGroup(franchiseGroupId: string): Promise<FranchiseGroup>;
-  listRestaurantsForUser(userId: string): Promise<Restaurant[]>;
+  getRestaurant(restaurantId: RestaurantId): Promise<Restaurant>;
+  getFranchiseGroup(franchiseGroupId: FranchiseGroupId): Promise<FranchiseGroup>;
+  listRestaurantsForUser(userId: UserId): Promise<Restaurant[]>;
 }
 ```
 
@@ -144,18 +144,18 @@ interface ITenantService {
 ### Contracts Exposed
 ```typescript
 interface IItemReadService {
-  findById(itemId: string, restaurantId: string): Promise<ItemWithOverride>;
-  convertUom(itemId: string, qty: number, fromUom: string, toUom: string): Promise<number>;
-  listParLevels(restaurantId: string): Promise<ItemWithOverride[]>;
+  findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride>;
+  convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
+  listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
 }
 
 interface IItemWriteService extends IItemReadService {
   createItem(dto: CreateItemDto): Promise<Item>;
-  updateItem(itemId: string, dto: UpdateItemDto): Promise<Item>;
+  updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item>;
   createCategory(dto: CreateCategoryDto): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
-  upsertUomConversion(dto: UpsertUomConversionDto): Promise<UomConversion>;
-  updateOverride(itemId: string, restaurantId: string, dto: UpdateOverrideDto): Promise<ItemRestaurantOverride>;
+  upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion>;
+  updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;
 }
 ```
 
@@ -187,6 +187,9 @@ interface IItemWriteService extends IItemReadService {
 | `purchase_orders` | CRUD |
 | `po_line_items` | CRUD |
 | `inventory_batches` | INSERT on receipt |
+
+> [!NOTE]
+> **Dual ownership**: Procurement Agent owns the INSERT of `inventory_batches` rows (on PO receipt). Inventory Agent owns FIFO costing semantics and stock-level consumption from batches. See [Cross-Agent ACID Critical Path](#acid-critical-path) below.
 
 ### Contracts Exposed
 ```typescript
@@ -277,8 +280,19 @@ interface IRecipeService {
 ```typescript
 interface ILedgerService {
   record(trx: Transaction, entry: LedgerEntryDto): Promise<void>;
-  getCurrentStock(restaurantId: string, itemId: string): Promise<number>;
-  getCurrentStockBulk(restaurantId: string): Promise<StockLevel[]>;
+  getCurrentStock(restaurantId: RestaurantId, itemId: ItemId): Promise<number>;
+  getCurrentStockBulk(restaurantId: RestaurantId): Promise<StockLevel[]>;
+}
+
+interface IStockQueryService {
+  getCurrentStock(restaurantId: RestaurantId, itemId: ItemId): Promise<number>;
+  getCurrentStockBulk(restaurantId: RestaurantId): Promise<StockLevel[]>;
+}
+
+interface IInventoryCountService {
+  startBatch(restaurantId: RestaurantId): Promise<InventoryCountBatch>;
+  submitActualCount(batchId: CountBatchId, rowId: CountRowId, dto: SubmitCountRowDto): Promise<InventoryCountRow>;
+  closeBatch(batchId: CountBatchId, dto: CloseCountBatchDto): Promise<void>;
 }
 ```
 
@@ -293,7 +307,7 @@ interface ILedgerService {
 **Responsibility**: Accept XLSX/CSV POS export files, parse them asynchronously, map rows to recipes via `menu_item_mappings`, and trigger BOM-based inventory depletion.
 
 ### Inputs
-- `POST /sales/import` → multipart file upload
+- `POST /sales-imports/upload` → multipart file upload
 - BullMQ internal job queue messages
 
 ### Outputs
@@ -310,12 +324,15 @@ interface ILedgerService {
 ### Processing Pipeline (BullMQ Worker)
 ```
 1. Parse file (xlsx/csv)
-2. Upsert rows into sales_import_rows
-3. For each row:
-   a. resolveRecipeByPosString(restaurantId, raw_item_name)  ← RecipeAgent
-   b. expandBOM(recipeId, quantity_sold)                     ← RecipeAgent
-   c. LedgerService.record({ reason_code: 'SALES_DEPLETION' }) ← InventoryAgent
-4. Update batch status
+2. Wrap execution in tenantContext.run(franchiseGroupId, restaurantId)
+3. BEGIN Kysely TRANSACTION
+   a. Upsert rows into sales_import_rows
+   b. For each row:
+      i.  resolveRecipeByPosString(restaurantId, raw_item_name)  ← RecipeAgent
+      ii. expandBOM(recipeId, quantity_sold)                     ← RecipeAgent
+      iii. LedgerService.record(trx, { reason_code: 'SALES_DEPLETION' }) ← InventoryAgent
+4. COMMIT TRANSACTION
+5. Update batch status
 ```
 
 ### SOLID Notes

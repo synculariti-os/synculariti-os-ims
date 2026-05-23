@@ -64,7 +64,7 @@ describe('ItemController', () => {
 
       const result = await controller.listParLevels(mockUser);
       
-      expect(service.listParLevels).toHaveBeenCalledWith(mockUser.restaurantId);
+      expect(service.listParLevels).toHaveBeenCalledWith(mockUser.restaurantId, 1, 50);
       expect(result).toEqual(mockResult);
     });
   });

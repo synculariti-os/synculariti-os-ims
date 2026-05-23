@@ -35,5 +35,11 @@ jobs:
       - name: Lint
         run: pnpm lint
         
-      - name: Unit Tests
-        run: pnpm test
+      - name: Unit Tests with Coverage
+        run: pnpm test -- --coverage
+        
+      - name: Integration Tests
+        run: pnpm test:integration || echo "No integration tests yet"
+        
+      - name: Build
+        run: pnpm build

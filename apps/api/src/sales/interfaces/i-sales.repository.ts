@@ -6,8 +6,7 @@ export interface ISalesRepository {
     businessDate: string;
     fileUrl: string;
     uploadedBy: string;
-  }): Promise<any>;
-  updateBatchStatus(batchId: string, status: 'PROCESSING' | 'COMPLETED' | 'FAILED', errorMessage?: string): Promise<void>;
-  insertImportRows(trx: any, rows: any[]): Promise<void>;
-  getMenuItemMappings(restaurantId: string, rawExcelStrings: string[]): Promise<{ rawExcelString: string; recipeId: string }[]>;
+  }): Promise<{ id: string; status: string; restaurant_id: string; business_date: string }>;
+  updateBatchStatus(batchId: string, status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED', errorMessage?: string): Promise<void>;
+  insertImportRows(trx: import('kysely').Kysely<import('@ims/types').Database>, rows: { batchId: string, rawItemName: string, quantitySold: number, isMapped: boolean }[]): Promise<void>;
 }

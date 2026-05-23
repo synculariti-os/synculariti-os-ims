@@ -1,8 +1,9 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Database, Recipe, RecipeIngredient, RecipeId, RestaurantId, ItemId } from '@ims/types';
+import { Database, Recipe, RecipeIngredient, RecipeId, ItemId, RestaurantId, RecipeIngredientId, MenuItemMappingId, asRecipeId, asItemId, asFranchiseGroupId, asRestaurantId, asRecipeIngredientId, asMenuItemMappingId } from '@ims/types';
+import { CreateRecipeDto, UpdateRecipeDto } from '@ims/validators';
+import { v4 as uuidv4 } from 'uuid';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
-import type { CreateRecipeDto, UpdateRecipeDto } from '@ims/validators';
 
 @Injectable()
 export class RecipeRepository implements IRecipeRepository {
@@ -11,7 +12,7 @@ export class RecipeRepository implements IRecipeRepository {
   // ── Read ──────────────────────────────────────────────────────────────────
 
   async findById(recipeId: RecipeId): Promise<Recipe | null> {
-    const row = await (this.db as Kysely<any>)
+    const row = await this.db
       .selectFrom('recipes')
       .selectAll()
       .where('id', '=', recipeId)
@@ -21,23 +22,23 @@ export class RecipeRepository implements IRecipeRepository {
   }
 
   async findByProducesItemId(itemId: string): Promise<Recipe | null> {
-    const row = await (this.db as Kysely<any>)
+    const row = await this.db
       .selectFrom('recipes')
       .selectAll()
-      .where('produces_item_id', '=', itemId)
+      .where('produces_item_id', '=', asItemId(itemId))
       .executeTakeFirst();
 
     return row ? this.mapRecipeRow(row) : null;
   }
 
   async findIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]> {
-    const rows = await (this.db as Kysely<any>)
+    const rows = await this.db
       .selectFrom('recipe_ingredients')
       .selectAll()
       .where('recipe_id', '=', recipeId)
       .execute();
 
-    return rows.map((r: any) => this.mapIngredientRow(r));
+    return rows.map((r: Record<string, unknown>) => this.mapIngredientRow(r));
   }
 
   /**
@@ -45,7 +46,7 @@ export class RecipeRepository implements IRecipeRepository {
    * Matches on restaurant_id + raw_excel_string (case-insensitive trim).
    */
   async resolveByPosString(restaurantId: RestaurantId, rawString: string): Promise<Recipe | null> {
-    const row = await (this.db as Kysely<any>)
+    const row = await this.db
       .selectFrom('menu_item_mappings')
       .innerJoin('recipes', 'recipes.id', 'menu_item_mappings.recipe_id')
       .select([
@@ -64,71 +65,100 @@ export class RecipeRepository implements IRecipeRepository {
     return row ? this.mapRecipeRow(row) : null;
   }
 
+  async resolveRecipesByPosStrings(
+    restaurantId: RestaurantId,
+    rawStrings: string[],
+  ): Promise<import('@ims/types').MenuItemMapping[]> {
+    if (rawStrings.length === 0) return [];
+    
+    const rows = await this.db
+      .selectFrom('menu_item_mappings')
+      .selectAll()
+      .where('restaurant_id', '=', restaurantId)
+      .where('raw_excel_string', 'in', rawStrings.map(s => s.trim()))
+      .execute();
+      
+    return rows.map((r: Record<string, unknown>) => ({
+      id: asMenuItemMappingId(r.id as string),
+      restaurantId: asRestaurantId(r.restaurant_id as string),
+      rawExcelString: r.raw_excel_string as string,
+      recipeId: asRecipeId(r.recipe_id as string),
+      createdAt: r.created_at as string,
+    }));
+  }
+
   // ── Write ─────────────────────────────────────────────────────────────────
 
   async create(dto: CreateRecipeDto, restaurantId: RestaurantId): Promise<Recipe> {
-    const [recipe] = await (this.db as Kysely<any>)
-      .insertInto('recipes')
-      .values({
-        produces_item_id: dto.producesItemId,
-        yield_quantity: dto.yieldQuantity,
-        franchise_group_id: dto.franchiseGroupId ?? null,
-        restaurant_id: dto.restaurantId ?? null,
-      })
-      .returningAll()
-      .execute();
-
-    if (dto.ingredients && dto.ingredients.length > 0) {
-      await (this.db as Kysely<any>)
-        .insertInto('recipe_ingredients')
-        .values(
-          dto.ingredients.map((ing) => ({
-            recipe_id: recipe.id,
-            ingredient_item_id: ing.ingredientItemId,
-            quantity_required: ing.quantityRequired,
-          })),
-        )
-        .execute();
-    }
-
-    return this.mapRecipeRow(recipe);
-  }
-
-  async update(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
-    const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
-    if (dto.yieldQuantity !== undefined) {
-      updateData['yield_quantity'] = dto.yieldQuantity;
-    }
-
-    const [recipe] = await (this.db as Kysely<any>)
-      .updateTable('recipes')
-      .set(updateData)
-      .where('id', '=', recipeId)
-      .returningAll()
-      .execute();
-
-    if (dto.ingredients !== undefined) {
-      // Replace all ingredients atomically
-      await (this.db as Kysely<any>)
-        .deleteFrom('recipe_ingredients')
-        .where('recipe_id', '=', recipeId)
+    return await this.db.transaction().execute(async (trx) => {
+      const [recipe] = await trx
+        .insertInto('recipes')
+        .values({
+          id: uuidv4() as RecipeId,
+          produces_item_id: asItemId(dto.producesItemId),
+          yield_quantity: dto.yieldQuantity,
+          franchise_group_id: dto.franchiseGroupId ? asFranchiseGroupId(dto.franchiseGroupId) : null,
+          restaurant_id: dto.restaurantId ? asRestaurantId(dto.restaurantId) : null,
+        })
+        .returningAll()
         .execute();
 
-      if (dto.ingredients.length > 0) {
-        await (this.db as Kysely<any>)
+      if (dto.ingredients && dto.ingredients.length > 0) {
+        await trx
           .insertInto('recipe_ingredients')
           .values(
             dto.ingredients.map((ing) => ({
-              recipe_id: recipeId,
-              ingredient_item_id: ing.ingredientItemId,
+              id: uuidv4() as RecipeIngredientId,
+              recipe_id: recipe.id,
+              ingredient_item_id: asItemId(ing.ingredientItemId),
               quantity_required: ing.quantityRequired,
             })),
           )
           .execute();
       }
-    }
 
-    return this.mapRecipeRow(recipe);
+      return this.mapRecipeRow(recipe);
+    });
+  }
+
+  async update(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
+    return await this.db.transaction().execute(async (trx) => {
+      const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
+      if (dto.yieldQuantity !== undefined) {
+        updateData['yield_quantity'] = dto.yieldQuantity;
+      }
+
+      const [recipe] = await trx
+        .updateTable('recipes')
+        .set(updateData)
+        .where('id', '=', recipeId)
+        .returningAll()
+        .execute();
+
+      if (dto.ingredients !== undefined) {
+        // Replace all ingredients atomically
+        await trx
+          .deleteFrom('recipe_ingredients')
+          .where('recipe_id', '=', recipeId)
+          .execute();
+
+        if (dto.ingredients.length > 0) {
+          await trx
+            .insertInto('recipe_ingredients')
+            .values(
+              dto.ingredients.map((ing) => ({
+                id: uuidv4() as RecipeIngredientId,
+                recipe_id: recipeId,
+                ingredient_item_id: asItemId(ing.ingredientItemId),
+                quantity_required: ing.quantityRequired,
+              })),
+            )
+            .execute();
+        }
+      }
+
+      return this.mapRecipeRow(recipe);
+    });
   }
 
   async upsertMapping(
@@ -136,42 +166,43 @@ export class RecipeRepository implements IRecipeRepository {
     rawString: string,
     recipeId: RecipeId,
   ): Promise<void> {
-    await (this.db as Kysely<any>)
+    await this.db
       .insertInto('menu_item_mappings')
       .values({
+        id: uuidv4() as MenuItemMappingId,
         restaurant_id: restaurantId,
         raw_excel_string: rawString.trim(),
         recipe_id: recipeId,
       })
-      .onConflict((oc: any) =>
+      .onConflict((oc) =>
         oc
           .columns(['restaurant_id', 'raw_excel_string'])
-          .doUpdateSet({ recipe_id: recipeId, updated_at: new Date().toISOString() }),
+          .doUpdateSet({ recipe_id: recipeId }),
       )
       .execute();
   }
 
   // ── Mappers ───────────────────────────────────────────────────────────────
 
-  private mapRecipeRow(row: any): Recipe {
+  private mapRecipeRow(row: Record<string, unknown>): Recipe {
     return {
-      id: row.id as RecipeId,
-      franchiseGroupId: row.franchise_group_id ?? null,
-      restaurantId: row.restaurant_id as RestaurantId | null,
-      producesItemId: row.produces_item_id as ItemId,
+      id: asRecipeId(row.id as string),
+      franchiseGroupId: row.franchise_group_id ? asFranchiseGroupId(row.franchise_group_id as string) : null,
+      restaurantId: row.restaurant_id ? (row.restaurant_id as RestaurantId) : null,
+      producesItemId: asItemId(row.produces_item_id as string),
       yieldQuantity: Number(row.yield_quantity),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      createdAt: row.created_at as string,
+      updatedAt: row.updated_at as string,
     };
   }
 
-  private mapIngredientRow(row: any): RecipeIngredient {
+  private mapIngredientRow(row: Record<string, unknown>): RecipeIngredient {
     return {
-      id: row.id,
-      recipeId: row.recipe_id as RecipeId,
-      ingredientItemId: row.ingredient_item_id as ItemId,
+      id: asRecipeIngredientId(row.id as string),
+      recipeId: asRecipeId(row.recipe_id as string),
+      ingredientItemId: asItemId(row.ingredient_item_id as string),
       quantityRequired: Number(row.quantity_required),
-      createdAt: row.created_at,
+      createdAt: row.created_at as string,
     };
   }
 }

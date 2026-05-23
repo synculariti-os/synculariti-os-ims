@@ -33,17 +33,17 @@ const CLOSED_BATCH = { ...OPEN_BATCH, status: COUNT_STATUS.CLOSED, version: 1 };
 // ---------------------------------------------------------------------------
 const mockDb = {
   transaction: vi.fn().mockImplementation(() => ({
-    execute: vi.fn().mockImplementation((fn: (trx: any) => Promise<void>) => fn({})),
+    execute: vi.fn().mockImplementation((fn: (trx: unknown) => Promise<void>) => fn({})),
   })),
 };
 
 const mockCountRepo: IInventoryCountRepository = {
-  createBatch: vi.fn(),
-  findBatchById: vi.fn(),
-  updateBatchStatus: vi.fn(),
-  findRowsByBatchId: vi.fn(),
-  updateCountRow: vi.fn(),
-  createCountRows: vi.fn(),
+  createBatch: vi.fn() as any,
+  findBatchById: vi.fn() as any,
+  updateBatchStatus: vi.fn() as any,
+  findRowsByBatchId: vi.fn() as any,
+  updateCountRow: vi.fn() as any,
+  createCountRows: vi.fn() as any,
 };
 
 const mockLedgerService: ILedgerService = {
@@ -61,6 +61,12 @@ describe('InventoryCountService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     service = new InventoryCountService(mockDb as any, mockCountRepo, mockLedgerService);
+  });
+
+  const closeDto = (version: number) => ({
+    batchId: BATCH_ID,
+    version,
+    rows: [{ itemId: ITEM_ID_A, actualQty: 45 }],
   });
 
   // ── startBatch ────────────────────────────────────────────────────────────
@@ -98,7 +104,7 @@ describe('InventoryCountService', () => {
         expectedQty: 50, actualQty: 45, varianceQty: -5,
       } as any);
 
-      const result = await service.submitActualCount(BATCH_ID, ROW_ID_A, { actualQty: 45 });
+      const result = await service.submitActualCount(BATCH_ID, ROW_ID_A, { itemId: ITEM_ID_A, actualQty: 45 });
 
       expect(result.varianceQty).toBe(-5);
     });
@@ -107,7 +113,7 @@ describe('InventoryCountService', () => {
       vi.mocked(mockCountRepo.findBatchById).mockResolvedValueOnce(CLOSED_BATCH as any);
 
       await expect(
-        service.submitActualCount(BATCH_ID, ROW_ID_A, { actualQty: 45 }),
+        service.submitActualCount(BATCH_ID, ROW_ID_A, { itemId: ITEM_ID_A, actualQty: 45 }),
       ).rejects.toThrow(/cannot submit.*closed/i);
     });
   });
@@ -122,7 +128,7 @@ describe('InventoryCountService', () => {
         { id: 'row-uuid-bbb' as any, batchId: BATCH_ID, itemId: ITEM_ID_B, expectedQty: 30, actualQty: 30, varianceQty: 0 },
       ] as any);
 
-      await service.closeBatch(BATCH_ID, { version: 0 });
+      await service.closeBatch(BATCH_ID, closeDto(0));
 
       // Only rows with non-zero variance get ledger entries
       expect(mockLedgerService.record).toHaveBeenCalledTimes(1);
@@ -148,13 +154,13 @@ describe('InventoryCountService', () => {
       vi.mocked(mockCountRepo.findBatchById).mockResolvedValueOnce(staleBatch as any);
 
       // Client sends version: 0 (stale)
-      await expect(service.closeBatch(BATCH_ID, { version: 0 })).rejects.toThrow(ConflictException);
+      await expect(service.closeBatch(BATCH_ID, closeDto(0))).rejects.toThrow(ConflictException);
     });
 
     it('throws when trying to close an already CLOSED batch', async () => {
       vi.mocked(mockCountRepo.findBatchById).mockResolvedValueOnce(CLOSED_BATCH as any);
 
-      await expect(service.closeBatch(BATCH_ID, { version: 1 })).rejects.toThrow(ConflictException);
+      await expect(service.closeBatch(BATCH_ID, closeDto(1))).rejects.toThrow(ConflictException);
     });
 
     it('skips COUNT_ADJUSTMENT entries for rows with zero variance', async () => {
@@ -163,7 +169,7 @@ describe('InventoryCountService', () => {
         { id: ROW_ID_A, batchId: BATCH_ID, itemId: ITEM_ID_A, expectedQty: 50, actualQty: 50, varianceQty: 0 },
       ] as any);
 
-      await service.closeBatch(BATCH_ID, { version: 0 });
+      await service.closeBatch(BATCH_ID, closeDto(0));
 
       expect(mockLedgerService.record).not.toHaveBeenCalled();
     });

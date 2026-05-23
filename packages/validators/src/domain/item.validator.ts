@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const CreateItemSchema = z.object({
+export const createItemSchema = z.object({
   franchiseGroupId: z.string().uuid().nullable(),
   restaurantId: z.string().uuid().nullable(),
   categoryId: z.string().uuid(),
@@ -14,38 +14,39 @@ export const CreateItemSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-export const UpdateItemSchema = CreateItemSchema.partial();
+export const updateItemSchema = createItemSchema.partial();
 
-export const CreateUomConversionSchema = z.object({
+export const createUomConversionSchema = z.object({
   itemId: z.string().uuid(),
   fromUom: z.string().min(1),
   toUom: z.string().min(1),
   multiplierFactor: z.number().positive(),
 });
 
-const BaseCategorySchema = z.object({
+const baseCategorySchema = z.object({
   franchiseGroupId: z.string().uuid().nullable(),
   restaurantId: z.string().uuid().nullable(),
   name: z.string().min(1),
   description: z.string().optional(),
 });
 
-export const CreateCategorySchema = BaseCategorySchema.refine(data => 
+export const createCategorySchema = baseCategorySchema.refine(data => 
   (data.franchiseGroupId !== null && data.restaurantId === null) ||
   (data.franchiseGroupId === null && data.restaurantId !== null),
   { message: 'Must specify exactly one of franchiseGroupId or restaurantId' }
 );
 
-export const UpdateCategorySchema = BaseCategorySchema.partial();
+export const updateCategorySchema = baseCategorySchema.partial();
 
-export const UpdateItemOverrideSchema = z.object({
+export const updateItemOverrideSchema = z.object({
   parLevel: z.number().min(0).optional(),
   isActive: z.boolean().optional(),
 });
 
-export type CreateItemDto = z.infer<typeof CreateItemSchema>;
-export type UpdateItemDto = z.infer<typeof UpdateItemSchema>;
-export type CreateUomConversionDto = z.infer<typeof CreateUomConversionSchema>;
-export type CreateCategoryDto = z.infer<typeof CreateCategorySchema>;
-export type UpdateCategoryDto = z.infer<typeof UpdateCategorySchema>;
-export type UpdateItemOverrideDto = z.infer<typeof UpdateItemOverrideSchema>;
+export type CreateItemDto = z.infer<typeof createItemSchema>;
+export type UpdateItemDto = z.infer<typeof updateItemSchema>;
+export type CreateUomConversionDto = z.infer<typeof createUomConversionSchema>;
+export type CreateCategoryDto = z.infer<typeof createCategorySchema>;
+export type UpdateCategoryDto = z.infer<typeof updateCategorySchema>;
+export type UpdateItemOverrideDto = z.infer<typeof updateItemOverrideSchema>;
+

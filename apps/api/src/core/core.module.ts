@@ -2,13 +2,15 @@ import { Module, Global } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
-import { LEDGER_SERVICE_TOKEN } from '../sales/interfaces/i-ledger.service';
+import { LEDGER_SERVICE_TOKEN } from '../inventory/interfaces/i-ledger.service';
 import { STORAGE_SERVICE_TOKEN } from '../sales/interfaces/i-storage.service';
 import * as WebSocket from 'ws';
+import * as fs from 'fs';
+import { TenantContextDriver } from '../common/kysely/tenant-context.driver';
 
 const mockLedgerService = {
-  record: async (trx: any, entry: any) => {
-    // TODO: remove when InventoryModule is wired
+  record: async (trx: unknown, entry: unknown) => {
+    console.log('Mock LedgerService record called', { entry });
   },
 };
 
@@ -20,7 +22,7 @@ const mockLedgerService = {
       useFactory: () => {
         // Fix for Node.js 20 lacking native WebSocket support
         if (typeof globalThis.WebSocket === 'undefined') {
-          (globalThis as any).WebSocket = WebSocket;
+          (globalThis as unknown as Record<string, unknown>).WebSocket = WebSocket;
         }
         
         return createClient(
@@ -32,13 +34,23 @@ const mockLedgerService = {
     {
       provide: 'DB_CLIENT',
       useFactory: () => {
-        return new Kysely({
-          dialect: new PostgresDialect({
-            pool: new Pool({
-              connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:54322/postgres',
-            }),
+        const dialect = new PostgresDialect({
+          pool: new Pool({
+            connectionString: process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:54322/postgres',
           }),
         });
+        
+        const originalDriver = dialect.createDriver();
+        const driver = new TenantContextDriver(originalDriver);
+        
+        const customDialect = {
+          createAdapter: () => dialect.createAdapter(),
+          createDriver: () => driver,
+          createIntrospector: (db: any) => dialect.createIntrospector(db),
+          createQueryCompiler: () => dialect.createQueryCompiler(),
+        };
+
+        return new Kysely({ dialect: customDialect });
       },
     },
     {
@@ -47,13 +59,13 @@ const mockLedgerService = {
     },
     {
       provide: STORAGE_SERVICE_TOKEN,
-      useFactory: (supabase: any) => ({
+      useFactory: (supabase: ReturnType<typeof createClient>) => ({
         downloadFile: async (path: string) => {
           const { data, error } = await supabase.storage.from('sales_raw_uploads').download(path);
           if (error) throw error;
           const buffer = Buffer.from(await data.arrayBuffer());
           const tempPath = `/tmp/${path.split('/').pop()}`;
-          require('fs').writeFileSync(tempPath, buffer);
+          fs.writeFileSync(tempPath, buffer);
           return tempPath;
         }
       }),

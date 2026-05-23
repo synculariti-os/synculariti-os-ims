@@ -39,7 +39,6 @@
 | `Permission` | `interface` | `permissions` | Atomic permission code with module scope |
 | `UserRestaurantRole` | `interface` | `user_restaurant_roles` | Junction: user ↔ restaurant ↔ role assignment |
 | `JwtPayload` | `interface` | — | Shape of the JWT: `{ sub, email, restaurantId, franchiseGroupId, permissions }` |
-| `TokenPair` | `interface` | — | `{ accessToken: string; refreshToken: string }` |
 | `PermissionCode` | `const enum` | `permissions` | All valid permission codes (e.g. `INVENTORY_READ`, `PROCUREMENT_WRITE`) |
 
 ---
@@ -183,30 +182,41 @@
 
 ### Decorators
 
+All decorators live in `apps/api/src/common/decorators/` and are re-exported by their owning module.
+
 | Symbol | Kind | Module | Description |
 |---|---|---|---|
-| `@RequirePermission(code: PermissionCode)` | Decorator | `AuthModule` | Route guard decorator. Reads JWT `permissions` array. |
-| `@Public()` | Decorator | `AuthModule` | Marks a route as not requiring JWT. Used on `/auth/login`, `/auth/refresh`. |
-| `@CurrentUser()` | Decorator | `AuthModule` | Parameter decorator — extracts `JwtPayload` from the request. |
-| `@TenantId()` | Decorator | `TenantModule` | Parameter decorator — extracts `restaurantId` from JWT. |
-| `@Transactional()` | Decorator | `DatabaseModule` | AOP decorator that wraps a service method in a Kysely transaction (custom implementation). |
+| `@RequirePermission(code: PermissionCode)` | Decorator | `common` | Route guard decorator — sets metadata read by `PermissionsGuard`. |
+| `@Public()` | Decorator | `common` | Marks a route as not requiring JWT. |
+| `@CurrentUser()` | Decorator | `common` | Parameter decorator — extracts `JwtPayload` from the request. |
+| `@TenantId()` | Decorator | `common` | Parameter decorator — extracts `restaurantId` from JWT. |
+| `@Transactional()` | Decorator | `common` | AOP decorator that wraps a service method in a Kysely transaction (metadata-only; actual tx handled by service layer). |
 
 ### Global Providers (registered in `AppModule`)
 
 | Symbol | Kind | Description |
 |---|---|---|
-| `JwtAuthGuard` | `CanActivate` | Global guard — validates Bearer token on all non-`@Public()` routes. |
+| `SupabaseAuthGuard` | `CanActivate` | Global guard — validates Bearer token via Supabase on all non-`@Public()` routes. |
 | `PermissionsGuard` | `CanActivate` | Global guard — evaluates `@RequirePermission()` decorators. |
-| `TenantContextInterceptor` | `NestInterceptor` | Calls `set_tenant_context()` on DB connection before each request. |
+| `TenantContextInterceptor` | `NestInterceptor` | Calls `tenantContext.run()` to populate the context with `franchiseGroupId` and `restaurantId`. |
+| `TenantContextDriver` | `Kysely Driver` | Custom Kysely driver wrapper. Automatically reads `tenantContext` and executes `set_tenant_context` on connection checkout. |
+| `TransformResponseInterceptor` | `NestInterceptor` | Wraps all responses in `{ data }` envelope. |
 | `AuditInterceptor` | `NestInterceptor` | Writes to `audit_log` after each mutating request (POST/PUT/PATCH/DELETE). |
-| `HttpExceptionFilter` | `ExceptionFilter` | Global exception handler — formats all errors into the standard response envelope. |
-| `ZodValidationPipe` | `PipeTransform` | Global validation pipe — uses Zod schemas from `@ims/validators`. |
+| `GlobalExceptionFilter` | `ExceptionFilter` | Global exception handler — formats all errors into the standard response envelope. |
+
+### Per-Route Providers (imported where used)
+
+| Symbol | Kind | Description |
+|---|---|---|
+| `ZodValidationPipe` | `PipeTransform` | Validation pipe used per-route via `new ZodValidationPipe(schema)`. Not registered globally. |
+| `@CurrentUser()` | Decorator | Parameter decorator — extracts `JwtPayload` from the request. |
+| `@RequirePermission(code)` | Decorator | Route guard decorator — sets metadata read by `PermissionsGuard`. |
 
 ### Core Service Interfaces (exported from each module)
 
 | Symbol | Kind | Module | Description |
 |---|---|---|---|
-| `IAuthService` | `interface` | `AuthModule` | `validateCredentials`, `resolvePermissions`, `issueTokenPair` |
+| `IAuthService` | `interface` | `AuthModule` | `verifyAndEnrich`, `resolvePermissions`, `getProfile`, `updateProfile` |
 | `ITenantService` | `interface` | `TenantModule` | `getRestaurant`, `getFranchiseGroup`, `listRestaurantsForUser` |
 | `IItemReadService` | `interface` | `ItemModule` | `findById`, `convertUom`, `listParLevels` |
 | `IItemWriteService` | `interface` | `ItemModule` | Extends `IItemReadService` with CRUD operations: `createItem`, `updateItem`, etc. |
@@ -214,6 +224,7 @@
 | `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients` |
 | `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk` |
 | `IStockQueryService` | `interface` | `InventoryModule` | Read-only: `getCurrentStock`, `getCurrentStockBulk` (for Reporting) |
+| `IInventoryCountService` | `interface` | `InventoryModule` | `startBatch`, `submitActualCount`, `closeBatch` |
 | `IAuditService` | `interface` | `AuditModule` | `log(entry: AuditEntryDto): Promise<void>` |
 
 ### BullMQ Queues
@@ -228,10 +239,10 @@
 
 ## Database Functions (Supabase / PostgreSQL)
 
-| Symbol | Language | Description |
-|---|---|---|
-| `set_tenant_context(p_franchise_id, p_restaurant_id)` | `plpgsql` | Sets `app.current_franchise_id` and `app.current_restaurant_id` session variables. Called before every query. |
-| `safe_cast_uuid(p_val)` | `plpgsql` | Safe UUID casting — returns `NULL` instead of throwing on invalid input. |
+| Symbol | Language | Description | Status |
+|---|---|---|---|
+| `set_tenant_context(p_franchise_id, p_restaurant_id)` | `plpgsql` | Sets `app.current_franchise_id` and `app.current_restaurant_id` session variables. Called by `TenantContextInterceptor` before every query. | ✅ Implemented |
+| `safe_cast_uuid(p_val)` | `plpgsql` | Safe UUID casting — returns `NULL` instead of throwing on invalid input. | ❌ Not yet created |
 
 ### Materialized View
 

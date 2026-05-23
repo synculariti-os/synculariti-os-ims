@@ -50,7 +50,7 @@ describe('SalesService', () => {
     supabaseMock.storage.getPublicUrl.mockReturnValue({ data: { publicUrl: 'https://fake-url.com/sales.xlsx' } });
     repoMock.createBatch.mockResolvedValue({ id: 'batch-123', status: 'PENDING' } as any);
 
-    const result = await service.uploadSalesFile(file, dto, 'restaurant-1', 'user-1');
+    const result = await service.uploadSalesFile(file, dto, 'restaurant-1', 'franchise-1', 'user-1');
 
     expect(supabaseMock.storage.upload).toHaveBeenCalled();
     expect(repoMock.createBatch).toHaveBeenCalledWith(expect.objectContaining({
@@ -59,7 +59,7 @@ describe('SalesService', () => {
       fileUrl: 'https://fake-url.com/sales.xlsx',
     }));
     expect(queueMock.add).toHaveBeenCalledWith('process-sales', { batchId: 'batch-123' });
-    expect(result.id).toEqual('batch-123');
+    expect(result.batchId).toEqual('batch-123');
   });
 
   it('should throw an error if supabase upload fails', async () => {
@@ -68,6 +68,6 @@ describe('SalesService', () => {
     
     supabaseMock.storage.upload.mockResolvedValue({ data: null, error: { message: 'Upload failed' } });
 
-    await expect(service.uploadSalesFile(file, dto, 'restaurant-1', 'user-1')).rejects.toThrow('Upload failed');
+    await expect(service.uploadSalesFile(file, dto, 'restaurant-1', 'franchise-1', 'user-1')).rejects.toThrow('Upload failed');
   });
 });

@@ -5,8 +5,8 @@ import * as path from 'path';
 import { vi, describe, it, expect, beforeEach, Mocked } from 'vitest';
 import { SalesImportProcessor } from '../sales.processor';
 import { ISalesRepository, SALES_REPOSITORY_TOKEN } from '../interfaces/i-sales.repository';
-import { IRecipeService, RECIPE_SERVICE_TOKEN } from '../interfaces/i-recipe.service';
-import { ILedgerService, LEDGER_SERVICE_TOKEN } from '../interfaces/i-ledger.service';
+import { IRecipeService, RECIPE_SERVICE_TOKEN } from '../../recipe/interfaces/i-recipe.service';
+import { ILedgerService, LEDGER_SERVICE_TOKEN } from '../../inventory/interfaces/i-ledger.service';
 import { IStorageService, STORAGE_SERVICE_TOKEN } from '../interfaces/i-storage.service';
 
 describe('SalesImportProcessor', () => {
@@ -21,11 +21,14 @@ describe('SalesImportProcessor', () => {
       createBatch: vi.fn(),
       updateBatchStatus: vi.fn(),
       insertImportRows: vi.fn(),
-      getMenuItemMappings: vi.fn(),
+
     } as any;
 
     recipeService = {
       expandBOM: vi.fn(),
+      resolveRecipesByPosStrings: vi.fn(),
+      getIngredients: vi.fn(),
+      resolveRecipeByPosString: vi.fn(),
     } as any;
 
     ledgerService = {
@@ -60,18 +63,18 @@ describe('SalesImportProcessor', () => {
     storageService.downloadFile.mockResolvedValue(excelPath);
 
     // Mock mappings: "BLUE HEAVEN COMBO" -> recipe1, "CHEESY SMASH" -> recipe2
-    salesRepository.getMenuItemMappings.mockResolvedValue([
-      { rawExcelString: 'BLUE HEAVEN COMBO', recipeId: 'recipe-1' },
-      { rawExcelString: 'CHEESY SMASH', recipeId: 'recipe-2' },
+    recipeService.resolveRecipesByPosStrings.mockResolvedValue([
+      { id: '1' as import('@ims/types').MenuItemMappingId, restaurantId: restaurantId as import('@ims/types').RestaurantId, rawExcelString: 'BLUE HEAVEN COMBO', recipeId: 'recipe-1' as import('@ims/types').RecipeId, createdAt: 'time' },
+      { id: '2' as import('@ims/types').MenuItemMappingId, restaurantId: restaurantId as import('@ims/types').RestaurantId, rawExcelString: 'CHEESY SMASH', recipeId: 'recipe-2' as import('@ims/types').RecipeId, createdAt: 'time' },
     ]);
 
     // Mock BOM expansion
     recipeService.expandBOM.mockImplementation(async (recipeId, quantity) => {
       if (recipeId === 'recipe-1') {
-        return [{ itemId: 'item-bun', consumedQty: quantity * 1 }, { itemId: 'item-patty', consumedQty: quantity * 1 }];
+        return [{ itemId: 'item-bun' as import('@ims/types').ItemId, consumedQty: quantity * 1 }, { itemId: 'item-patty' as import('@ims/types').ItemId, consumedQty: quantity * 1 }];
       }
       if (recipeId === 'recipe-2') {
-        return [{ itemId: 'item-cheese', consumedQty: quantity * 2 }];
+        return [{ itemId: 'item-cheese' as import('@ims/types').ItemId, consumedQty: quantity * 2 }];
       }
       return [];
     });

@@ -205,6 +205,9 @@ importers:
       '@ims/config':
         specifier: workspace:*
         version: link:../config
+      kysely:
+        specifier: ^0.27.4
+        version: 0.27.6
       typescript:
         specifier: ^5.6.3
         version: 5.9.3

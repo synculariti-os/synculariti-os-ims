@@ -53,9 +53,10 @@ export default function SalesImportPage() {
         throw new Error(responseData.message || 'Failed to register batch. Please try again.');
       }
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload Error:', error);
-      setErrorMessage(error.message || 'An unexpected error occurred. Please try again.');
+      const msg = error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.';
+      setErrorMessage(msg);
     } finally {
       setIsUploading(false);
     }
