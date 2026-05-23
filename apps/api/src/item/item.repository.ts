@@ -118,11 +118,13 @@ export class ItemRepository implements IItemRepository {
         join.onRef('item_restaurant_overrides.item_id', '=', 'items.id')
             .on('item_restaurant_overrides.restaurant_id', '=', sql`${restaurantId}`)
       )
+      .leftJoin('categories', 'categories.id', 'items.category_id')
       .select([
         'items.id as id',
         'items.franchise_group_id as franchiseGroupId',
         'items.restaurant_id as itemRestaurantId',
         'items.category_id as categoryId',
+        'categories.name as categoryName',
         'items.name as name',
         'items.sku as sku',
         'items.type as type',
@@ -148,6 +150,7 @@ export class ItemRepository implements IItemRepository {
         franchiseGroupId: item.franchiseGroupId ? asFranchiseGroupId(item.franchiseGroupId as string) : null,
         restaurantId: item.itemRestaurantId ? asRestaurantId(item.itemRestaurantId as string) : null,
         categoryId: asCategoryId(item.categoryId as string),
+        categoryName: item.categoryName as string | undefined,
         name: item.name as string,
         sku: item.sku as string,
       type: item.type as import('@ims/types').ItemType,

@@ -114,7 +114,7 @@ export function ItemsTable() {
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400">
                       <div className="flex items-center">
                         <Tag className="h-3 w-3 mr-1.5 opacity-70" />
-                        {item.categoryId || 'Uncategorized'}
+                        {item.categoryName || 'Uncategorized'}
                       </div>
                     </td>
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400">

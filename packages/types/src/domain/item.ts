@@ -6,6 +6,7 @@ export interface ItemWithOverride extends Item {
   override?: ItemRestaurantOverride;
   effectiveParLevel: number;
   effectiveIsActive: boolean;
+  categoryName?: string;
 }
 export interface ItemParStatus { item: Item; effectiveParLevel: number; currentStock: number; isBelowPar: boolean; deficit: number; }
 export interface StockLevel { itemId: ItemId; qty: number; }
