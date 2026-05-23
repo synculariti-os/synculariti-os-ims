@@ -25,6 +25,4 @@ services:
       # SUPABASE_URL
       # SUPABASE_SERVICE_ROLE_KEY
       # DATABASE_URL
-      # REDIS_URL
-      # JWT_PRIVATE_KEY
-      # JWT_PUBLIC_KEY
+
