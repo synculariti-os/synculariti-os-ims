@@ -94,7 +94,7 @@ export function MappingsTable() {
                       {mapping.rawExcelString}
                     </td>
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400 font-mono text-xs">
-                      {mapping.recipeId}
+                      {mapping.targetRecipeName || mapping.recipeId}
                     </td>
                   </tr>
                 ))}

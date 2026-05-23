@@ -94,7 +94,7 @@ export function RecipesTable() {
                       {recipe.id.substring(0, 8)}...
                     </td>
                     <td className="p-4 px-6 font-medium text-zinc-700 dark:text-zinc-300">
-                      {recipe.producesItemId}
+                      {recipe.producesItemName || recipe.producesItemId}
                     </td>
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400">
                       {recipe.yieldQuantity}

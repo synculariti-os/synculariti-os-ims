@@ -14,18 +14,27 @@ export class RecipeRepository implements IRecipeRepository {
   async findAllRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
     const rows = await this.db
       .selectFrom('recipes')
-      .selectAll()
+      .leftJoin('items', 'items.id', 'recipes.produces_item_id')
+      .selectAll('recipes')
+      .select('items.name as produces_item_name')
       // Usually recipes are owned by franchise group, but we filter by the context
       .execute();
       
-    return rows.map((r: Record<string, unknown>) => this.mapRecipeRow(r));
+    return rows.map((r: Record<string, unknown>) => {
+      const recipe = this.mapRecipeRow(r);
+      if (r.produces_item_name) recipe.producesItemName = r.produces_item_name as string;
+      return recipe;
+    });
   }
 
   async findAllMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]> {
     const rows = await this.db
       .selectFrom('menu_item_mappings')
-      .selectAll()
-      .where('restaurant_id', '=', restaurantId)
+      .leftJoin('recipes', 'recipes.id', 'menu_item_mappings.recipe_id')
+      .leftJoin('items', 'items.id', 'recipes.produces_item_id')
+      .selectAll('menu_item_mappings')
+      .select('items.name as target_recipe_name')
+      .where('menu_item_mappings.restaurant_id', '=', restaurantId)
       .execute();
 
     return rows.map((r: Record<string, unknown>) => ({
@@ -33,6 +42,7 @@ export class RecipeRepository implements IRecipeRepository {
       restaurantId: asRestaurantId(r.restaurant_id as string),
       rawExcelString: r.raw_excel_string as string,
       recipeId: asRecipeId(r.recipe_id as string),
+      targetRecipeName: r.target_recipe_name ? (r.target_recipe_name as string) : undefined,
       createdAt: r.created_at as string,
     }));
   }
