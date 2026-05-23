@@ -19,7 +19,7 @@ export class ItemController {
     @Inject(ITEM_WRITE_SERVICE_TOKEN) private readonly itemService: IItemWriteService,
   ) {}
 
-  @Get('below-par')
+  @Get()
   @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async listParLevels(
     @CurrentUser() user: JwtPayload,
