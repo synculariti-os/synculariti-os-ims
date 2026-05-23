@@ -218,6 +218,9 @@ COMMIT
 **Responsibility**: Manage Bill of Materials (recipes) that define how prep items are produced, and the mapping between raw POS strings and internal recipes.
 
 ### Inputs
+- `POST /recipes` — Create a new recipe with ingredients
+- `PUT /recipes/:id` — Update recipe yield/ingredients
+- `POST /recipes/mappings` — Map raw POS string to a recipe
 - CRUD for `recipes` + `recipe_ingredients`
 - CRUD for `menu_item_mappings` (raw POS string ↔ recipe)
 
@@ -238,6 +241,9 @@ interface IRecipeService {
   expandBOM(recipeId: string, soldQty: number): Promise<BomExpansion[]>;
   resolveRecipeByPosString(restaurantId: string, rawString: string): Promise<Recipe | null>;
   getIngredients(recipeId: string): Promise<RecipeIngredient[]>;
+  createRecipe(dto: CreateRecipeDto, restaurantId: RestaurantId): Promise<Recipe>;
+  updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe>;
+  createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void>;
 }
 ```
 

@@ -223,7 +223,7 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 | `IItemReadService` | `interface` | `ItemModule` | `findById`, `convertUom`, `listParLevels` |
 | `IItemWriteService` | `interface` | `ItemModule` | Extends `IItemReadService` with CRUD operations: `createItem`, `updateItem`, etc. |
 | `IProcurementService` | `interface` | `ProcurementModule` | `createDraftPO`, `submitPO`, `receivePO`, `cancelPO` |
-| `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients` |
+| `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients`, `createRecipe`, `updateRecipe`, `createMenuItemMapping` |
 | `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk` |
 | `IStockQueryService` | `interface` | `InventoryModule` | Read-only: `getCurrentStock`, `getCurrentStockBulk` (for Reporting) |
 | `IInventoryCountService` | `interface` | `InventoryModule` | `startBatch`, `submitActualCount`, `closeBatch` |

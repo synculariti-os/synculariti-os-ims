@@ -117,6 +117,7 @@ All REST paths use **kebab-case** plural nouns. No verbs in paths (use HTTP meth
 ✅ POST   /inventory/transfers
 ✅ PATCH  /inventory/counts/:id/close   ← action sub-resource is acceptable
 ✅ GET    /sales-imports
+✅ POST   /recipes
 ❌ POST   /receiveOrder
 ❌ GET    /getInventoryTransfers
 ```

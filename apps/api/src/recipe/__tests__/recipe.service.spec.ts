@@ -144,4 +144,90 @@ describe('RecipeService', () => {
       expect(result).toHaveLength(2);
     });
   });
+
+  // ── createRecipe ──────────────────────────────────────────────────────────
+
+  describe('createRecipe()', () => {
+    it('creates a recipe via repo when item exists', async () => {
+      const dto = {
+        producesItemId: PRODUCED_ITEM_ID,
+        yieldQuantity: 10,
+        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 }],
+      };
+      
+      vi.mocked(mockItemService.findById).mockResolvedValueOnce({} as any);
+      vi.mocked(mockRecipeRepo.create).mockResolvedValueOnce(MOCK_RECIPE as any);
+
+      const result = await service.createRecipe(dto, 'restaurant-uuid' as any);
+
+      expect(mockItemService.findById).toHaveBeenCalledWith(PRODUCED_ITEM_ID, 'restaurant-uuid');
+      expect(mockRecipeRepo.create).toHaveBeenCalledWith(dto, 'restaurant-uuid');
+      expect(result).toEqual(MOCK_RECIPE);
+    });
+
+    it('throws NotFoundException if the produced item does not exist', async () => {
+      const dto = {
+        producesItemId: PRODUCED_ITEM_ID,
+        yieldQuantity: 10,
+        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 }],
+      };
+      
+      vi.mocked(mockItemService.findById).mockResolvedValueOnce(null as any);
+
+      await expect(service.createRecipe(dto, 'restaurant-uuid' as any)).rejects.toThrow(/Item not found/i);
+      expect(mockRecipeRepo.create).not.toHaveBeenCalled();
+    });
+  });
+
+  // ── updateRecipe ──────────────────────────────────────────────────────────
+
+  describe('updateRecipe()', () => {
+    it('updates a recipe via repo', async () => {
+      const dto = {
+        yieldQuantity: 20,
+      };
+      
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
+      vi.mocked(mockRecipeRepo.update).mockResolvedValueOnce({ ...MOCK_RECIPE, yieldQuantity: 20 } as any);
+
+      const result = await service.updateRecipe(RECIPE_ID, dto);
+
+      expect(mockRecipeRepo.update).toHaveBeenCalledWith(RECIPE_ID, dto);
+      expect(result.yieldQuantity).toEqual(20);
+    });
+
+    it('throws NotFoundException if recipe does not exist', async () => {
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(null as any);
+
+      await expect(service.updateRecipe(RECIPE_ID, {})).rejects.toThrow(/Recipe.*not found/i);
+    });
+  });
+
+  // ── createMenuItemMapping ─────────────────────────────────────────────────
+
+  describe('createMenuItemMapping()', () => {
+    it('upserts a mapping via repo', async () => {
+      const dto = {
+        rawExcelString: 'Burger Patty',
+        recipeId: RECIPE_ID,
+      };
+
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
+
+      await service.createMenuItemMapping('restaurant-uuid' as any, dto);
+
+      expect(mockRecipeRepo.upsertMapping).toHaveBeenCalledWith('restaurant-uuid', dto.rawExcelString, RECIPE_ID);
+    });
+
+    it('throws NotFoundException if recipe does not exist', async () => {
+      const dto = {
+        rawExcelString: 'Burger Patty',
+        recipeId: RECIPE_ID,
+      };
+
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(null as any);
+
+      await expect(service.createMenuItemMapping('restaurant-uuid' as any, dto)).rejects.toThrow(/Recipe.*not found/i);
+    });
+  });
 });

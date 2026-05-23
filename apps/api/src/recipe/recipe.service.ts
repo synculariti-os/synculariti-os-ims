@@ -12,7 +12,9 @@ import type {
   RecipeId,
   RestaurantId,
 } from '@ims/types';
+import { asItemId } from '@ims/types';
 import type { IRecipeService } from './interfaces/i-recipe.service';
+import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
 import type { IItemReadService } from '../item/interfaces/i-item.service';
 import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
@@ -67,5 +69,33 @@ export class RecipeService implements IRecipeService {
 
   async getIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]> {
     return this.recipeRepo.findIngredients(recipeId);
+  }
+
+  async createRecipe(dto: CreateRecipeDto, restaurantId: RestaurantId): Promise<Recipe> {
+    // Validate that the produces item exists
+    const item = await this.itemService.findById(asItemId(dto.producesItemId), restaurantId);
+    if (!item) {
+      throw new NotFoundException(`Item not found: ${dto.producesItemId}`);
+    }
+
+    return this.recipeRepo.create(dto, restaurantId);
+  }
+
+  async updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
+    const existing = await this.recipeRepo.findById(recipeId);
+    if (!existing) {
+      throw new NotFoundException(`Recipe ${recipeId} not found`);
+    }
+
+    return this.recipeRepo.update(recipeId, dto);
+  }
+
+  async createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void> {
+    const existing = await this.recipeRepo.findById(dto.recipeId as RecipeId);
+    if (!existing) {
+      throw new NotFoundException(`Recipe ${dto.recipeId} not found`);
+    }
+
+    await this.recipeRepo.upsertMapping(restaurantId, dto.rawExcelString, dto.recipeId as RecipeId);
   }
 }
