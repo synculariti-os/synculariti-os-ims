@@ -9,7 +9,7 @@ import { IStorageService, STORAGE_SERVICE_TOKEN } from './interfaces/i-storage.s
 import { Database } from '@ims/types';
 import { Kysely } from 'kysely';
 
-@Processor('sales-import')
+@Processor('sales_import')
 export class SalesImportProcessor extends WorkerHost {
   private readonly logger = new Logger(SalesImportProcessor.name);
 

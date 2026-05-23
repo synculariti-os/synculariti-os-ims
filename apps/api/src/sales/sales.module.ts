@@ -6,6 +6,8 @@ import { SalesRepository } from './sales.repository';
 import { SALES_SERVICE_TOKEN } from './interfaces/i-sales.service';
 import { SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
 
+import { SalesImportProcessor } from './sales.processor';
+
 @Module({
   imports: [
     BullModule.registerQueue({
@@ -22,6 +24,7 @@ import { SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
       provide: SALES_REPOSITORY_TOKEN,
       useClass: SalesRepository,
     },
+    SalesImportProcessor,
   ],
   exports: [SALES_SERVICE_TOKEN],
 })
