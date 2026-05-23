@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { SalesModule } from './sales/sales.module';
+import { ItemModule } from './item/item.module';
 import { CoreModule } from './core/core.module';
 import { BullModule } from '@nestjs/bullmq';
 
@@ -23,6 +24,7 @@ const redisUrl = process.env.REDIS_URL ? new URL(process.env.REDIS_URL) : null;
             port: parseInt(process.env.REDIS_PORT || '6379'),
           },
     }),
+    ItemModule,
     SalesModule,
   ],
   controllers: [AppController],

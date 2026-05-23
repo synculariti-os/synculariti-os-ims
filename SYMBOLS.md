@@ -208,8 +208,8 @@
 |---|---|---|---|
 | `IAuthService` | `interface` | `AuthModule` | `validateCredentials`, `resolvePermissions`, `issueTokenPair` |
 | `ITenantService` | `interface` | `TenantModule` | `getRestaurant`, `getFranchiseGroup`, `listRestaurantsForUser` |
-| `IItemService` | `interface` | `ItemModule` | `findById`, `convertUom`, `listBelowPar` |
-| `IItemReadService` | `interface` | `ItemModule` | Read-only subset of `IItemService` (for Reporting/Recipe deps) |
+| `IItemReadService` | `interface` | `ItemModule` | `findById`, `convertUom`, `listParLevels` |
+| `IItemWriteService` | `interface` | `ItemModule` | Extends `IItemReadService` with CRUD operations: `createItem`, `updateItem`, etc. |
 | `IProcurementService` | `interface` | `ProcurementModule` | `createDraftPO`, `submitPO`, `receivePO`, `cancelPO` |
 | `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients` |
 | `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk` |

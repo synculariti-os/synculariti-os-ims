@@ -14,8 +14,8 @@ import type {
 } from '@ims/types';
 import type { IRecipeService } from './interfaces/i-recipe.service';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
-import type { IItemService } from '../item/interfaces/i-item.service';
-import { ITEM_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
+import type { IItemReadService } from '../item/interfaces/i-item.service';
+import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
 export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
 
@@ -23,7 +23,7 @@ export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
 export class RecipeService implements IRecipeService {
   constructor(
     @Inject(RECIPE_REPOSITORY_TOKEN) private readonly recipeRepo: IRecipeRepository,
-    @Inject(ITEM_SERVICE_TOKEN) private readonly itemService: IItemService,
+    @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
   ) {}
 
   async expandBOM(recipeId: RecipeId, soldQty: number): Promise<BomExpansion> {

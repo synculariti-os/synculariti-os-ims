@@ -1,0 +1,77 @@
+import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
+import type { ItemWithOverride, ItemId, RestaurantId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
+import type { IItemWriteService } from './interfaces/i-item.service';
+import { IItemRepository } from './interfaces/i-item.repository';
+import { ITEM_REPOSITORY_TOKEN } from './interfaces/i-item.repository';
+import type { 
+  CreateItemDto, 
+  UpdateItemDto, 
+  CreateCategoryDto, 
+  UpdateCategoryDto, 
+  CreateUomConversionDto, 
+  UpdateItemOverrideDto 
+} from '@ims/validators';
+
+@Injectable()
+export class ItemService implements IItemWriteService {
+  constructor(
+    @Inject(ITEM_REPOSITORY_TOKEN) private readonly itemRepo: IItemRepository,
+  ) {}
+
+  async findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride> {
+    const item = await this.itemRepo.findById(itemId, restaurantId);
+    if (!item) {
+      throw new NotFoundException(`Item ${itemId} not found for restaurant ${restaurantId}`);
+    }
+    return item;
+  }
+
+  async convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number> {
+    if (fromUom === toUom) {
+      return qty;
+    }
+
+    const conversion = await this.itemRepo.getUomConversion(itemId, fromUom, toUom);
+    if (!conversion) {
+      throw new BadRequestException(`UOM conversion not found from ${fromUom} to ${toUom} for item ${itemId}`);
+    }
+
+    return qty * conversion.multiplierFactor;
+  }
+
+  async listParLevels(restaurantId: RestaurantId): Promise<ItemWithOverride[]> {
+    return this.itemRepo.listParLevels(restaurantId);
+  }
+
+  async createItem(dto: CreateItemDto): Promise<Item> {
+    return this.itemRepo.createItem(dto);
+  }
+
+  async updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item> {
+    const updated = await this.itemRepo.updateItem(itemId, dto);
+    if (!updated) {
+      throw new NotFoundException(`Item ${itemId} not found`);
+    }
+    return updated;
+  }
+
+  async createCategory(dto: CreateCategoryDto): Promise<Category> {
+    return this.itemRepo.createCategory(dto);
+  }
+
+  async updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category> {
+    const updated = await this.itemRepo.updateCategory(categoryId, dto);
+    if (!updated) {
+      throw new NotFoundException(`Category ${categoryId} not found`);
+    }
+    return updated;
+  }
+
+  async upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion> {
+    return this.itemRepo.upsertUomConversion(dto);
+  }
+
+  async updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride> {
+    return this.itemRepo.upsertItemOverride(itemId, restaurantId, dto);
+  }
+}

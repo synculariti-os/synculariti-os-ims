@@ -5,7 +5,7 @@ import { ConflictException, BadRequestException } from '@nestjs/common';
 import { ProcurementService } from '../procurement.service';
 import type { IProcurementRepository } from '../interfaces/i-procurement.repository';
 import type { ILedgerService } from '../../inventory/interfaces/i-ledger.service';
-import type { IItemService } from '../../item/interfaces/i-item.service';
+import type { IItemReadService } from '../../item/interfaces/i-item.service';
 import type { CreatePoDto, ReceivePoDto } from '@ims/validators';
 import { PURCHASE_ORDER_STATUS } from '@ims/types';
 
@@ -81,10 +81,10 @@ const mockLedgerService: ILedgerService = {
   getCurrentStockBulk: vi.fn(),
 };
 
-const mockItemService: IItemService = {
+const mockItemService: IItemReadService = {
   findById: vi.fn(),
   convertUom: vi.fn(),
-  listBelowPar: vi.fn(),
+  listParLevels: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------

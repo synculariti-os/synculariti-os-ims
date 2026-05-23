@@ -143,10 +143,19 @@ interface ITenantService {
 
 ### Contracts Exposed
 ```typescript
-interface IItemService {
+interface IItemReadService {
   findById(itemId: string, restaurantId: string): Promise<ItemWithOverride>;
   convertUom(itemId: string, qty: number, fromUom: string, toUom: string): Promise<number>;
-  listBelowPar(restaurantId: string): Promise<ItemParStatus[]>;
+  listParLevels(restaurantId: string): Promise<ItemWithOverride[]>;
+}
+
+interface IItemWriteService extends IItemReadService {
+  createItem(dto: CreateItemDto): Promise<Item>;
+  updateItem(itemId: string, dto: UpdateItemDto): Promise<Item>;
+  createCategory(dto: CreateCategoryDto): Promise<Category>;
+  updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
+  upsertUomConversion(dto: UpsertUomConversionDto): Promise<UomConversion>;
+  updateOverride(itemId: string, restaurantId: string, dto: UpdateOverrideDto): Promise<ItemRestaurantOverride>;
 }
 ```
 

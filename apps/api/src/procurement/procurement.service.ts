@@ -17,9 +17,9 @@ import type { CreatePoDto, ReceivePoDto } from '@ims/validators';
 
 import type { IProcurementRepository } from './interfaces/i-procurement.repository';
 import type { ILedgerService } from '../inventory/interfaces/i-ledger.service';
-import type { IItemService } from '../item/interfaces/i-item.service';
+import type { IItemReadService } from '../item/interfaces/i-item.service';
 import { LEDGER_SERVICE_TOKEN } from '../inventory/interfaces/i-ledger.service';
-import { ITEM_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
+import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
 export const PROCUREMENT_REPOSITORY_TOKEN = Symbol('IProcurementRepository');
 
@@ -30,7 +30,7 @@ export class ProcurementService {
     @Inject(PROCUREMENT_REPOSITORY_TOKEN)
     private readonly procurementRepo: IProcurementRepository,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledger: ILedgerService,
-    @Inject(ITEM_SERVICE_TOKEN) private readonly itemService: IItemService,
+    @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
   ) {}
 
   async createDraftPO(restaurantId: RestaurantId, dto: CreatePoDto): Promise<PurchaseOrder> {

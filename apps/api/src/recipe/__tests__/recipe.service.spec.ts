@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { RecipeService } from '../recipe.service';
 import type { IRecipeRepository } from '../interfaces/i-recipe.repository';
-import type { IItemService } from '../../item/interfaces/i-item.service';
+import type { IItemReadService } from '../../item/interfaces/i-item.service';
 import type { BomExpansion } from '@ims/types';
 
 // ---------------------------------------------------------------------------
@@ -42,10 +42,10 @@ const mockRecipeRepo: IRecipeRepository = {
   upsertMapping: vi.fn(),
 };
 
-const mockItemService: IItemService = {
+const mockItemService: IItemReadService = {
   findById: vi.fn(),
   convertUom: vi.fn(),
-  listBelowPar: vi.fn(),
+  listParLevels: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------

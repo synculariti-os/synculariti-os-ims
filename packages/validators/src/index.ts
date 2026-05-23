@@ -7,3 +7,4 @@ export type ReceivePoDto = any;
 export type CloseCountBatchDto = any;
 export type SubmitCountRowDto = any;
 export * from './domain/sales.validator';
+export * from './domain/item.validator';
