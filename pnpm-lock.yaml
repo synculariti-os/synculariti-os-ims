@@ -114,6 +114,12 @@ importers:
 
   apps/web:
     dependencies:
+      '@ims/types':
+        specifier: workspace:*
+        version: link:../../packages/types
+      '@ims/validators':
+        specifier: workspace:*
+        version: link:../../packages/validators
       '@supabase/supabase-js':
         specifier: ^2.47.0
         version: 2.106.1
