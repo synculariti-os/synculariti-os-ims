@@ -28,6 +28,14 @@ export class RecipeService implements IRecipeService {
     @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
   ) {}
 
+  async listRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
+    return this.recipeRepo.findAllRecipes(restaurantId);
+  }
+
+  async listMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]> {
+    return this.recipeRepo.findAllMappings(restaurantId);
+  }
+
   async expandBOM(recipeId: RecipeId, soldQty: number): Promise<BomExpansion> {
     if (soldQty <= 0) {
       throw new BadRequestException('soldQty must be positive');

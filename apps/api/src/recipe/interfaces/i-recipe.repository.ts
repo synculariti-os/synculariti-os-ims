@@ -8,6 +8,8 @@ import type {
 import type { CreateRecipeDto, UpdateRecipeDto } from '@ims/validators';
 
 export interface IRecipeRepository {
+  findAllRecipes(restaurantId: RestaurantId): Promise<Recipe[]>;
+  findAllMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]>;
   findById(recipeId: RecipeId): Promise<Recipe | null>;
   findByProducesItemId(itemId: string): Promise<Recipe | null>;
   findIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]>;

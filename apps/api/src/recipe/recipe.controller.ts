@@ -1,5 +1,6 @@
 import {
   Controller,
+  Get,
   Post,
   Put,
   Param,
@@ -28,6 +29,24 @@ export class RecipeController {
   constructor(
     @Inject(RECIPE_SERVICE_TOKEN) private readonly recipeService: IRecipeService,
   ) {}
+
+  @Get()
+  @RequirePermission(PERMISSION_CODES.RECIPE_READ)
+  async getRecipes(@CurrentUser() user: JwtPayload): Promise<{ data: Recipe[] }> {
+    const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
+    const activeUser = user || { restaurantId: mockRestaurantId };
+    const recipes = await this.recipeService.listRecipes(activeUser.restaurantId as RestaurantId);
+    return { data: recipes };
+  }
+
+  @Get('mappings')
+  @RequirePermission(PERMISSION_CODES.RECIPE_READ)
+  async getMappings(@CurrentUser() user: JwtPayload): Promise<{ data: MenuItemMapping[] }> {
+    const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
+    const activeUser = user || { restaurantId: mockRestaurantId };
+    const mappings = await this.recipeService.listMappings(activeUser.restaurantId as RestaurantId);
+    return { data: mappings };
+  }
 
   @Post()
   @RequirePermission(PERMISSION_CODES.RECIPE_WRITE)

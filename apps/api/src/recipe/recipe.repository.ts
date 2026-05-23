@@ -11,6 +11,32 @@ export class RecipeRepository implements IRecipeRepository {
 
   // ── Read ──────────────────────────────────────────────────────────────────
 
+  async findAllRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
+    const rows = await this.db
+      .selectFrom('recipes')
+      .selectAll()
+      // Usually recipes are owned by franchise group, but we filter by the context
+      .execute();
+      
+    return rows.map((r: Record<string, unknown>) => this.mapRecipeRow(r));
+  }
+
+  async findAllMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]> {
+    const rows = await this.db
+      .selectFrom('menu_item_mappings')
+      .selectAll()
+      .where('restaurant_id', '=', restaurantId)
+      .execute();
+
+    return rows.map((r: Record<string, unknown>) => ({
+      id: asMenuItemMappingId(r.id as string),
+      restaurantId: asRestaurantId(r.restaurant_id as string),
+      rawExcelString: r.raw_excel_string as string,
+      recipeId: asRecipeId(r.recipe_id as string),
+      createdAt: r.created_at as string,
+    }));
+  }
+
   async findById(recipeId: RecipeId): Promise<Recipe | null> {
     const row = await this.db
       .selectFrom('recipes')

@@ -2,6 +2,8 @@ import type { BomExpansion, Recipe, RecipeIngredient, RecipeId, RestaurantId, Me
 import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
 
 export interface IRecipeService {
+  listRecipes(restaurantId: RestaurantId): Promise<Recipe[]>;
+  listMappings(restaurantId: RestaurantId): Promise<MenuItemMapping[]>;
   expandBOM(recipeId: RecipeId, soldQty: number): Promise<BomExpansion>;
   resolveRecipeByPosString(restaurantId: RestaurantId, rawString: string): Promise<Recipe | null>;
   resolveRecipesByPosStrings(restaurantId: RestaurantId, rawStrings: string[]): Promise<MenuItemMapping[]>;
