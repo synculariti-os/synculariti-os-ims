@@ -141,6 +141,9 @@ interface ITenantService {
 | `uom_conversions` | CRUD |
 | `item_restaurant_overrides` | CRUD |
 
+### UI Views
+- `/items` — Main catalog list and Create Item dialog.
+
 ### Contracts Exposed
 ```typescript
 interface IItemReadService {
@@ -235,6 +238,10 @@ COMMIT
 | `recipe_ingredients` | CRUD |
 | `menu_item_mappings` | CRUD |
 
+### UI Views
+- `/recipes` — Recipe (BOM) list and Create Recipe dialog.
+- `/recipes/mappings` — POS mapping list and linking dialog.
+
 ### Contracts Exposed
 ```typescript
 interface IRecipeService {
@@ -327,6 +334,9 @@ interface IInventoryCountService {
 |---|---|
 | `sales_import_batches` | INSERT + status UPDATE |
 | `sales_import_rows` | INSERT + `is_mapped` UPDATE |
+
+### UI Views
+- `/sales/import` — Sales POS file uploader and batch processing view.
 
 ### Processing Pipeline (BullMQ Worker)
 ```
