@@ -8,4 +8,6 @@ export interface ISalesRepository {
     uploadedBy: string;
   }): Promise<any>;
   updateBatchStatus(batchId: string, status: 'PROCESSING' | 'COMPLETED' | 'FAILED', errorMessage?: string): Promise<void>;
+  insertImportRows(trx: any, rows: any[]): Promise<void>;
+  getMenuItemMappings(restaurantId: string, rawExcelStrings: string[]): Promise<{ rawExcelString: string; recipeId: string }[]>;
 }

@@ -34,4 +34,33 @@ export class SalesRepository implements ISalesRepository {
       .where('id' as any, '=', batchId)
       .execute();
   }
+
+  async insertImportRows(trx: any, rows: any[]): Promise<void> {
+    if (rows.length === 0) return;
+    await trx
+      .insertInto('sales_import_rows')
+      .values(rows.map(r => ({
+        batch_id: r.batchId,
+        raw_item_name: r.rawItemName,
+        quantity_sold: r.quantitySold,
+        is_mapped: r.isMapped
+      })))
+      .execute();
+  }
+
+  async getMenuItemMappings(restaurantId: string, rawExcelStrings: string[]): Promise<{ rawExcelString: string; recipeId: string }[]> {
+    if (rawExcelStrings.length === 0) return [];
+    
+    const mappings = await this.db
+      .selectFrom('menu_item_mappings' as any)
+      .select(['raw_excel_string', 'recipe_id'])
+      .where('restaurant_id' as any, '=', restaurantId)
+      .where('raw_excel_string' as any, 'in', rawExcelStrings)
+      .execute();
+
+    return mappings.map((m: any) => ({
+      rawExcelString: m.raw_excel_string,
+      recipeId: m.recipe_id
+    }));
+  }
 }
