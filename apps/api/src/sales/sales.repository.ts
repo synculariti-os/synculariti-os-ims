@@ -53,4 +53,36 @@ export class SalesRepository implements ISalesRepository {
       .execute();
   }
 
+  async listBatches(restaurantId: string, page: number, limit: number): Promise<{ data: import('@ims/types').SalesImportBatch[], total: number }> {
+    const offset = (page - 1) * limit;
+    
+    const [data, totalResult] = await Promise.all([
+      this.db
+        .selectFrom('sales_import_batches')
+        .selectAll()
+        .where('restaurant_id', '=', asRestaurantId(restaurantId))
+        .orderBy('created_at', 'desc')
+        .offset(offset)
+        .limit(limit)
+        .execute(),
+      this.db
+        .selectFrom('sales_import_batches')
+        .select(this.db.fn.count<string>('id').as('total'))
+        .where('restaurant_id', '=', asRestaurantId(restaurantId))
+        .executeTakeFirst()
+    ]);
+
+    return {
+      data: data.map(row => ({
+        id: row.id,
+        status: row.status,
+        restaurantId: row.restaurant_id,
+        businessDate: row.business_date,
+        errorMessage: row.error_message,
+        createdAt: row.created_at,
+        updatedAt: row.updated_at,
+      })),
+      total: totalResult?.total ? parseInt(totalResult.total, 10) : 0,
+    };
+  }
 }

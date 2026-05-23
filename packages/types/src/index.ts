@@ -8,3 +8,10 @@ export * from './domain/inventory';
 export * from './domain/sales';
 export * from './constants/index';
 export * from './database.types';
+
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}

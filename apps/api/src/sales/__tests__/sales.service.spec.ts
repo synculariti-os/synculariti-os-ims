@@ -58,7 +58,12 @@ describe('SalesService', () => {
       businessDate: '2023-10-01',
       fileUrl: 'https://fake-url.com/sales.xlsx',
     }));
-    expect(queueMock.add).toHaveBeenCalledWith('process-sales', { batchId: 'batch-123' });
+    expect(queueMock.add).toHaveBeenCalledWith('process-sales', { 
+      batchId: 'batch-123',
+      restaurantId: 'restaurant-1',
+      franchiseId: 'franchise-1',
+      filePath: expect.any(String)
+    });
     expect(result.batchId).toEqual('batch-123');
   });
 
@@ -69,5 +74,28 @@ describe('SalesService', () => {
     supabaseMock.storage.upload.mockResolvedValue({ data: null, error: { message: 'Upload failed' } });
 
     await expect(service.uploadSalesFile(file, dto, 'restaurant-1', 'franchise-1', 'user-1')).rejects.toThrow('Upload failed');
+  });
+
+  describe('listBatches', () => {
+    it('should return paginated batches with meta envelope', async () => {
+      const mockBatches = [
+        { id: 'b1', status: 'COMPLETED' },
+        { id: 'b2', status: 'PENDING' }
+      ];
+      repoMock.listBatches = vi.fn().mockResolvedValue({ data: mockBatches, total: 2 });
+
+      const result = await service.listBatches('rest-1', 1, 50);
+
+      expect(repoMock.listBatches).toHaveBeenCalledWith('rest-1', 1, 50);
+      expect(result).toEqual({
+        data: mockBatches,
+        meta: {
+          total: 2,
+          page: 1,
+          limit: 50,
+          totalPages: 1
+        }
+      });
+    });
   });
 });

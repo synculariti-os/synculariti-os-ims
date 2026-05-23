@@ -43,4 +43,17 @@ export class SalesService implements ISalesService {
 
     return { batchId: batch.id };
   }
+
+  async listBatches(restaurantId: string, page: number, limit: number): Promise<{ data: import('@ims/types').SalesImportBatch[], meta: import('@ims/types').PaginationMeta }> {
+    const { data, total } = await this.repo.listBatches(restaurantId, page, limit);
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
+      }
+    };
+  }
 }

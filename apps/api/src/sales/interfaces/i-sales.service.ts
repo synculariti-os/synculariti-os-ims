@@ -8,4 +8,5 @@ export interface ISalesService {
     franchiseId: string,
     userId: string,
   ): Promise<{ batchId: string }>;
+  listBatches(restaurantId: string, page: number, limit: number): Promise<{ data: import('@ims/types').SalesImportBatch[], meta: import('@ims/types').PaginationMeta }>;
 }

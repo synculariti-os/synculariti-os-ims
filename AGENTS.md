@@ -308,6 +308,7 @@ interface IInventoryCountService {
 
 ### Inputs
 - `POST /sales-imports/upload` → multipart file upload
+- `GET /sales-imports` → returns paginated list of batches for the current restaurant
 - BullMQ internal job queue messages
 
 ### Outputs

@@ -175,6 +175,8 @@
 | Symbol | Kind | Description |
 |---|---|---|
 | `salesImportFileSchema` | `ZodObject` | Multer file validation: size ≤ 10MB, MIME in allowed list |
+| `listBatchesQuerySchema` | `ZodObject` | Pagination parameters for fetching batches (`page`, `limit`) |
+| `ListBatchesQueryDto` | `inferred type` | `z.infer<typeof listBatchesQuerySchema>` |
 
 ---
 

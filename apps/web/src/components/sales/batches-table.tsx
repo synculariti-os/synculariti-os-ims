@@ -4,19 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, Clock, AlertTriangle, Loader2 } from 'lucide-react';
-
-// TODO: Once frontend routes through NestJS API (not direct Supabase), import from @ims/types
-// The types package uses camelCase, but direct Supabase queries return snake_case.
-export type ImportStatus = 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-
-export interface SalesImportBatch {
-  id: string;
-  business_date: string;
-  status: ImportStatus;
-  error_message: string | null;
-  file_url: string;
-  created_at: string;
-}
+import { SalesImportBatch, ImportStatus } from '@ims/types';
 
 const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: string, label: string }> = {
   PENDING: { icon: Clock, class: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400', label: 'Pending' },
@@ -29,47 +17,40 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
   const [batches, setBatches] = useState<SalesImportBatch[]>(initialBatches);
 
   useEffect(() => {
-    // Initial fetch
+    let isMounted = true;
+    
     const fetchBatches = async () => {
-      const { data, error } = await supabase
-        .from('sales_import_batches')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(20);
-      
-      if (!error && data) {
-        setBatches(data as SalesImportBatch[]);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/sales-imports?limit=20`, {
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        });
+
+        if (res.ok) {
+          const json = await res.json();
+          if (isMounted) {
+            setBatches(json.data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch batches', error);
       }
     };
 
-    if (initialBatches.length === 0) {
-      fetchBatches();
-    }
+    fetchBatches();
 
-    // Subscribe to realtime updates
-    const channel = supabase
-      .channel('public:sales_import_batches')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'sales_import_batches' },
-        (payload) => {
-          if (payload.eventType === 'INSERT') {
-            setBatches((prev) => [payload.new as SalesImportBatch, ...prev]);
-          } else if (payload.eventType === 'UPDATE') {
-            setBatches((prev) => 
-              prev.map(batch => batch.id === payload.new.id ? payload.new as SalesImportBatch : batch)
-            );
-          } else if (payload.eventType === 'DELETE') {
-            setBatches((prev) => prev.filter(batch => batch.id !== payload.old.id));
-          }
-        }
-      )
-      .subscribe();
+    // Poll every 3 seconds
+    const intervalId = setInterval(fetchBatches, 3000);
 
     return () => {
-      supabase.removeChannel(channel);
+      isMounted = false;
+      clearInterval(intervalId);
     };
-  }, [initialBatches]);
+  }, []);
 
   return (
     <div className="w-full mt-10">
@@ -97,12 +78,12 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
                   return (
                     <tr key={batch.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
                       <td className="p-4 px-6 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
-                        {new Date(batch.created_at).toLocaleString(undefined, { 
+                        {new Date(batch.createdAt).toLocaleString(undefined, { 
                           month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' 
                         })}
                       </td>
                       <td className="p-4 px-6 text-zinc-700 dark:text-zinc-300 font-medium whitespace-nowrap">
-                        {batch.business_date || '-'}
+                        {batch.businessDate || '-'}
                       </td>
                       <td className="p-4 px-6 whitespace-nowrap">
                         <span className={cn(
@@ -118,8 +99,8 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
                       </td>
                       <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400 max-w-[200px] truncate">
                         {batch.status === 'FAILED' ? (
-                          <span className="text-red-500/90 dark:text-red-400" title={batch.error_message || ''}>
-                            {batch.error_message || 'Unknown error'}
+                          <span className="text-red-500/90 dark:text-red-400" title={batch.errorMessage || ''}>
+                            {batch.errorMessage || 'Unknown error'}
                           </span>
                         ) : (
                           <span className="text-xs font-mono opacity-60">
