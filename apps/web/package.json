@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.4.0",
     "@ims/types": "workspace:*",
     "@ims/validators": "workspace:*",
     "@supabase/supabase-js": "^2.47.0",
@@ -19,8 +20,10 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-dropzone": "^15.0.0",
+    "react-hook-form": "^7.76.1",
     "tailwind-merge": "^3.6.0",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
