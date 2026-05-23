@@ -13,11 +13,7 @@
     "sourceMap": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "rootDir": "./src",
-    "paths": {
-      "@ims/types": ["../../packages/types/src"],
-      "@ims/validators": ["../../packages/validators/src"]
-    }
+    "rootDir": "./src"
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]

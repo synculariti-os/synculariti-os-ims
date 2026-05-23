@@ -2,10 +2,13 @@
   "name": "@ims/types",
   "version": "0.1.0",
   "private": true,
-  "main": "./src/index.ts",
-  "types": "./src/index.ts",
-  "exports": { ".": "./src/index.ts" },
-  "scripts": { "type-check": "tsc --noEmit" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": { ".": "./dist/index.js" },
+  "scripts": { 
+    "build": "tsc",
+    "type-check": "tsc --noEmit" 
+  },
   "devDependencies": {
     "@ims/config": "workspace:*",
     "typescript": "^5.6.3"

@@ -7,10 +7,10 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
-import { AUTH_SERVICE_TOKEN } from '../auth/interfaces/i-auth.service';
-import type { IAuthService } from '../auth/interfaces/i-auth.service';
+import { AUTH_SERVICE_TOKEN } from '../../auth/interfaces/i-auth.service';
+import type { IAuthService } from '../../auth/interfaces/i-auth.service';
 import type { RestaurantId } from '@ims/types';
-import { IS_PUBLIC_KEY } from '../common/decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
@@ -30,7 +30,7 @@ export class SupabaseAuthGuard implements CanActivate {
     }
 
     const request = context.switchToHttp().getRequest<Request & { user: unknown }>();
-    const headers = request.headers as Record<string, string>;
+    const headers = request.headers as unknown as Record<string, string>;
 
     const token = headers['authorization']?.split(' ')[1];
     if (!token) {
