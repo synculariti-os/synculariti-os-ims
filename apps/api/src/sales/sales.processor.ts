@@ -79,7 +79,7 @@ export class SalesImportProcessor extends WorkerHost {
       });
 
       // 5. Expand BOM and prepare ledger entries
-      const depletionTasks = [];
+      const depletionTasks: { itemId: string; consumedQty: number }[] = [];
       for (const row of rowsToInsert) {
         if (row.recipeId) {
           const bomExpansion = await this.recipeService.expandBOM(row.recipeId, row.quantitySold);

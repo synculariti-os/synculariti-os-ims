@@ -53,7 +53,7 @@ export class SalesRepository implements ISalesRepository {
     
     const mappings = await this.db
       .selectFrom('menu_item_mappings' as any)
-      .select(['raw_excel_string', 'recipe_id'])
+      .select(['raw_excel_string' as any, 'recipe_id' as any])
       .where('restaurant_id' as any, '=', restaurantId)
       .where('raw_excel_string' as any, 'in', rawExcelStrings)
       .execute();
