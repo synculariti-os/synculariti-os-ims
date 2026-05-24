@@ -29,11 +29,26 @@ export default function SalesImportPage() {
       }
       formData.append('businessDate', businessDate);
       
-      // Call NestJS API using apiClient
-      await apiClient('/sales-imports/upload', {
+      // Call NestJS API using fetch directly to ensure headers are correctly set for FormData
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/sales-imports/upload`, {
         method: 'POST',
+        headers: {
+          'Authorization': session ? `Bearer ${session.access_token}` : '',
+          'x-restaurant-id': 'b0000000-0000-0000-0000-000000000001' // Hardcoded default context for testing, usually from context
+        },
         body: formData,
       });
+
+      if (!response.ok) {
+        let errorMsg = response.statusText;
+        try {
+          const errData = await response.json();
+          errorMsg = errData.message || errData.error?.message || errorMsg;
+        } catch (e) {}
+        throw new Error(errorMsg);
+      }
 
     } catch (error: unknown) {
       console.error('Upload Error:', error);
