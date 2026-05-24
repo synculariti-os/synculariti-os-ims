@@ -33,12 +33,13 @@ export interface Database {
     created_at: Generated<string>;
   };
   permissions: {
+    id: string;
     code: PermissionCode;
     description: string | null;
   };
   role_permissions: {
     role_id: RoleId;
-    permission_code: PermissionCode;
+    permission_id: string;
   };
   user_restaurant_roles: {
     user_id: UserId;

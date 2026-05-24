@@ -14,7 +14,7 @@ export class PermissionRepository implements IPermissionRepository {
       .selectFrom('user_restaurant_roles as urr')
       .innerJoin('roles as r', 'r.id', 'urr.role_id')
       .innerJoin('role_permissions as rp', 'rp.role_id', 'r.id')
-      .innerJoin('permissions as p', 'p.code', 'rp.permission_code')
+      .innerJoin('permissions as p', 'p.id', 'rp.permission_id')
       .select('p.code')
       .where('urr.user_id', '=', userId)
       .where('urr.restaurant_id', '=', restaurantId)
