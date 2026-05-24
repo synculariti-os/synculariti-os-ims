@@ -33,10 +33,17 @@ export default function SalesImportPage() {
       // Call NestJS API using fetch directly to ensure headers are correctly set for FormData
       const { data: { session } } = await supabase.auth.getSession();
       
+      if (!session || !session.access_token) {
+        throw new Error("You are not logged in! Missing session access token.");
+      }
+
+      console.log('Using API URL:', process.env.NEXT_PUBLIC_API_URL);
+      console.log('Sending request to:', `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/sales-imports/upload`);
+
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/sales-imports/upload`, {
         method: 'POST',
         headers: {
-          'Authorization': session ? `Bearer ${session.access_token}` : '',
+          'Authorization': `Bearer ${session.access_token}`,
           'x-restaurant-id': 'b0000000-0000-0000-0000-000000000001' // Hardcoded default context for testing, usually from context
         },
         body: formData,
