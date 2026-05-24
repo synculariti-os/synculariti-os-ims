@@ -1,0 +1,51 @@
+import { Injectable, Inject } from '@nestjs/common';
+import { Kysely } from 'kysely';
+import crypto from 'crypto';
+import { Database, Json, UserId, RestaurantId, FranchiseGroupId } from '@ims/types';
+import { IAuditService } from './interfaces/i-audit.service';
+
+@Injectable()
+export class AuditService implements IAuditService {
+  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+
+  async logAction(params: {
+    userId: string | null;
+    userEmail: string | null;
+    action: string;
+    entityType: string;
+    entityId: string;
+    oldValue: Json | null;
+    newValue: Json | null;
+    success: boolean;
+    errorMessage?: string;
+    sourceIp?: string;
+    userAgent?: string;
+    restaurantId?: string;
+    franchiseGroupId?: string;
+  }): Promise<void> {
+    try {
+      await this.db
+        .insertInto('audit_log')
+        .values({
+          id: crypto.randomUUID(),
+          user_id: params.userId as UserId | null,
+          user_email: params.userEmail,
+          action: params.action,
+          entity_type: params.entityType,
+          entity_id: params.entityId,
+          old_value: params.oldValue,
+          new_value: params.newValue,
+          success: params.success,
+          error_message: params.errorMessage || null,
+          source_ip: params.sourceIp || null,
+          user_agent: params.userAgent || null,
+          restaurant_id: (params.restaurantId as RestaurantId) || null,
+          franchise_group_id: (params.franchiseGroupId as FranchiseGroupId) || null,
+        })
+        .execute();
+    } catch (e) {
+      console.error('Failed to write audit log:', e);
+      // We don't throw here to avoid failing the business transaction if audit logging fails
+    }
+  }
+}
