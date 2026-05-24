@@ -3,8 +3,7 @@
 import React, { useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { BatchesTable } from '@/components/sales/batches-table';
-import { supabase } from '@/lib/supabase';
-import { v4 as uuidv4 } from 'uuid';
+import { apiClient } from '@/lib/api-client';
 import { FileUp, Info } from 'lucide-react';
 
 export default function SalesImportPage() {
@@ -16,42 +15,25 @@ export default function SalesImportPage() {
     setErrorMessage(null);
     
     try {
-      // 1. Upload to Supabase Storage
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${uuidv4()}.${fileExt}`;
-      const filePath = `raw/${fileName}`;
-
-      const { data: storageData, error: storageError } = await supabase.storage
-        .from('sales_raw_uploads')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
-        });
-
-      if (storageError) {
-        throw new Error(storageError.message || 'Failed to upload to storage');
-      }
-
-      // 2. Call NestJS API to register batch
-      const restaurantId = 'default-rest-id'; // In a real app, this comes from TenantContext
+      const formData = new FormData();
+      formData.append('file', file);
       
-      const response = await fetch('/api/sales/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Usually pass the auth token here, but mocking for now
-        },
-        body: JSON.stringify({
-          restaurantId,
-          filePath: storageData.path,
-        }),
-      });
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(responseData.message || 'Failed to register batch. Please try again.');
+      // Parse business date from filename or use today
+      const match = file.name.match(/20\d{2}[01]\d[0123]\d/); // matches e.g. 20260504
+      let businessDate = new Date().toISOString().split('T')[0];
+      if (match) {
+        const year = match[0].substring(0, 4);
+        const month = match[0].substring(4, 6);
+        const day = match[0].substring(6, 8);
+        businessDate = `${year}-${month}-${day}`;
       }
+      formData.append('businessDate', businessDate);
+      
+      // Call NestJS API using apiClient
+      await apiClient('/sales-imports/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
     } catch (error: unknown) {
       console.error('Upload Error:', error);
