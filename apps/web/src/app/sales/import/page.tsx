@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { BatchesTable } from '@/components/sales/batches-table';
+import { supabase } from '@/lib/supabase';
 import { apiClient } from '@/lib/api-client';
 import { FileUp, Info } from 'lucide-react';
 
