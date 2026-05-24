@@ -4,12 +4,26 @@ import React, { useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { BatchesTable } from '@/components/sales/batches-table';
 import { supabase } from '@/lib/supabase';
-import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
+import { useRouter } from 'next/navigation';
 import { FileUp, Info } from 'lucide-react';
 
 export default function SalesImportPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const { restaurantId } = useAuthStore();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.push('/login');
+      } else if (!restaurantId) {
+        // Logged in but no context selected, go back to login to select restaurant
+        router.push('/login');
+      }
+    });
+  }, [router, restaurantId]);
 
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
@@ -34,7 +48,12 @@ export default function SalesImportPage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session || !session.access_token) {
-        throw new Error("You are not logged in! Missing session access token.");
+        router.push('/login');
+        return;
+      }
+
+      if (!restaurantId) {
+        throw new Error("No restaurant context selected. Please log in again.");
       }
 
       console.log('Using API URL:', process.env.NEXT_PUBLIC_API_URL);
@@ -44,7 +63,7 @@ export default function SalesImportPage() {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${session.access_token}`,
-          'x-restaurant-id': 'b0000000-0000-0000-0000-000000000001' // Hardcoded default context for testing, usually from context
+          'x-restaurant-id': restaurantId
         },
         body: formData,
       });
