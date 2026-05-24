@@ -10,6 +10,7 @@ import { JwtPayload } from '@ims/types';
 import { tenantContext } from '../context/tenant.context';
 import { Reflector } from '@nestjs/core';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { IS_TOKEN_ONLY_KEY } from '../decorators/token-only.decorator';
 
 @Injectable()
 export class TenantContextInterceptor implements NestInterceptor {
@@ -21,7 +22,12 @@ export class TenantContextInterceptor implements NestInterceptor {
       context.getClass(),
     ]);
 
-    if (isPublic) {
+    const isTokenOnly = this.reflector.getAllAndOverride<boolean>(IS_TOKEN_ONLY_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic || isTokenOnly) {
       return next.handle();
     }
 
