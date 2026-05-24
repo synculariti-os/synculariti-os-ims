@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
 import { CheckCircle2, Clock, AlertTriangle, Loader2 } from 'lucide-react';
 import { SalesImportBatch, ImportStatus } from '@ims/types';
+import { useAuthStore } from '@/store/use-auth-store';
 
 const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: string, label: string }> = {
   PENDING: { icon: Clock, class: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400', label: 'Pending' },
@@ -15,6 +16,7 @@ const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: strin
 
 export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesImportBatch[] }) {
   const [batches, setBatches] = useState<SalesImportBatch[]>(initialBatches);
+  const { restaurantId } = useAuthStore();
 
   useEffect(() => {
     let isMounted = true;
@@ -22,11 +24,12 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
     const fetchBatches = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
+        if (!session || !restaurantId) return;
 
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/sales-imports?limit=20`, {
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
+            'Authorization': `Bearer ${session.access_token}`,
+            'x-restaurant-id': restaurantId,
           },
         });
 
@@ -50,7 +53,7 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
       isMounted = false;
       clearInterval(intervalId);
     };
-  }, []);
+  }, [restaurantId]);
 
   return (
     <div className="w-full mt-10">
