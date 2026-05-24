@@ -11,6 +11,7 @@ import { AUTH_SERVICE_TOKEN } from '../../auth/interfaces/i-auth.service';
 import type { IAuthService } from '../../auth/interfaces/i-auth.service';
 import type { RestaurantId } from '@ims/types';
 import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+import { IS_TOKEN_ONLY_KEY } from '../decorators/token-only.decorator';
 
 @Injectable()
 export class SupabaseAuthGuard implements CanActivate {
@@ -25,6 +26,11 @@ export class SupabaseAuthGuard implements CanActivate {
       context.getClass(),
     ]);
 
+    const isTokenOnly = this.reflector.getAllAndOverride<boolean>(IS_TOKEN_ONLY_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
     if (isPublic) {
       return true;
     }
@@ -35,6 +41,12 @@ export class SupabaseAuthGuard implements CanActivate {
     const token = headers['authorization']?.split(' ')[1];
     if (!token) {
       throw new UnauthorizedException('Missing authorization token');
+    }
+
+    if (isTokenOnly) {
+      const payload = await this.authService.verifyToken(token);
+      request.user = payload;
+      return true;
     }
 
     const restaurantId = headers['x-restaurant-id'] as RestaurantId;

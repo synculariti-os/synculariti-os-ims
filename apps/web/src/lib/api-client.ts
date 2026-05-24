@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { useAuthStore } from '../store/use-auth-store';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -9,10 +10,14 @@ type FetchOptions = Omit<RequestInit, 'body'> & {
 
 export async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
   const { data: { session } } = await supabase.auth.getSession();
+  const { restaurantId } = useAuthStore.getState();
   
   const headers = new Headers(options.headers);
   if (session?.access_token) {
     headers.set('Authorization', `Bearer ${session.access_token}`);
+  }
+  if (restaurantId) {
+    headers.set('x-restaurant-id', restaurantId);
   }
   
   if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {

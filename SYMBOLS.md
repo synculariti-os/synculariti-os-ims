@@ -190,6 +190,7 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 |---|---|---|---|
 | `@RequirePermission(code: PermissionCode)` | Decorator | `common` | Route guard decorator — sets metadata read by `PermissionsGuard`. |
 | `@Public()` | Decorator | `common` | Marks a route as not requiring JWT. |
+| `@TokenOnly()` | Decorator | `common` | Marks a route as requiring JWT, but bypassing the `x-restaurant-id` context check (used for `GET /tenant/context`). |
 | `@CurrentUser()` | Decorator | `common` | Parameter decorator — extracts `JwtPayload` from the request. |
 | `@TenantId()` | Decorator | `common` | Parameter decorator — extracts `restaurantId` from JWT. |
 | `@Transactional()` | Decorator | `common` | AOP decorator that wraps a service method in a Kysely transaction (metadata-only; actual tx handled by service layer). |

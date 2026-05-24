@@ -78,7 +78,7 @@ Zod schemas are defined once in `packages/validators/`. NestJS DTOs use `ZodVali
 ## 3. Security Rules
 
 ### R-SEC-01 — JWT Verification on Every Protected Route
-All NestJS routes must be protected by `SupabaseAuthGuard` (registered globally via `APP_GUARD` in `AppModule`). Use `@Public()` decorator on routes that should not require authentication (e.g., health checks). JWT issuance is delegated entirely to Supabase Auth — NestJS never issues tokens.
+All NestJS routes must be protected by `SupabaseAuthGuard` (registered globally via `APP_GUARD` in `AppModule`). Use `@Public()` decorator on routes that should not require authentication (e.g., health checks). Use the `@TokenOnly()` decorator on routes that require JWT authentication but do not yet have a restaurant context (e.g., `GET /tenant/context`). JWT issuance is delegated entirely to Supabase Auth — NestJS never issues tokens.
 
 ### R-SEC-02 — Permission Guard is Mandatory for Mutations
 Every mutating endpoint (POST, PUT, PATCH, DELETE) must carry a `@RequirePermission('MODULE.ACTION')` decorator. The guard verifies the permission is present in the JWT `permissions` array.

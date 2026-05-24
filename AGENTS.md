@@ -69,6 +69,8 @@
 ### Contracts Exposed (injectable services)
 ```typescript
 interface IAuthService {
+  /** Verify Supabase token without restaurant context (used for context loading) */
+  verifyToken(token: string): Promise<{ sub: UserId; email: string }>;
   /** Verify Supabase token and return enriched user context */
   verifyAndEnrich(token: string, restaurantId: string): Promise<JwtPayload>;
   /** Resolve permission codes for a user+restaurant pair */
@@ -93,7 +95,7 @@ interface IAuthService {
 ### Inputs
 - CRUD REST endpoints for `franchise_groups` (admin-only)
 - CRUD REST endpoints for `restaurants` (franchise admin)
-- `GET /tenant/context` → returns current user's accessible restaurants
+- `GET /tenant/context` → returns current user's accessible restaurants (Requires `@TokenOnly()` as no restaurant context exists yet)
 
 ### Outputs
 - `TenantContext` object consumed by the `TenantContextInterceptor` on every request

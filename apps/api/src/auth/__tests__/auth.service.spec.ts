@@ -156,6 +156,32 @@ describe('AuthService', () => {
     });
   });
 
+  describe('verifyToken', () => {
+    it('should return basic user data when token is valid', async () => {
+      mockSupabaseAdminGetUser.mockResolvedValueOnce({
+        data: { user: { id: 'user-uuid-123', email: 'test@example.com' } },
+        error: null,
+      });
+
+      const result = await service.verifyToken('valid_token');
+
+      expect(mockSupabaseAdminGetUser).toHaveBeenCalledWith('valid_token');
+      expect(result).toEqual({
+        sub: 'user-uuid-123',
+        email: 'test@example.com',
+      });
+    });
+
+    it('should throw UnauthorizedException when token is invalid', async () => {
+      mockSupabaseAdminGetUser.mockResolvedValueOnce({ 
+        data: { user: null }, 
+        error: new Error('Invalid') 
+      });
+
+      await expect(service.verifyToken('invalid_token')).rejects.toThrow(UnauthorizedException);
+    });
+  });
+
   // ── resolvePermissions ───────────────────────────────────────────────────
 
   describe('resolvePermissions()', () => {

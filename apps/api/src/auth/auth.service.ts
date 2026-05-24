@@ -24,6 +24,22 @@ export class AuthService implements IAuthService {
     @Inject(PERMISSION_REPOSITORY_TOKEN) private readonly permissionRepo: IPermissionRepository,
   ) {}
 
+  async verifyToken(token: string): Promise<{ sub: UserId; email: string }> {
+    const {
+      data: { user: authUser },
+      error,
+    } = await this.supabase.auth.getUser(token);
+
+    if (error ?? !authUser) {
+      throw new UnauthorizedException('Invalid or expired token');
+    }
+
+    return {
+      sub: authUser.id as UserId,
+      email: authUser.email ?? '',
+    };
+  }
+
   async verifyAndEnrich(token: string, restaurantId: RestaurantId): Promise<JwtPayload> {
     // 1. Validate token with Supabase Auth
     const {

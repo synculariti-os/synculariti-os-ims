@@ -1,12 +1,13 @@
-import { Module } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { Module, Global } from '@nestjs/common';
+import { AuthService, USER_REPOSITORY_TOKEN, PERMISSION_REPOSITORY_TOKEN } from './auth.service';
 import { AUTH_SERVICE_TOKEN } from './interfaces/i-auth.service';
-
 import { UserRepository } from './user.repository';
 import { PermissionRepository } from './permission.repository';
-import { USER_REPOSITORY_TOKEN, PERMISSION_REPOSITORY_TOKEN } from './auth.service';
+import { AuthController } from './auth.controller';
 
+@Global()
 @Module({
+  controllers: [AuthController],
   providers: [
     {
       provide: AUTH_SERVICE_TOKEN,
