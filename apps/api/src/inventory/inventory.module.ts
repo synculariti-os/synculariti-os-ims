@@ -7,8 +7,10 @@ import { LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 import { INVENTORY_COUNT_SERVICE_TOKEN } from './interfaces/i-inventory-count.service';
 import { LEDGER_REPOSITORY_TOKEN } from './ledger.service';
 import { COUNT_REPOSITORY_TOKEN } from './inventory-count.service';
+import { InventoryController } from './inventory.controller';
 
 @Module({
+  controllers: [InventoryController],
   providers: [
     {
       provide: LEDGER_SERVICE_TOKEN,

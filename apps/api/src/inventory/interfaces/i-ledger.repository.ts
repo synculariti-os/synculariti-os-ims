@@ -5,4 +5,5 @@ export interface ILedgerRepository {
   insertEntry(trx: unknown, entry: Record<string, unknown>): Promise<void>;
   sumChangeAmount(restaurantId: RestaurantId, itemId: ItemId): Promise<number>;
   sumChangeAmountBulk(restaurantId: RestaurantId): Promise<StockLevel[]>;
+  getLedgerEntries(restaurantId: RestaurantId, limit: number, offset: number): Promise<any[]>;
 }

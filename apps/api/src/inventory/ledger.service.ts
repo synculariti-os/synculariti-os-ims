@@ -47,4 +47,8 @@ export class LedgerService implements ILedgerService {
   async getCurrentStockBulk(restaurantId: RestaurantId): Promise<StockLevel[]> {
     return this.ledgerRepo.sumChangeAmountBulk(restaurantId);
   }
+
+  async getLedgerEntries(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<any[]> {
+    return this.ledgerRepo.getLedgerEntries(restaurantId, limit, offset);
+  }
 }

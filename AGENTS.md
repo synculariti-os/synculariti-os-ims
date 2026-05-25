@@ -276,6 +276,8 @@ interface IRecipeService {
 - `POST /inventory/counts/:batchId/close` — reconcile and write adjustment
 - `POST /inventory/waste` — waste log entry
 - `POST /inventory/prep` — prep production log entry
+- `GET /inventory/stock` — returns current aggregated stock levels
+- `GET /inventory/ledger` — returns paginated ledger entries
 
 ### Outputs
 - Current stock level (computed by summing `inventory_ledger.change_amount` per `item_id + restaurant_id`)
@@ -297,6 +299,7 @@ interface ILedgerService {
   record(trx: Transaction, entry: LedgerEntryDto): Promise<void>;
   getCurrentStock(restaurantId: RestaurantId, itemId: ItemId): Promise<number>;
   getCurrentStockBulk(restaurantId: RestaurantId): Promise<StockLevel[]>;
+  getLedgerEntries(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<any[]>;
 }
 
 interface IStockQueryService {
