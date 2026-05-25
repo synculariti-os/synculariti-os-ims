@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Navbar } from '@/components/ui/navbar';
 import { StockTable } from '@/components/inventory/stock-table';
 import { LedgerTable } from '@/components/inventory/ledger-table';
 import { PackageSearch, Boxes, History } from 'lucide-react';
@@ -12,8 +11,6 @@ export default function InventoryDashboard() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] bg-[url('/grid.svg')] dark:bg-[url('/grid-dark.svg')] bg-center selection:bg-indigo-500/30">
-      <Navbar />
-
       <main className="pt-32 pb-16 px-6">
         <div className="max-w-7xl mx-auto space-y-10">
           
