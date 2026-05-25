@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Package, Layers, Link as LinkIcon, UploadCloud } from 'lucide-react';
+import { Package, Layers, Link as LinkIcon, UploadCloud, Boxes } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -13,6 +13,7 @@ export function Navbar() {
     { name: 'Recipes', href: '/recipes', icon: Layers },
     { name: 'POS Mappings', href: '/recipes/mappings', icon: LinkIcon },
     { name: 'Sales Import', href: '/sales/import', icon: UploadCloud },
+    { name: 'Inventory', href: '/inventory', icon: Boxes },
   ];
 
   return (
