@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createCategorySchema, type CreateCategoryDto } from '@ims/validators';
 import { apiClient } from '@/lib/api-client';
 import { X, Loader2 } from 'lucide-react';
-import { useTenant } from '@/components/providers/tenant-provider';
+import { useAuthStore } from '@/store/use-auth-store';
 
 interface CreateCategoryDialogProps {
   onOpenChange: (open: boolean) => void;
@@ -15,7 +15,7 @@ interface CreateCategoryDialogProps {
 
 export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { restaurantId } = useTenant();
+  const restaurantId = useAuthStore((state) => state.restaurantId);
 
   const {
     register,
