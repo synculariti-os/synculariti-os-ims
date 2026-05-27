@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Loader2, Fingerprint } from 'lucide-react';
 import { RestaurantSelector } from '@/components/auth/restaurant-selector';
@@ -8,19 +8,32 @@ import { RestaurantSelector } from '@/components/auth/restaurant-selector';
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start true to check existing session
+  const [submitting, setSubmitting] = useState(false); // True only while form is submitting
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
   
   // Controls the flow: false = Login Form, true = Restaurant Selector
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Auto-detect existing session: if the user is already logged in with Supabase
+  // (e.g., they were redirected here because restaurantId was null),
+  // skip the login form and show the restaurant selector directly.
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setIsAuthenticated(true);
+      }
+      setLoading(false);
+    });
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setSubmitting(true);
     setMessage(null);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
@@ -32,7 +45,8 @@ export default function LoginPage() {
       setIsAuthenticated(true);
     } catch (error: any) {
       setMessage({ type: 'error', text: error.message });
-      setLoading(false);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -52,7 +66,13 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {!isAuthenticated ? (
+        {loading ? (
+          // Initial session check — show spinner to prevent flash of login form
+          <div className="flex flex-col items-center justify-center py-8 space-y-3 text-zinc-500">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <p className="text-sm">Checking session...</p>
+          </div>
+        ) : !isAuthenticated ? (
           <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
             <h1 className="text-2xl font-bold text-center text-zinc-900 dark:text-white mb-2">
               Welcome back
@@ -92,10 +112,10 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={loading}
+                disabled={submitting}
                 className="w-full flex items-center justify-center py-3 px-4 bg-zinc-900 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-100 dark:text-zinc-900 text-white font-medium rounded-xl transition-all disabled:opacity-50 mt-4 shadow-md"
               >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue'}
+                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Continue'}
               </button>
             </form>
 
