@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createItemSchema } from '@ims/validators';
 import { z } from 'zod';
 import { X, Loader2, PackagePlus } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { Category } from '@ims/types';
 
 type CreateItemForm = z.infer<typeof createItemSchema>;
 
@@ -19,6 +20,8 @@ interface CreateItemDialogProps {
 export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
   const {
     register,
@@ -42,6 +45,23 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   });
 
   const itemType = watch('type');
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchCategories = async () => {
+        try {
+          setIsLoadingCategories(true);
+          const res = await apiClient<{ data: Category[] }>('/items/categories');
+          setCategories(res.data || []);
+        } catch (error) {
+          console.error('Failed to fetch categories:', error);
+        } finally {
+          setIsLoadingCategories(false);
+        }
+      };
+      fetchCategories();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -123,14 +143,19 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
               
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Category ID (Optional)
+                  Category
                 </label>
-                <input
+                <select
                   {...register('categoryId')}
-                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
-                  placeholder="e.g. cat_123"
-                />
-                {errors.categoryId && <p className="mt-1.5 text-sm text-red-500">{errors.categoryId.message}</p>}
+                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white appearance-none"
+                  disabled={isLoadingCategories}
+                >
+                  <option value="">{isLoadingCategories ? 'Loading...' : 'Select Category...'}</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+                </select>
+                {errors.categoryId && <p className="mt-1.5 text-sm text-red-500">Please select a valid category</p>}
               </div>
             </div>
 
