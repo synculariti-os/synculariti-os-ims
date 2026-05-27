@@ -6,12 +6,19 @@ import { PERMISSION_CODES, asItemId } from '@ims/types';
 import type { JwtPayload } from '@ims/types';
 import {
   CreateItemDto,
+  createItemDtoSchema,
   UpdateItemDto,
+  updateItemDtoSchema,
   CreateCategoryDto,
+  createCategoryDtoSchema,
   UpdateCategoryDto,
+  updateCategoryDtoSchema,
   CreateUomConversionDto,
+  createUomConversionDtoSchema,
   UpdateItemOverrideDto,
+  updateItemOverrideDtoSchema,
 } from '@ims/validators';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 
 @Controller('items')
 export class ItemController {
@@ -29,19 +36,19 @@ export class ItemController {
 
   @Post('categories')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async createCategory(@Body() dto: CreateCategoryDto) {
+  async createCategory(@Body(new ZodValidationPipe(createCategoryDtoSchema)) dto: CreateCategoryDto) {
     return this.itemService.createCategory(dto);
   }
 
   @Put('categories/:id')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async updateCategory(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
+  async updateCategory(@Param('id') id: string, @Body(new ZodValidationPipe(updateCategoryDtoSchema)) dto: UpdateCategoryDto) {
     return this.itemService.updateCategory(id, dto);
   }
 
   @Post('uom-conversions')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async upsertUomConversion(@Body() dto: CreateUomConversionDto) {
+  async upsertUomConversion(@Body(new ZodValidationPipe(createUomConversionDtoSchema)) dto: CreateUomConversionDto) {
     return this.itemService.upsertUomConversion(dto);
   }
 
@@ -61,7 +68,7 @@ export class ItemController {
 
   @Post()
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async createItem(@Body() dto: CreateItemDto) {
+  async createItem(@Body(new ZodValidationPipe(createItemDtoSchema)) dto: CreateItemDto) {
     return this.itemService.createItem(dto);
   }
 
@@ -75,7 +82,7 @@ export class ItemController {
 
   @Put(':id')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async updateItem(@Param('id') id: string, @Body() dto: UpdateItemDto) {
+  async updateItem(@Param('id') id: string, @Body(new ZodValidationPipe(updateItemDtoSchema)) dto: UpdateItemDto) {
     return this.itemService.updateItem(asItemId(id), dto);
   }
 
@@ -84,7 +91,7 @@ export class ItemController {
   async updateOverride(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
-    @Body() dto: UpdateItemOverrideDto,
+    @Body(new ZodValidationPipe(updateItemOverrideDtoSchema)) dto: UpdateItemOverrideDto,
   ) {
     return this.itemService.updateOverride(asItemId(id), user.restaurantId, dto);
   }

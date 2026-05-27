@@ -36,7 +36,7 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
       setIsSubmitting(true);
       await apiClient('/items/categories', {
         method: 'POST',
-        body: JSON.stringify(data),
+        body: data,
       });
       onSuccess();
       onOpenChange(false);
