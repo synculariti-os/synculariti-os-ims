@@ -3,57 +3,34 @@ import { ITEM_WRITE_SERVICE_TOKEN, IItemWriteService } from './interfaces/i-item
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { PERMISSION_CODES, asItemId } from '@ims/types';
-import type { ItemId, RestaurantId, JwtPayload } from '@ims/types';
-import { 
-  CreateItemDto, 
-  UpdateItemDto, 
-  CreateCategoryDto, 
-  UpdateCategoryDto, 
-  CreateUomConversionDto, 
-  UpdateItemOverrideDto 
+import type { JwtPayload } from '@ims/types';
+import {
+  CreateItemDto,
+  UpdateItemDto,
+  CreateCategoryDto,
+  UpdateCategoryDto,
+  CreateUomConversionDto,
+  UpdateItemOverrideDto,
 } from '@ims/validators';
-import { Public } from '../common/decorators/public.decorator';
 
 @Controller('items')
-@Public()
 export class ItemController {
   constructor(
     @Inject(ITEM_WRITE_SERVICE_TOKEN) private readonly itemService: IItemWriteService,
   ) {}
 
-  @Get()
-  @Public()
-  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
-  async listParLevels(
-    @CurrentUser() user: JwtPayload,
-    @Query('page') page?: string,
-    @Query('limit') limit?: string,
-  ) {
-    // TEMPORARY: Mock user context for UI testing
-    const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
-    const activeUser = user || { restaurantId: mockRestaurantId };
-    
-    const pageNum = page ? parseInt(page, 10) : 1;
-    const limitNum = limit ? parseInt(limit, 10) : 50;
-    return this.itemService.listParLevels(activeUser.restaurantId, pageNum, limitNum);
-  }
+  // ── Static routes MUST come before dynamic /:id routes ──────────────────────
 
-  @Post()
-  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async createItem(@Body() dto: CreateItemDto) {
-    return this.itemService.createItem(dto);
+  @Get('categories')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
+  async listCategories(@CurrentUser() user: JwtPayload) {
+    return this.itemService.listCategories(user.restaurantId, user.franchiseGroupId);
   }
 
   @Post('categories')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async createCategory(@Body() dto: CreateCategoryDto) {
     return this.itemService.createCategory(dto);
-  }
-
-  @Get('categories')
-  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
-  async listCategories(@CurrentUser() user: JwtPayload) {
-    return this.itemService.listCategories(user.restaurantId, user.franchiseGroupId);
   }
 
   @Put('categories/:id')
@@ -67,6 +44,28 @@ export class ItemController {
   async upsertUomConversion(@Body() dto: CreateUomConversionDto) {
     return this.itemService.upsertUomConversion(dto);
   }
+
+  // ── Collection routes ────────────────────────────────────────────────────────
+
+  @Get()
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
+  async listParLevels(
+    @CurrentUser() user: JwtPayload,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 50;
+    return this.itemService.listParLevels(user.restaurantId, pageNum, limitNum);
+  }
+
+  @Post()
+  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
+  async createItem(@Body() dto: CreateItemDto) {
+    return this.itemService.createItem(dto);
+  }
+
+  // ── Dynamic /:id routes MUST come AFTER all static routes ───────────────────
 
   @Get(':id')
   @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
@@ -85,7 +84,7 @@ export class ItemController {
   async updateOverride(
     @Param('id') id: string,
     @CurrentUser() user: JwtPayload,
-    @Body() dto: UpdateItemOverrideDto
+    @Body() dto: UpdateItemOverrideDto,
   ) {
     return this.itemService.updateOverride(asItemId(id), user.restaurantId, dto);
   }
