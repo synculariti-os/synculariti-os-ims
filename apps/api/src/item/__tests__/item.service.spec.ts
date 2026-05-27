@@ -60,6 +60,7 @@ describe('ItemService', () => {
       updateItem: vi.fn(),
       createCategory: vi.fn(),
       updateCategory: vi.fn(),
+      listCategories: vi.fn(),
       upsertUomConversion: vi.fn(),
       upsertItemOverride: vi.fn(),
     };
@@ -119,6 +120,16 @@ describe('ItemService', () => {
       const result = await service.listParLevels(mockRestaurantId, 1, 50);
       expect(result).toEqual(paginatedResult);
       expect(repo.listParLevels).toHaveBeenCalledWith(mockRestaurantId, 1, 50);
+    });
+  });
+
+  describe('listCategories', () => {
+    it('should return a list of categories', async () => {
+      const mockCategory = { id: 'cat-1', name: 'Veg' } as any;
+      repo.listCategories.mockResolvedValue([mockCategory]);
+      const result = await service.listCategories(mockRestaurantId, 'franchise-1');
+      expect(result).toEqual([mockCategory]);
+      expect(repo.listCategories).toHaveBeenCalledWith(mockRestaurantId, 'franchise-1');
     });
   });
 });

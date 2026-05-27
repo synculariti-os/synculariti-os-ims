@@ -185,6 +185,24 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
+  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string): Promise<Category[]> {
+    const categories = await this.db
+      .selectFrom('categories')
+      .selectAll()
+      .where((eb) => eb.or([
+        eb('restaurant_id', '=', restaurantId),
+        eb('franchise_group_id', '=', asFranchiseGroupId(franchiseGroupId)),
+        eb.and([
+          eb('restaurant_id', 'is', null),
+          eb('franchise_group_id', 'is', null)
+        ])
+      ]))
+      .orderBy('name', 'asc')
+      .execute();
+
+    return categories.map(c => this.mapCategoryRecord(c));
+  }
+
   async createItem(data: CreateItemDto): Promise<Item> {
     const [item] = await this.db
       .insertInto('items')

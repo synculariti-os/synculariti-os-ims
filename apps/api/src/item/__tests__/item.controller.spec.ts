@@ -27,6 +27,7 @@ describe('ItemController', () => {
       updateItem: vi.fn(),
       createCategory: vi.fn(),
       updateCategory: vi.fn(),
+      listCategories: vi.fn(),
       upsertUomConversion: vi.fn(),
       updateOverride: vi.fn(),
     };
@@ -78,6 +79,18 @@ describe('ItemController', () => {
       
       expect(service.createItem).toHaveBeenCalledWith(mockDto);
       expect(result).toEqual(mockDto);
+    });
+  });
+
+  describe('listCategories', () => {
+    it('should call service.listCategories', async () => {
+      const mockResult = [{ id: 'cat-1', name: 'Veg' }] as any;
+      service.listCategories.mockResolvedValue(mockResult);
+
+      const result = await controller.listCategories(mockUser);
+      
+      expect(service.listCategories).toHaveBeenCalledWith(mockUser.restaurantId, mockUser.franchiseGroupId);
+      expect(result).toEqual(mockResult);
     });
   });
 });

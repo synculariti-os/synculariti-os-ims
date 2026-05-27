@@ -47,6 +47,10 @@ export class ItemService implements IItemWriteService {
     return this.itemRepo.createItem(dto);
   }
 
+  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string): Promise<Category[]> {
+    return this.itemRepo.listCategories(restaurantId, franchiseGroupId);
+  }
+
   async updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item> {
     const updated = await this.itemRepo.updateItem(itemId, dto);
     if (!updated) {

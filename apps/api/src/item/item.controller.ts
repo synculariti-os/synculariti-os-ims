@@ -62,6 +62,12 @@ export class ItemController {
     return this.itemService.createCategory(dto);
   }
 
+  @Get('categories')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
+  async listCategories(@CurrentUser() user: JwtPayload) {
+    return this.itemService.listCategories(user.restaurantId, user.franchiseGroupId);
+  }
+
   @Put('categories/:id')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async updateCategory(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
