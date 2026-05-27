@@ -15,8 +15,8 @@ export function CategoriesTable() {
   const fetchCategories = async () => {
     try {
       setIsLoading(true);
-      const data = await apiClient<Category[]>('/items/categories');
-      setCategories(data || []);
+      const response = await apiClient<{ data: Category[] }>('/items/categories');
+      setCategories(response.data || []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
     } finally {
