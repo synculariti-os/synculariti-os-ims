@@ -11,15 +11,15 @@ const mockRestaurant: Restaurant = {
   franchiseGroupId: 'fran-1' as FranchiseGroupId,
   name: 'Test Restaurant',
   timezone: 'UTC',
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 const mockFranchiseGroup: FranchiseGroup = {
   id: 'fran-1' as FranchiseGroupId,
   name: 'Test Franchise',
-  createdAt: new Date(),
-  updatedAt: new Date(),
+  createdAt: new Date().toISOString(),
+  updatedAt: new Date().toISOString(),
 };
 
 describe('TenantService', () => {

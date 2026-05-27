@@ -40,7 +40,7 @@ describe('InventoryController', () => {
       const mockUser = { restaurantId: 'rest-123' };
       const mockResult = [{ itemId: 'item-1', qty: 10 }];
       
-      vi.mocked(mockLedgerService.getCurrentStockBulk).mockResolvedValueOnce(mockResult as any);
+      vi.mocked(mockLedgerService.getCurrentStockBulk!).mockResolvedValueOnce(mockResult as any);
 
       const result = await controller.getStock(mockUser as any);
       
@@ -54,7 +54,7 @@ describe('InventoryController', () => {
       const mockUser = { restaurantId: 'rest-123' };
       const mockResult = [{ id: 'entry-1', amount: 5 }];
       
-      vi.mocked(mockLedgerService.getLedgerEntries).mockResolvedValueOnce(mockResult);
+      vi.mocked(mockLedgerService.getLedgerEntries!).mockResolvedValueOnce(mockResult);
 
       const result = await controller.getLedger(mockUser as any, 20, 10);
       

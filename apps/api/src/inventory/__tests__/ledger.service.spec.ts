@@ -37,6 +37,7 @@ const mockLedgerRepository: ILedgerRepository = {
   insertEntry: vi.fn(),
   sumChangeAmount: vi.fn(),
   sumChangeAmountBulk: vi.fn(),
+      getLedgerEntries: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------

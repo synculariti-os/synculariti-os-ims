@@ -41,6 +41,8 @@ const mockRecipeRepo: IRecipeRepository = {
   create: vi.fn(),
   update: vi.fn(),
   upsertMapping: vi.fn(),
+      findAllRecipes: vi.fn(),
+      findAllMappings: vi.fn(),
 };
 
 const mockItemService: IItemReadService = {

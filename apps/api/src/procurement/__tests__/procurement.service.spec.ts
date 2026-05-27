@@ -80,6 +80,7 @@ const mockLedgerService: ILedgerService = {
   record: vi.fn(),
   getCurrentStock: vi.fn(),
   getCurrentStockBulk: vi.fn(),
+      getLedgerEntries: vi.fn(),
 };
 
 const mockItemService: IItemReadService = {
