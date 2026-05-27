@@ -38,22 +38,10 @@ export class ItemController {
     return this.itemService.listParLevels(activeUser.restaurantId, pageNum, limitNum);
   }
 
-  @Get(':id')
-  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
-  async findById(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
-    return this.itemService.findById(asItemId(id), user.restaurantId);
-  }
-
   @Post()
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async createItem(@Body() dto: CreateItemDto) {
     return this.itemService.createItem(dto);
-  }
-
-  @Put(':id')
-  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async updateItem(@Param('id') id: string, @Body() dto: UpdateItemDto) {
-    return this.itemService.updateItem(asItemId(id), dto);
   }
 
   @Post('categories')
@@ -78,6 +66,18 @@ export class ItemController {
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async upsertUomConversion(@Body() dto: CreateUomConversionDto) {
     return this.itemService.upsertUomConversion(dto);
+  }
+
+  @Get(':id')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
+  async findById(@Param('id') id: string, @CurrentUser() user: JwtPayload) {
+    return this.itemService.findById(asItemId(id), user.restaurantId);
+  }
+
+  @Put(':id')
+  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
+  async updateItem(@Param('id') id: string, @Body() dto: UpdateItemDto) {
+    return this.itemService.updateItem(asItemId(id), dto);
   }
 
   @Patch(':id/overrides')

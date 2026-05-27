@@ -266,7 +266,7 @@ export class ItemRepository implements IItemRepository {
         franchise_group_id: data.franchiseGroupId ? asFranchiseGroupId(data.franchiseGroupId) : null,
         restaurant_id: data.restaurantId ? asRestaurantId(data.restaurantId) : null,
         name: data.name,
-        description: data.description,
+        description: data.description ?? null,
       })
       .returningAll()
       .execute();
