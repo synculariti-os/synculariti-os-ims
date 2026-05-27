@@ -8,18 +8,18 @@ import type { Restaurant, FranchiseGroup, RestaurantId, FranchiseGroupId, UserId
 
 const mockRestaurant: Restaurant = {
   id: 'rest-1' as RestaurantId,
-  franchise_group_id: 'fran-1' as FranchiseGroupId,
+  franchiseGroupId: 'fran-1' as FranchiseGroupId,
   name: 'Test Restaurant',
   timezone: 'UTC',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const mockFranchiseGroup: FranchiseGroup = {
   id: 'fran-1' as FranchiseGroupId,
   name: 'Test Franchise',
-  created_at: new Date().toISOString(),
-  updated_at: new Date().toISOString(),
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 describe('TenantService', () => {

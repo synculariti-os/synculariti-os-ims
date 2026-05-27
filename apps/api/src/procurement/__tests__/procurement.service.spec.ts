@@ -86,6 +86,7 @@ const mockItemService: IItemReadService = {
   findById: vi.fn(),
   convertUom: vi.fn(),
   listParLevels: vi.fn(),
+      listCategories: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------

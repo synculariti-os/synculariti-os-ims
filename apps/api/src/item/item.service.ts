@@ -47,7 +47,7 @@ export class ItemService implements IItemWriteService {
     return this.itemRepo.createItem(dto);
   }
 
-  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string): Promise<Category[]> {
+  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]> {
     return this.itemRepo.listCategories(restaurantId, franchiseGroupId);
   }
 

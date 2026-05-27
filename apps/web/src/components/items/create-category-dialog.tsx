@@ -24,8 +24,8 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
   } = useForm<CreateCategoryDto>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
-      restaurantId: restaurantId || undefined,
-      franchiseGroupId: undefined,
+      restaurantId: restaurantId || null,
+      franchiseGroupId: null,
       name: '',
       description: '',
     },

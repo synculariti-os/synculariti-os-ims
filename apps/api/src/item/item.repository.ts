@@ -185,18 +185,25 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
-  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string): Promise<Category[]> {
+  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]> {
     const categories = await this.db
       .selectFrom('categories')
       .selectAll()
-      .where((eb) => eb.or([
-        eb('restaurant_id', '=', restaurantId),
-        eb('franchise_group_id', '=', asFranchiseGroupId(franchiseGroupId)),
-        eb.and([
-          eb('restaurant_id', 'is', null),
-          eb('franchise_group_id', 'is', null)
-        ])
-      ]))
+      .where((eb) => {
+        const conditions = [
+          eb('restaurant_id', '=', restaurantId),
+          eb.and([
+            eb('restaurant_id', 'is', null),
+            eb('franchise_group_id', 'is', null)
+          ])
+        ];
+        
+        if (franchiseGroupId) {
+          conditions.push(eb('franchise_group_id', '=', asFranchiseGroupId(franchiseGroupId)));
+        }
+
+        return eb.or(conditions);
+      })
       .orderBy('name', 'asc')
       .execute();
 

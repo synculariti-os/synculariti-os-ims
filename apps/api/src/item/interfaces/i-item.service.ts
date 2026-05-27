@@ -12,7 +12,7 @@ export interface IItemReadService {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride>;
   convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
   listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
-  listCategories(restaurantId: RestaurantId, franchiseGroupId: string): Promise<Category[]>;
+  listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]>;
 }
 
 export interface IItemWriteService extends IItemReadService {

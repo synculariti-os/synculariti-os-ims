@@ -1,5 +1,6 @@
 /* @immutable-test — Written Red-first on: 2026-05-24. NEVER MODIFY after first GREEN. */
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { InventoryController } from '../inventory.controller';
 import { LEDGER_SERVICE_TOKEN, ILedgerService } from '../interfaces/i-ledger.service';
 import { TenantContextInterceptor } from '../../common/interceptors/tenant-context.interceptor';
