@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { X, Loader2, PackagePlus } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Category } from '@ims/types';
+import { useAuthStore } from '@/store/use-auth-store';
 
 type CreateItemForm = z.infer<typeof createItemSchema>;
 
@@ -22,6 +23,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const restaurantId = useAuthStore((state) => state.restaurantId);
 
   const {
     register,
@@ -32,6 +34,8 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   } = useForm({
     resolver: zodResolver(createItemSchema),
     defaultValues: {
+      restaurantId: restaurantId || null,
+      franchiseGroupId: null,
       name: '',
       type: 'RAW',
       sku: '',
@@ -112,16 +116,30 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
           )}
 
           <form id="create-item-form" onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div>
-              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                Item Name
-              </label>
-              <input
-                {...register('name')}
-                className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
-                placeholder="e.g. Organic Flour"
-              />
-              {errors.name && <p className="mt-1.5 text-sm text-red-500">{errors.name.message}</p>}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  Item Name
+                </label>
+                <input
+                  {...register('name')}
+                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
+                  placeholder="e.g. Organic Flour"
+                />
+                {errors.name && <p className="mt-1.5 text-sm text-red-500">{errors.name.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
+                  SKU
+                </label>
+                <input
+                  {...register('sku')}
+                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
+                  placeholder="e.g. FLOUR-001"
+                />
+                {errors.sku && <p className="mt-1.5 text-sm text-red-500">{errors.sku.message}</p>}
+              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
