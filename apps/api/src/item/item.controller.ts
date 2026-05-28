@@ -36,7 +36,14 @@ export class ItemController {
 
   @Post('categories')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async createCategory(@Body(new ZodValidationPipe(createCategorySchema)) dto: CreateCategoryDto) {
+  async createCategory(
+    @CurrentUser() user: JwtPayload,
+    @Body(new ZodValidationPipe(createCategorySchema)) dto: CreateCategoryDto
+  ) {
+    if (!dto.restaurantId && !dto.franchiseGroupId) {
+      dto.restaurantId = user.restaurantId;
+      dto.franchiseGroupId = user.franchiseGroupId || null;
+    }
     return this.itemService.createCategory(dto);
   }
 
@@ -68,7 +75,14 @@ export class ItemController {
 
   @Post()
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
-  async createItem(@Body(new ZodValidationPipe(createItemSchema)) dto: CreateItemDto) {
+  async createItem(
+    @CurrentUser() user: JwtPayload,
+    @Body(new ZodValidationPipe(createItemSchema)) dto: CreateItemDto
+  ) {
+    if (!dto.restaurantId && !dto.franchiseGroupId) {
+      dto.restaurantId = user.restaurantId;
+      dto.franchiseGroupId = user.franchiseGroupId || null;
+    }
     return this.itemService.createItem(dto);
   }
 
