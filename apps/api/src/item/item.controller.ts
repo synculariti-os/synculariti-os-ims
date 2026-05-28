@@ -41,8 +41,13 @@ export class ItemController {
     @Body(new ZodValidationPipe(createCategorySchema)) dto: CreateCategoryDto
   ) {
     if (!dto.restaurantId && !dto.franchiseGroupId) {
-      dto.restaurantId = user.restaurantId;
-      dto.franchiseGroupId = user.franchiseGroupId || null;
+      if (user.restaurantId) {
+        dto.restaurantId = user.restaurantId;
+        dto.franchiseGroupId = null;
+      } else if (user.franchiseGroupId) {
+        dto.franchiseGroupId = user.franchiseGroupId;
+        dto.restaurantId = null;
+      }
     }
     return this.itemService.createCategory(dto);
   }
@@ -80,8 +85,13 @@ export class ItemController {
     @Body(new ZodValidationPipe(createItemSchema)) dto: CreateItemDto
   ) {
     if (!dto.restaurantId && !dto.franchiseGroupId) {
-      dto.restaurantId = user.restaurantId;
-      dto.franchiseGroupId = user.franchiseGroupId || null;
+      if (user.restaurantId) {
+        dto.restaurantId = user.restaurantId;
+        dto.franchiseGroupId = null;
+      } else if (user.franchiseGroupId) {
+        dto.franchiseGroupId = user.franchiseGroupId;
+        dto.restaurantId = null;
+      }
     }
     return this.itemService.createItem(dto);
   }
