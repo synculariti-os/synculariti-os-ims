@@ -24,6 +24,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const restaurantId = useAuthStore((state) => state.restaurantId);
+  const franchiseGroupId = useAuthStore((state) => state.franchiseGroupId);
 
   const {
     register,
@@ -71,6 +72,9 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
 
   const onSubmit = async (formData: unknown) => {
     const data = formData as CreateItemForm;
+    data.restaurantId = restaurantId || null;
+    data.franchiseGroupId = franchiseGroupId || null;
+    
     setIsSubmitting(true);
     setError(null);
     try {
