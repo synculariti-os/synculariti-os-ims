@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { X, Loader2, PackagePlus } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Category } from '@ims/types';
-import { useAuthStore } from '@/store/use-auth-store';
+
 
 type CreateItemForm = z.infer<typeof createItemSchema>;
 
@@ -33,10 +33,8 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   } = useForm({
     resolver: zodResolver(createItemSchema),
     defaultValues: {
-      restaurantId: null,
-      franchiseGroupId: null,
       name: '',
-      type: 'RAW',
+      type: 'RAW' as const,
       sku: '',
       purchasingUom: 'kg',
       inventoryUom: 'kg',
@@ -68,12 +66,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
 
   if (!isOpen) return null;
 
-  const onSubmit = async (formData: unknown) => {
-    const data = formData as CreateItemForm;
-    const { restaurantId, franchiseGroupId } = useAuthStore.getState();
-    data.restaurantId = restaurantId || null;
-    data.franchiseGroupId = franchiseGroupId || null;
-    
+  const onSubmit = async (data: CreateItemForm) => {
     setIsSubmitting(true);
     setError(null);
     try {

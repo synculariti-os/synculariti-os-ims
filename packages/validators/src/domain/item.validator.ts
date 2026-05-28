@@ -1,10 +1,12 @@
 import { z } from 'zod';
 
-const baseItemSchema = z.object({
-  // Owner fields — the controller will inject from JWT if not provided by client.
-  // Both default to null so the XOR refine can catch the missing-owner case.
-  franchiseGroupId: z.string().uuid().nullable().default(null),
-  restaurantId: z.string().uuid().nullable().default(null),
+/**
+ * Client-facing schema for item creation.
+ * Ownership (franchiseGroupId / restaurantId) is intentionally EXCLUDED —
+ * it is resolved server-side from the authenticated JWT context (R-ARCH-02).
+ * The DB `item_owner_xor` constraint is enforced in ItemService, not here.
+ */
+export const createItemSchema = z.object({
   categoryId: z.string().uuid(),
   name: z.string().min(1),
   sku: z.string().min(1),
@@ -16,18 +18,7 @@ const baseItemSchema = z.object({
   isActive: z.boolean().default(true),
 });
 
-/**
- * Mirrors the DB `item_owner_xor` CHECK constraint:
- * Exactly ONE of franchiseGroupId or restaurantId must be non-null.
- */
-export const createItemSchema = baseItemSchema.refine(
-  (data) =>
-    (data.franchiseGroupId !== null && data.restaurantId === null) ||
-    (data.franchiseGroupId === null && data.restaurantId !== null),
-  { message: 'Exactly one of franchiseGroupId or restaurantId must be provided (not both, not neither)' },
-);
-
-export const updateItemSchema = baseItemSchema.partial();
+export const updateItemSchema = createItemSchema.partial();
 
 export const createUomConversionSchema = z.object({
   itemId: z.string().uuid(),

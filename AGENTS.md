@@ -155,7 +155,7 @@ interface IItemReadService {
 }
 
 interface IItemWriteService extends IItemReadService {
-  createItem(dto: CreateItemDto): Promise<Item>;
+  createItem(dto: CreateItemDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Item>;
   updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item>;
   createCategory(dto: CreateCategoryDto): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;

@@ -84,18 +84,9 @@ export class ItemController {
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createItemSchema)) dto: CreateItemDto
   ) {
-    // Guarantee exactly one owner (mirrors item_owner_xor DB constraint).
-    // The Zod schema validates this after Zod defaults are applied, but the
-    // owner may legitimately be omitted by the client — in that case we inject
-    // from the JWT so the XOR refine passes on any retry path.
-    const hasOwner =
-      (dto.franchiseGroupId !== null) !== (dto.restaurantId !== null); // true XOR
-    if (!hasOwner) {
-      // Prefer restaurant-level scope; fall back to franchise if no restaurant
-      dto.restaurantId = user.restaurantId ?? null;
-      dto.franchiseGroupId = user.restaurantId ? null : (user.franchiseGroupId ?? null);
-    }
-    return this.itemService.createItem(dto);
+    // Controller is transport-only: extract JWT context and pass to service.
+    // All business logic (owner XOR resolution) lives in ItemService (R-ARCH-02).
+    return this.itemService.createItem(dto, user.restaurantId ?? null, user.franchiseGroupId ?? null);
   }
 
   // ── Dynamic /:id routes MUST come AFTER all static routes ───────────────────

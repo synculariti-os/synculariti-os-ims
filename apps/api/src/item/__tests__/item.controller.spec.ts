@@ -77,7 +77,7 @@ describe('ItemController', () => {
 
       const result = await controller.createItem(mockUser, mockDto);
       
-      expect(service.createItem).toHaveBeenCalledWith(mockDto);
+      expect(service.createItem).toHaveBeenCalledWith(mockDto, mockUser.restaurantId, mockUser.franchiseGroupId);
       expect(result).toEqual(mockDto);
     });
   });

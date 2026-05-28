@@ -1,9 +1,11 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IItemRepository } from './interfaces/i-item.repository';
+import type { CreateItemCommand } from './interfaces/i-item.service';
 import { Kysely, sql } from 'kysely';
 import { Database, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride, Item, asRestaurantId, asItemId, asCategoryId, asFranchiseGroupId } from '@ims/types';
 import { v4 as uuidv4 } from 'uuid';
-import { CreateItemDto, UpdateItemDto, CreateCategoryDto, UpdateCategoryDto, CreateUomConversionDto, UpdateItemOverrideDto } from '@ims/validators';
+import { UpdateItemDto, CreateCategoryDto, UpdateCategoryDto, CreateUomConversionDto, UpdateItemOverrideDto } from '@ims/validators';
+
 
 @Injectable()
 export class ItemRepository implements IItemRepository {
@@ -210,7 +212,7 @@ export class ItemRepository implements IItemRepository {
     return categories.map(c => this.mapCategoryRecord(c));
   }
 
-  async createItem(data: CreateItemDto): Promise<Item> {
+  async createItem(data: CreateItemCommand): Promise<Item> {
     const [item] = await this.db
       .insertInto('items')
       .values({

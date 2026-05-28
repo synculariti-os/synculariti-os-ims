@@ -73,6 +73,9 @@ No module may define its own `interface` or `type` for entities that exist in th
 ### R-ARCH-05 — Shared Validation Lives in `@ims/validators`
 Zod schemas are defined once in `packages/validators/`. NestJS DTOs use `ZodValidationPipe` backed by the same schema. Frontend `react-hook-form` uses the same schema resolver. No duplicated field validation.
 
+**Corollary — Server Context Fields Must Not Be in Shared Schemas**: Fields that are resolved from server-side JWT context (e.g., `restaurantId`, `franchiseGroupId` derived from `@CurrentUser()`) must **not** appear in the shared `@ims/validators` schema. These are backend concerns injected at the service layer. If the DB requires them (e.g., `item_owner_xor`), enforce the constraint in the Service via a backend-only command type (e.g., `CreateItemCommand`), not in the shared Zod schema.
+
+
 ---
 
 ## 3. Security Rules

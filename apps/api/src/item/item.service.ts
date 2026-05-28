@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
-import type { ItemWithOverride, ItemId, RestaurantId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
-import type { IItemWriteService } from './interfaces/i-item.service';
+import type { ItemWithOverride, ItemId, RestaurantId, FranchiseGroupId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
+import { asRestaurantId, asFranchiseGroupId } from '@ims/types';
+import type { IItemWriteService, CreateItemCommand } from './interfaces/i-item.service';
 import { IItemRepository } from './interfaces/i-item.repository';
 import { ITEM_REPOSITORY_TOKEN } from './interfaces/i-item.repository';
 import type { 
@@ -43,8 +44,29 @@ export class ItemService implements IItemWriteService {
     return this.itemRepo.listParLevels(restaurantId, page, limit);
   }
 
-  async createItem(dto: CreateItemDto): Promise<Item> {
-    return this.itemRepo.createItem(dto);
+  async createItem(
+    dto: CreateItemDto,
+    restaurantId: RestaurantId | null,
+    franchiseGroupId: string | null,
+  ): Promise<Item> {
+    // Business rule: enforce item_owner_xor — exactly one owner must be set.
+    // Restaurant scope takes priority when both are somehow provided.
+    const resolvedRestaurantId = restaurantId ?? null;
+    const resolvedFranchiseGroupId = resolvedRestaurantId ? null : (franchiseGroupId ?? null);
+
+    if (!resolvedRestaurantId && !resolvedFranchiseGroupId) {
+      throw new BadRequestException(
+        'Cannot create item: authenticated user has no restaurant or franchise group context assigned.',
+      );
+    }
+
+    const command: CreateItemCommand = {
+      ...dto,
+      restaurantId: resolvedRestaurantId,
+      franchiseGroupId: resolvedFranchiseGroupId ? asFranchiseGroupId(resolvedFranchiseGroupId) : null,
+    };
+
+    return this.itemRepo.createItem(command);
   }
 
   async listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]> {

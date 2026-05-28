@@ -1,4 +1,4 @@
-import type { ItemWithOverride, ItemId, RestaurantId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
+import type { ItemWithOverride, ItemId, RestaurantId, FranchiseGroupId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
 import type { 
   CreateItemDto, 
   UpdateItemDto, 
@@ -8,6 +8,13 @@ import type {
   UpdateItemOverrideDto 
 } from '@ims/validators';
 
+/** Backend-only: item creation command with owner context injected by the service. */
+export type CreateItemCommand = CreateItemDto & {
+  restaurantId: RestaurantId | null;
+  franchiseGroupId: FranchiseGroupId | null;
+};
+
+
 export interface IItemReadService {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride>;
   convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
@@ -16,7 +23,7 @@ export interface IItemReadService {
 }
 
 export interface IItemWriteService extends IItemReadService {
-  createItem(dto: CreateItemDto): Promise<Item>;
+  createItem(dto: CreateItemDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Item>;
   updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item>;
   createCategory(dto: CreateCategoryDto): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
