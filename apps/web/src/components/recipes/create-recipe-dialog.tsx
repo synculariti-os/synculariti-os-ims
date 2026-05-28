@@ -40,6 +40,7 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
     resolver: zodResolver(createRecipeSchema),
     defaultValues: {
       producesItemId: '',
+      recipeName: '',
       yieldQuantity: 1,
       ingredients: [{ ingredientItemId: '', quantityRequired: 1 }],
     },
@@ -52,13 +53,22 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
 
   if (!isOpen) return null;
 
+  const [recipeMode, setRecipeMode] = useState<'prep' | 'menu'>('prep');
+
   const onSubmit = async (data: CreateRecipeForm) => {
     setIsSubmitting(true);
     setError(null);
     try {
+      // Strip unused fields based on mode
+      const payload = {
+        ...data,
+        producesItemId: recipeMode === 'prep' ? data.producesItemId : null,
+        recipeName: recipeMode === 'menu' ? data.recipeName : null,
+      };
+
       await apiClient('/recipes', {
         method: 'POST',
-        body: data,
+        body: payload,
       });
       reset();
       onSuccess();
@@ -101,21 +111,50 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
           )}
 
           <form id="create-recipe-form" onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            
+            {/* Mode Toggle */}
+            <div className="flex p-1 bg-zinc-100 dark:bg-zinc-800 rounded-xl mb-4">
+              <button
+                type="button"
+                onClick={() => setRecipeMode('prep')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${recipeMode === 'prep' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                Prep Item Recipe
+              </button>
+              <button
+                type="button"
+                onClick={() => setRecipeMode('menu')}
+                className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${recipeMode === 'menu' ? 'bg-white dark:bg-zinc-700 shadow-sm text-zinc-900 dark:text-white' : 'text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'}`}
+              >
+                Menu Item (Virtual)
+              </button>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                  Produces Item (Prep Item)
+                  {recipeMode === 'prep' ? 'Produces Item (Prep Item)' : 'Recipe Name'}
                 </label>
-                <select
-                  {...register('producesItemId')}
-                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white appearance-none"
-                >
-                  <option value="">Select an Item...</option>
-                  {prepItems.map(item => (
-                    <option key={item.id} value={item.id}>{item.name}</option>
-                  ))}
-                </select>
-                {errors.producesItemId && <p className="mt-1.5 text-sm text-red-500">{errors.producesItemId.message}</p>}
+                {recipeMode === 'prep' ? (
+                  <select
+                    {...register('producesItemId')}
+                    className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white appearance-none"
+                  >
+                    <option value="">Select an Item...</option>
+                    {prepItems.map(item => (
+                      <option key={item.id} value={item.id}>{item.name}</option>
+                    ))}
+                  </select>
+                ) : (
+                  <input
+                    type="text"
+                    {...register('recipeName')}
+                    className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
+                    placeholder="e.g. Cheeseburger"
+                  />
+                )}
+                {errors.producesItemId && recipeMode === 'prep' && <p className="mt-1.5 text-sm text-red-500">{errors.producesItemId.message}</p>}
+                {errors.recipeName && recipeMode === 'menu' && <p className="mt-1.5 text-sm text-red-500">{errors.recipeName.message}</p>}
               </div>
 
               <div>

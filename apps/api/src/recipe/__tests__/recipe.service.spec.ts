@@ -166,6 +166,8 @@ describe('RecipeService', () => {
       expect(mockItemService.findById).toHaveBeenCalledWith(PRODUCED_ITEM_ID, 'restaurant-uuid');
       expect(mockRecipeRepo.create).toHaveBeenCalledWith({
         ...dto,
+        producesItemId: dto.producesItemId,
+        recipeName: null,
         restaurantId: 'restaurant-uuid',
         franchiseGroupId: null,
       });

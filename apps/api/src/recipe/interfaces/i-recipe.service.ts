@@ -2,7 +2,9 @@ import type { BomExpansion, Recipe, RecipeIngredient, RecipeId, RestaurantId, Me
 import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
 import type { FranchiseGroupId } from '@ims/types';
 
-export type CreateRecipeCommand = CreateRecipeDto & {
+export type CreateRecipeCommand = Omit<CreateRecipeDto, 'producesItemId'> & {
+  producesItemId?: string | null;
+  recipeName?: string | null;
   restaurantId: RestaurantId | null;
   franchiseGroupId: FranchiseGroupId | null;
 };

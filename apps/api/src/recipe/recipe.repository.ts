@@ -132,7 +132,8 @@ export class RecipeRepository implements IRecipeRepository {
         .insertInto('recipes')
         .values({
           id: uuidv4() as RecipeId,
-          produces_item_id: asItemId(command.producesItemId),
+          produces_item_id: command.producesItemId ? asItemId(command.producesItemId) : null,
+          recipe_name: command.recipeName ? command.recipeName : null,
           yield_quantity: command.yieldQuantity,
           franchise_group_id: command.franchiseGroupId ? asFranchiseGroupId(command.franchiseGroupId) : null,
           restaurant_id: command.restaurantId ? asRestaurantId(command.restaurantId) : null,
@@ -226,7 +227,8 @@ export class RecipeRepository implements IRecipeRepository {
       id: asRecipeId(row.id as string),
       franchiseGroupId: row.franchise_group_id ? asFranchiseGroupId(row.franchise_group_id as string) : null,
       restaurantId: row.restaurant_id ? (row.restaurant_id as RestaurantId) : null,
-      producesItemId: asItemId(row.produces_item_id as string),
+      producesItemId: row.produces_item_id ? asItemId(row.produces_item_id as string) : null,
+      recipeName: row.recipe_name ? (row.recipe_name as string) : null,
       yieldQuantity: Number(row.yield_quantity),
       createdAt: row.created_at as string,
       updatedAt: row.updated_at as string,

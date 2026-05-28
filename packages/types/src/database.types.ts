@@ -151,7 +151,8 @@ export interface Database {
     id: RecipeId;
     franchise_group_id: FranchiseGroupId | null;
     restaurant_id: RestaurantId | null;
-    produces_item_id: ItemId;
+    produces_item_id: ItemId | null;
+    recipe_name: string | null;
     yield_quantity: number;
     created_at: Generated<string>;
     updated_at: Generated<string>;

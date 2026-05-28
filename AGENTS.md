@@ -220,7 +220,7 @@ COMMIT
 
 ## 5. Recipe/BOM Agent
 
-**Responsibility**: Manage Bill of Materials (recipes) that define how prep items are produced, and the mapping between raw POS strings and internal recipes.
+**Responsibility**: Manage Bill of Materials (recipes) that define how prep items are produced, and the mapping between raw POS strings and internal recipes. It supports both standard recipes (producing an inventory-tracked `PREP` item) and "Virtual Recipes" (Menu Items without an inventory track, using `recipe_name`).
 
 ### Inputs
 - `POST /recipes` — Create a new recipe with ingredients

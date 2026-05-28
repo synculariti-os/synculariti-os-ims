@@ -93,17 +93,21 @@ export class RecipeService implements IRecipeService {
       );
     }
 
-    // Validate that the produces item exists
-    const item = await this.itemService.findById(
-      asItemId(dto.producesItemId), 
-      resolvedRestaurantId as RestaurantId
-    );
-    if (!item) {
-      throw new NotFoundException(`Item not found: ${dto.producesItemId}`);
+    if (dto.producesItemId) {
+      // Validate that the produces item exists
+      const item = await this.itemService.findById(
+        asItemId(dto.producesItemId), 
+        resolvedRestaurantId as RestaurantId
+      );
+      if (!item) {
+        throw new NotFoundException(`Item not found: ${dto.producesItemId}`);
+      }
     }
 
     const command: CreateRecipeCommand = {
       ...dto,
+      producesItemId: dto.producesItemId ?? null,
+      recipeName: dto.recipeName ?? null,
       restaurantId: resolvedRestaurantId,
       franchiseGroupId: resolvedFranchiseGroupId ? (resolvedFranchiseGroupId as any) : null,
     };

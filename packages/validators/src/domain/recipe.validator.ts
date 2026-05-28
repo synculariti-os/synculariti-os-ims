@@ -7,9 +7,13 @@ export const recipeIngredientSchema = z.object({
 export type RecipeIngredientDto = z.infer<typeof recipeIngredientSchema>;
 
 export const createRecipeSchema = z.object({
-  producesItemId: z.string().uuid(),
+  producesItemId: z.string().uuid().nullable().optional(),
+  recipeName: z.string().min(1).nullable().optional(),
   yieldQuantity: z.number().positive(),
   ingredients: z.array(recipeIngredientSchema).min(1),
+}).refine(data => data.producesItemId || data.recipeName, {
+  message: "Either a Produces Item or a Recipe Name must be provided",
+  path: ["producesItemId"]
 });
 export type CreateRecipeDto = z.infer<typeof createRecipeSchema>;
 
