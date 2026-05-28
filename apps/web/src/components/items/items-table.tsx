@@ -5,12 +5,14 @@ import { ItemWithOverride } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
 import { Package, Plus, Search, Tag, Scale } from 'lucide-react';
 import { CreateItemDialog } from './create-item-dialog';
+import { EditItemDialog } from './edit-item-dialog';
 
 export function ItemsTable() {
   const [items, setItems] = useState<ItemWithOverride[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingItem, setEditingItem] = useState<ItemWithOverride | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -91,6 +93,7 @@ export function ItemsTable() {
                   <th className="p-4 px-6 font-medium">Category</th>
                   <th className="p-4 px-6 font-medium">Inv. UOM</th>
                   <th className="p-4 px-6 font-medium hidden sm:table-cell">Purch. UOM</th>
+                  <th className="p-4 px-6 font-medium text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200/50 dark:divide-zinc-800/50 text-sm">
@@ -126,6 +129,14 @@ export function ItemsTable() {
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400 hidden sm:table-cell">
                       {item.purchasingUom || '-'}
                     </td>
+                    <td className="p-4 px-6 text-right">
+                      <button 
+                        className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
+                        onClick={() => setEditingItem(item)}
+                      >
+                        Edit
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -141,6 +152,15 @@ export function ItemsTable() {
           setIsCreateOpen(false);
           refreshItems();
         }} 
+      />
+
+      <EditItemDialog
+        item={editingItem}
+        onOpenChange={(open) => !open && setEditingItem(null)}
+        onSuccess={() => {
+          setEditingItem(null);
+          refreshItems();
+        }}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, Inject } from '@nestjs/common';
 import type { ItemWithOverride, ItemId, RestaurantId, FranchiseGroupId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
 import { asRestaurantId, asFranchiseGroupId } from '@ims/types';
-import type { IItemWriteService, CreateItemCommand } from './interfaces/i-item.service';
+import type { IItemWriteService, CreateItemCommand, CreateCategoryCommand } from './interfaces/i-item.service';
 import { IItemRepository } from './interfaces/i-item.repository';
 import { ITEM_REPOSITORY_TOKEN } from './interfaces/i-item.repository';
 import type { 
@@ -81,8 +81,27 @@ export class ItemService implements IItemWriteService {
     return updated;
   }
 
-  async createCategory(dto: CreateCategoryDto): Promise<Category> {
-    return this.itemRepo.createCategory(dto);
+  async createCategory(
+    dto: CreateCategoryDto,
+    restaurantId: RestaurantId | null,
+    franchiseGroupId: string | null,
+  ): Promise<Category> {
+    const resolvedRestaurantId = restaurantId ?? null;
+    const resolvedFranchiseGroupId = resolvedRestaurantId ? null : (franchiseGroupId ?? null);
+
+    if (!resolvedRestaurantId && !resolvedFranchiseGroupId) {
+      throw new BadRequestException(
+        'Cannot create category: authenticated user has no restaurant or franchise group context assigned.',
+      );
+    }
+
+    const command: CreateCategoryCommand = {
+      ...dto,
+      restaurantId: resolvedRestaurantId,
+      franchiseGroupId: resolvedFranchiseGroupId ? asFranchiseGroupId(resolvedFranchiseGroupId) : null,
+    };
+
+    return this.itemRepo.createCategory(command);
   }
 
   async updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category> {

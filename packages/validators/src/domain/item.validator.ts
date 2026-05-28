@@ -28,18 +28,11 @@ export const createUomConversionSchema = z.object({
 });
 
 const baseCategorySchema = z.object({
-  franchiseGroupId: z.string().uuid().nullable(),
-  restaurantId: z.string().uuid().nullable(),
   name: z.string().min(1),
   description: z.string().optional(),
 });
 
-export const createCategorySchema = baseCategorySchema.refine(data => 
-  (data.franchiseGroupId !== null && data.restaurantId === null) ||
-  (data.franchiseGroupId === null && data.restaurantId !== null),
-  { message: 'Must specify exactly one of franchiseGroupId or restaurantId' }
-);
-
+export const createCategorySchema = baseCategorySchema;
 export const updateCategorySchema = baseCategorySchema.partial();
 
 export const updateItemOverrideSchema = z.object({

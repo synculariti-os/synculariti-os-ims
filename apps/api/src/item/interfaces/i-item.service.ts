@@ -15,6 +15,12 @@ export type CreateItemCommand = CreateItemDto & {
 };
 
 
+/** Backend-only: category creation command with owner context. */
+export type CreateCategoryCommand = CreateCategoryDto & {
+  restaurantId: RestaurantId | null;
+  franchiseGroupId: FranchiseGroupId | null;
+};
+
 export interface IItemReadService {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride>;
   convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
@@ -25,7 +31,7 @@ export interface IItemReadService {
 export interface IItemWriteService extends IItemReadService {
   createItem(dto: CreateItemDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Item>;
   updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item>;
-  createCategory(dto: CreateCategoryDto): Promise<Category>;
+  createCategory(dto: CreateCategoryDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
   upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion>;
   updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;

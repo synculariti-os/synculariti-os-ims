@@ -1,54 +1,69 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createCategorySchema, type CreateCategoryDto } from '@ims/validators';
+import { updateCategorySchema, type UpdateCategoryDto } from '@ims/validators';
 import { apiClient } from '@/lib/api-client';
 import { X, Loader2 } from 'lucide-react';
+import type { Category } from '@ims/types';
 
-interface CreateCategoryDialogProps {
+interface EditCategoryDialogProps {
+  category: Category | null;
   onOpenChange: (open: boolean) => void;
   onSuccess: () => void;
 }
 
-export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategoryDialogProps) {
+export function EditCategoryDialog({ category, onOpenChange, onSuccess }: EditCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
-  } = useForm<CreateCategoryDto>({
-    resolver: zodResolver(createCategorySchema),
+  } = useForm<UpdateCategoryDto>({
+    resolver: zodResolver(updateCategorySchema),
     defaultValues: {
       name: '',
       description: '',
     },
   });
 
-  const onSubmit = async (data: CreateCategoryDto) => {
+  useEffect(() => {
+    if (category) {
+      reset({
+        name: category.name,
+        description: category.description || '',
+      });
+    }
+  }, [category, reset]);
+
+  const onSubmit = async (data: UpdateCategoryDto) => {
+    if (!category) return;
     try {
       setIsSubmitting(true);
-      await apiClient('/items/categories', {
-        method: 'POST',
+      await apiClient(`/items/categories/${category.id}`, {
+        method: 'PUT',
         body: data,
       });
       onSuccess();
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to create category:', error);
-      alert('Failed to create category');
+      console.error('Failed to update category:', error);
+      alert('Failed to update category');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (!category) return null;
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xl w-full max-w-md overflow-hidden">
         <div className="flex justify-between items-center p-6 border-b border-zinc-100 dark:border-zinc-800">
-          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Create Category</h2>
+          <h2 className="text-xl font-semibold text-zinc-900 dark:text-white">Edit Category</h2>
           <button
             onClick={() => onOpenChange(false)}
             className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors"
@@ -101,7 +116,7 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
               className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
               {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Create Category
+              Save Changes
             </button>
           </div>
         </form>

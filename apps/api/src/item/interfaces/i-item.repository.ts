@@ -6,7 +6,7 @@ import type {
   CreateUomConversionDto, 
   UpdateItemOverrideDto 
 } from '@ims/validators';
-import type { CreateItemCommand } from './i-item.service';
+import type { CreateItemCommand, CreateCategoryCommand } from './i-item.service';
 
 export interface IItemRepository {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride | null>;
@@ -15,7 +15,7 @@ export interface IItemRepository {
   listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]>;
   createItem(data: CreateItemCommand): Promise<Item>;
   updateItem(itemId: ItemId, data: UpdateItemDto): Promise<Item>;
-  createCategory(data: CreateCategoryDto): Promise<Category>;
+  createCategory(data: CreateCategoryCommand): Promise<Category>;
   updateCategory(categoryId: string, data: UpdateCategoryDto): Promise<Category>;
   upsertUomConversion(data: CreateUomConversionDto): Promise<UomConversion>;
   upsertItemOverride(itemId: ItemId, restaurantId: RestaurantId, data: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;

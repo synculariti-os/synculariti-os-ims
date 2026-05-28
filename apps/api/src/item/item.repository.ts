@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { IItemRepository } from './interfaces/i-item.repository';
-import type { CreateItemCommand } from './interfaces/i-item.service';
+import type { CreateItemCommand, CreateCategoryCommand } from './interfaces/i-item.service';
 import { Kysely, sql } from 'kysely';
 import { Database, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride, Item, asRestaurantId, asItemId, asCategoryId, asFranchiseGroupId } from '@ims/types';
 import { v4 as uuidv4 } from 'uuid';
@@ -260,7 +260,7 @@ export class ItemRepository implements IItemRepository {
     return this.mapItemRecord(item);
   }
 
-  async createCategory(data: CreateCategoryDto): Promise<Category> {
+  async createCategory(data: CreateCategoryCommand): Promise<Category> {
     const [category] = await this.db
       .insertInto('categories')
       .values({

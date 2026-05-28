@@ -40,16 +40,7 @@ export class ItemController {
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createCategorySchema)) dto: CreateCategoryDto
   ) {
-    if (!dto.restaurantId && !dto.franchiseGroupId) {
-      if (user.restaurantId) {
-        dto.restaurantId = user.restaurantId;
-        dto.franchiseGroupId = null;
-      } else if (user.franchiseGroupId) {
-        dto.franchiseGroupId = user.franchiseGroupId;
-        dto.restaurantId = null;
-      }
-    }
-    return this.itemService.createCategory(dto);
+    return this.itemService.createCategory(dto, user.restaurantId ?? null, user.franchiseGroupId ?? null);
   }
 
   @Put('categories/:id')

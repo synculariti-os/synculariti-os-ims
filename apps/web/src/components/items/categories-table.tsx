@@ -5,12 +5,14 @@ import { Category } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
 import { Tag, Plus, Search } from 'lucide-react';
 import { CreateCategoryDialog } from './create-category-dialog';
+import { EditCategoryDialog } from './edit-category-dialog';
 
 export function CategoriesTable() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -93,7 +95,7 @@ export function CategoriesTable() {
                   <td className="px-6 py-4 text-right">
                     <button 
                       className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                      onClick={() => alert('Edit feature coming soon!')}
+                      onClick={() => setEditingCategory(category)}
                     >
                       Edit
                     </button>
@@ -108,6 +110,14 @@ export function CategoriesTable() {
       {isCreateOpen && (
         <CreateCategoryDialog
           onOpenChange={setIsCreateOpen}
+          onSuccess={fetchCategories}
+        />
+      )}
+
+      {editingCategory && (
+        <EditCategoryDialog
+          category={editingCategory}
+          onOpenChange={(open) => !open && setEditingCategory(null)}
           onSuccess={fetchCategories}
         />
       )}
