@@ -40,9 +40,9 @@ export function ItemsTable() {
 
   const filteredItems = items.filter(
     (item) =>
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.type.toLowerCase().includes(searchQuery.toLowerCase())
+      (item.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.sku || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.type || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

@@ -23,8 +23,6 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const restaurantId = useAuthStore((state) => state.restaurantId);
-  const franchiseGroupId = useAuthStore((state) => state.franchiseGroupId);
 
   const {
     register,
@@ -35,7 +33,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   } = useForm({
     resolver: zodResolver(createItemSchema),
     defaultValues: {
-      restaurantId: restaurantId || null,
+      restaurantId: null,
       franchiseGroupId: null,
       name: '',
       type: 'RAW',
@@ -72,6 +70,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
 
   const onSubmit = async (formData: unknown) => {
     const data = formData as CreateItemForm;
+    const { restaurantId, franchiseGroupId } = useAuthStore.getState();
     data.restaurantId = restaurantId || null;
     data.franchiseGroupId = franchiseGroupId || null;
     

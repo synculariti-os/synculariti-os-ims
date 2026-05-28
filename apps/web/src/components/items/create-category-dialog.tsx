@@ -15,7 +15,6 @@ interface CreateCategoryDialogProps {
 
 export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategoryDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const restaurantId = useAuthStore((state) => state.restaurantId);
 
   const {
     register,
@@ -24,7 +23,7 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
   } = useForm<CreateCategoryDto>({
     resolver: zodResolver(createCategorySchema),
     defaultValues: {
-      restaurantId: restaurantId || null,
+      restaurantId: null,
       franchiseGroupId: null,
       name: '',
       description: '',
@@ -33,6 +32,10 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
 
   const onSubmit = async (data: CreateCategoryDto) => {
     try {
+      const { restaurantId, franchiseGroupId } = useAuthStore.getState();
+      data.restaurantId = restaurantId || null;
+      data.franchiseGroupId = franchiseGroupId || null;
+      
       setIsSubmitting(true);
       await apiClient('/items/categories', {
         method: 'POST',
