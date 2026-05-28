@@ -75,7 +75,7 @@ describe('ItemController', () => {
       const mockDto = { name: 'Item 1' } as any;
       service.createItem.mockResolvedValue(mockDto);
 
-      const result = await controller.createItem(mockDto);
+      const result = await controller.createItem(mockUser, mockDto);
       
       expect(service.createItem).toHaveBeenCalledWith(mockDto);
       expect(result).toEqual(mockDto);
