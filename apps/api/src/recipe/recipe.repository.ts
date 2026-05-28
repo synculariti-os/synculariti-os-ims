@@ -4,6 +4,7 @@ import { Database, Recipe, RecipeIngredient, RecipeId, ItemId, RestaurantId, Rec
 import { CreateRecipeDto, UpdateRecipeDto } from '@ims/validators';
 import { v4 as uuidv4 } from 'uuid';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
+import type { CreateRecipeCommand } from './interfaces/i-recipe.service';
 
 @Injectable()
 export class RecipeRepository implements IRecipeRepository {
@@ -125,25 +126,25 @@ export class RecipeRepository implements IRecipeRepository {
 
   // ── Write ─────────────────────────────────────────────────────────────────
 
-  async create(dto: CreateRecipeDto, restaurantId: RestaurantId): Promise<Recipe> {
+  async create(command: CreateRecipeCommand): Promise<Recipe> {
     return await this.db.transaction().execute(async (trx) => {
       const [recipe] = await trx
         .insertInto('recipes')
         .values({
           id: uuidv4() as RecipeId,
-          produces_item_id: asItemId(dto.producesItemId),
-          yield_quantity: dto.yieldQuantity,
-          franchise_group_id: dto.franchiseGroupId ? asFranchiseGroupId(dto.franchiseGroupId) : null,
-          restaurant_id: dto.restaurantId ? asRestaurantId(dto.restaurantId) : null,
+          produces_item_id: asItemId(command.producesItemId),
+          yield_quantity: command.yieldQuantity,
+          franchise_group_id: command.franchiseGroupId ? asFranchiseGroupId(command.franchiseGroupId) : null,
+          restaurant_id: command.restaurantId ? asRestaurantId(command.restaurantId) : null,
         })
         .returningAll()
         .execute();
 
-      if (dto.ingredients && dto.ingredients.length > 0) {
+      if (command.ingredients && command.ingredients.length > 0) {
         await trx
           .insertInto('recipe_ingredients')
           .values(
-            dto.ingredients.map((ing) => ({
+            command.ingredients.map((ing) => ({
               id: uuidv4() as RecipeIngredientId,
               recipe_id: recipe.id,
               ingredient_item_id: asItemId(ing.ingredientItemId),

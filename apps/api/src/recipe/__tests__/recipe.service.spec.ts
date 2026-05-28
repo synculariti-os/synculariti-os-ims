@@ -161,10 +161,14 @@ describe('RecipeService', () => {
       vi.mocked(mockItemService.findById).mockResolvedValueOnce({} as any);
       vi.mocked(mockRecipeRepo.create).mockResolvedValueOnce(MOCK_RECIPE as any);
 
-      const result = await service.createRecipe(dto, 'restaurant-uuid' as any);
+      const result = await service.createRecipe(dto, 'restaurant-uuid' as any, null);
 
       expect(mockItemService.findById).toHaveBeenCalledWith(PRODUCED_ITEM_ID, 'restaurant-uuid');
-      expect(mockRecipeRepo.create).toHaveBeenCalledWith(dto, 'restaurant-uuid');
+      expect(mockRecipeRepo.create).toHaveBeenCalledWith({
+        ...dto,
+        restaurantId: 'restaurant-uuid',
+        franchiseGroupId: null,
+      });
       expect(result).toEqual(MOCK_RECIPE);
     });
 
@@ -177,7 +181,7 @@ describe('RecipeService', () => {
       
       vi.mocked(mockItemService.findById).mockResolvedValueOnce(null as any);
 
-      await expect(service.createRecipe(dto, 'restaurant-uuid' as any)).rejects.toThrow(/Item not found/i);
+      await expect(service.createRecipe(dto, 'restaurant-uuid' as any, null)).rejects.toThrow(/Item not found/i);
       expect(mockRecipeRepo.create).not.toHaveBeenCalled();
     });
   });

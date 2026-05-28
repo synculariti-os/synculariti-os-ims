@@ -247,12 +247,12 @@ COMMIT
 ### Contracts Exposed
 ```typescript
 interface IRecipeService {
-  expandBOM(recipeId: string, soldQty: number): Promise<BomExpansion[]>;
+  expandBOM(recipeId: string, soldQty: number): Promise<BomExpansionLine[]>;
   resolveRecipeByPosString(restaurantId: string, rawString: string): Promise<Recipe | null>;
   getIngredients(recipeId: string): Promise<RecipeIngredient[]>;
-  createRecipe(dto: CreateRecipeDto, restaurantId: RestaurantId): Promise<Recipe>;
+  createRecipe(dto: CreateRecipeDto, restaurantId: string | null, franchiseGroupId: string | null): Promise<Recipe>;
   updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe>;
-  createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void>;
+  createMenuItemMapping(restaurantId: string, dto: MenuItemMappingDto): Promise<void>;
 }
 ```
 

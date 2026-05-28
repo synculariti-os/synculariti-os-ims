@@ -13,7 +13,7 @@ import type {
   RestaurantId,
 } from '@ims/types';
 import { asItemId } from '@ims/types';
-import type { IRecipeService } from './interfaces/i-recipe.service';
+import type { IRecipeService, CreateRecipeCommand } from './interfaces/i-recipe.service';
 import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
 import type { IItemReadService } from '../item/interfaces/i-item.service';
@@ -79,14 +79,36 @@ export class RecipeService implements IRecipeService {
     return this.recipeRepo.findIngredients(recipeId);
   }
 
-  async createRecipe(dto: CreateRecipeDto, restaurantId: RestaurantId): Promise<Recipe> {
+  async createRecipe(
+    dto: CreateRecipeDto, 
+    restaurantId: RestaurantId | null,
+    franchiseGroupId: string | null
+  ): Promise<Recipe> {
+    const resolvedRestaurantId = restaurantId ?? null;
+    const resolvedFranchiseGroupId = resolvedRestaurantId ? null : (franchiseGroupId ?? null);
+
+    if (!resolvedRestaurantId && !resolvedFranchiseGroupId) {
+      throw new BadRequestException(
+        'Cannot create recipe: authenticated user has no restaurant or franchise group context assigned.',
+      );
+    }
+
     // Validate that the produces item exists
-    const item = await this.itemService.findById(asItemId(dto.producesItemId), restaurantId);
+    const item = await this.itemService.findById(
+      asItemId(dto.producesItemId), 
+      resolvedRestaurantId as RestaurantId
+    );
     if (!item) {
       throw new NotFoundException(`Item not found: ${dto.producesItemId}`);
     }
 
-    return this.recipeRepo.create(dto, restaurantId);
+    const command: CreateRecipeCommand = {
+      ...dto,
+      restaurantId: resolvedRestaurantId,
+      franchiseGroupId: resolvedFranchiseGroupId ? (resolvedFranchiseGroupId as any) : null,
+    };
+
+    return this.recipeRepo.create(command);
   }
 
   async updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
