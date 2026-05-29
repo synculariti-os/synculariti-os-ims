@@ -93,8 +93,18 @@ export function RecipesTable() {
                     <td className="p-4 px-6 text-zinc-900 dark:text-zinc-100 font-mono text-xs">
                       {recipe.id.substring(0, 8)}...
                     </td>
-                    <td className="p-4 px-6 font-medium text-zinc-700 dark:text-zinc-300">
-                      {recipe.producesItemName || recipe.producesItemId}
+                    <td className="p-4 px-6 font-medium text-zinc-700 dark:text-zinc-300 flex items-center gap-2">
+                      {recipe.producesItemId ? (
+                        <>
+                          <span className="px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs font-semibold">PREP</span>
+                          {recipe.producesItemName || recipe.producesItemId}
+                        </>
+                      ) : (
+                        <>
+                          <span className="px-2 py-0.5 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded text-xs font-semibold">MENU</span>
+                          {recipe.recipeName || 'Unnamed Virtual Recipe'}
+                        </>
+                      )}
                     </td>
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400">
                       {recipe.yieldQuantity}
