@@ -51,9 +51,9 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
     name: 'ingredients',
   });
 
-  if (!isOpen) return null;
-
   const [recipeMode, setRecipeMode] = useState<'prep' | 'menu'>('prep');
+
+  if (!isOpen) return null;
 
   const onSubmit = async (data: CreateRecipeForm) => {
     setIsSubmitting(true);
