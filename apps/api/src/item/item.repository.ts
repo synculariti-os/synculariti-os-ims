@@ -403,4 +403,46 @@ export class ItemRepository implements IItemRepository {
       updatedAt: row.updated_at as string,
     };
   }
+
+  async deleteItem(itemId: ItemId): Promise<void> {
+    await this.db
+      .deleteFrom('items')
+      .where('id', '=', itemId)
+      .execute();
+  }
+
+  async deleteCategory(categoryId: string): Promise<void> {
+    await this.db
+      .deleteFrom('categories')
+      .where('id', '=', categoryId as import('@ims/types').CategoryId)
+      .execute();
+  }
+
+  async generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string> {
+    // Get category name to derive prefix
+    const category = await this.db
+      .selectFrom('categories')
+      .select('name')
+      .where('id', '=', categoryId as import('@ims/types').CategoryId)
+      .executeTakeFirst();
+
+    const prefix = category
+      ? (category.name as string)
+          .toUpperCase()
+          .replace(/[^A-Z0-9]/g, '')
+          .substring(0, 6)
+      : 'ITEM';
+
+    // Count existing items with this category to get next sequence number
+    const result = await this.db
+      .selectFrom('items')
+      .select((eb) => eb.fn.count<number>('id').as('count'))
+      .where('category_id', '=', categoryId as import('@ims/types').CategoryId)
+      .executeTakeFirst();
+
+    const count = Number(result?.count ?? 0) + 1;
+    const seq = String(count).padStart(3, '0');
+    return `${prefix}-${seq}`;
+  }
 }
+

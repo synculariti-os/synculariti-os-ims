@@ -162,6 +162,7 @@ interface IItemWriteService extends IItemReadService {
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
   upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion>;
   updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;
+  generateSku(categoryId: string): Promise<string>;
 }
 ```
 

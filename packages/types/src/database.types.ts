@@ -160,7 +160,8 @@ export interface Database {
   recipe_ingredients: {
     id: RecipeIngredientId;
     recipe_id: RecipeId;
-    ingredient_item_id: ItemId;
+    ingredient_item_id: ItemId | null;
+    sub_recipe_id: RecipeId | null;
     quantity_required: number;
     created_at: Generated<string>;
   };

@@ -3,9 +3,27 @@
 import React, { useEffect, useState } from 'react';
 import { ItemWithOverride } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
-import { Package, Plus, Search, Tag, Scale } from 'lucide-react';
+import { Package, Plus, Search, Tag, Scale, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { CreateItemDialog } from './create-item-dialog';
 import { EditItemDialog } from './edit-item-dialog';
+
+function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => void; onCancel: () => void; name: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onCancel}>
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-zinc-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full"><AlertTriangle className="w-5 h-5 text-red-500" /></div>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Delete Item</h3>
+        </div>
+        <p className="text-zinc-600 dark:text-zinc-400 mb-6 text-sm">Delete <span className="font-semibold text-zinc-900 dark:text-white">{name}</span>? This is permanent and cannot be undone.</p>
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="px-4 py-2 rounded-xl text-sm font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+          <button onClick={onConfirm} className="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function ItemsTable() {
   const [items, setItems] = useState<ItemWithOverride[]>([]);
@@ -13,6 +31,7 @@ export function ItemsTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemWithOverride | null>(null);
+  const [deletingItem, setDeletingItem] = useState<ItemWithOverride | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -130,12 +149,22 @@ export function ItemsTable() {
                       {item.purchasingUom || '-'}
                     </td>
                     <td className="p-4 px-6 text-right">
-                      <button 
-                        className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                        onClick={() => setEditingItem(item)}
-                      >
-                        Edit
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          onClick={() => setEditingItem(item)}
+                          title="Edit item"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                          onClick={() => setDeletingItem(item)}
+                          title="Delete item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -162,6 +191,22 @@ export function ItemsTable() {
           refreshItems();
         }}
       />
+
+      {deletingItem && (
+        <ConfirmDeleteModal
+          name={deletingItem.name}
+          onConfirm={async () => {
+            try {
+              await apiClient(`/items/${deletingItem.id}`, { method: 'DELETE' });
+              setDeletingItem(null);
+              refreshItems();
+            } catch (err) {
+              console.error('Failed to delete item', err);
+            }
+          }}
+          onCancel={() => setDeletingItem(null)}
+        />
+      )}
     </div>
   );
 }

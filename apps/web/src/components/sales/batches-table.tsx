@@ -3,9 +3,10 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { cn } from '@/lib/utils';
-import { CheckCircle2, Clock, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle2, Clock, AlertTriangle, Loader2, ChevronDown, ChevronUp } from 'lucide-react';
 import { SalesImportBatch, ImportStatus } from '@ims/types';
 import { useAuthStore } from '@/store/use-auth-store';
+import { SmartMappingReview } from './unmapped-items-panel';
 
 const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: string, label: string }> = {
   PENDING: { icon: Clock, class: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400', label: 'Pending' },
@@ -16,6 +17,7 @@ const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: strin
 
 export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesImportBatch[] }) {
   const [batches, setBatches] = useState<SalesImportBatch[]>(initialBatches);
+  const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
   const { restaurantId } = useAuthStore();
 
   useEffect(() => {
@@ -79,8 +81,9 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
                 {batches.map((batch) => {
                   const StatusIcon = statusConfig[batch.status].icon;
                   return (
-                    <tr key={batch.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
-                      <td className="p-4 px-6 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
+                    <React.Fragment key={batch.id}>
+                      <tr className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
+                        <td className="p-4 px-6 text-zinc-700 dark:text-zinc-300 whitespace-nowrap">
                         {new Date(batch.createdAt).toLocaleString(undefined, { 
                           month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' 
                         })}
@@ -105,6 +108,14 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
                           <span className="text-red-500/90 dark:text-red-400" title={batch.errorMessage || ''}>
                             {batch.errorMessage || 'Unknown error'}
                           </span>
+                        ) : batch.status === 'COMPLETED' ? (
+                          <button
+                            onClick={() => setExpandedBatchId(expandedBatchId === batch.id ? null : batch.id)}
+                            className="flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium text-sm transition-colors"
+                          >
+                            View & Map Items
+                            {expandedBatchId === batch.id ? <ChevronUp className="w-4 h-4 ml-1" /> : <ChevronDown className="w-4 h-4 ml-1" />}
+                          </button>
                         ) : (
                           <span className="text-xs font-mono opacity-60">
                             {batch.id.substring(0, 8)}...
@@ -112,6 +123,22 @@ export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesIm
                         )}
                       </td>
                     </tr>
+                    {expandedBatchId === batch.id && (
+                      <tr key={`${batch.id}-expanded`}>
+                        <td colSpan={4} className="p-0 border-b-0">
+                          <div className="bg-zinc-50/50 dark:bg-zinc-900/50 p-4 sm:p-6 border-b border-zinc-200/50 dark:border-zinc-800/50">
+                            <SmartMappingReview 
+                              batchId={batch.id} 
+                              onResolved={() => {
+                                // Close panel on resolve
+                                setExpandedBatchId(null);
+                              }} 
+                            />
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                   );
                 })}
               </tbody>

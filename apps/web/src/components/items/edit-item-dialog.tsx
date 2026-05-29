@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateItemSchema } from '@ims/validators';
 import { z } from 'zod';
-import { X, Loader2, PackagePlus } from 'lucide-react';
+import { X, Loader2, PackagePlus, Wand2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Category, ItemWithOverride } from '@ims/types';
 
@@ -22,12 +22,14 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
+  const [isGeneratingSku, setIsGeneratingSku] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<UpdateItemForm>({
     resolver: zodResolver(updateItemSchema),
@@ -95,6 +97,20 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
     }
   };
 
+  const handleGenerateSku = async () => {
+    const categoryId = watch('categoryId');
+    if (!categoryId) return;
+    setIsGeneratingSku(true);
+    try {
+      const res = await apiClient<{ sku: string }>(`/items/generate-sku?categoryId=${categoryId}`);
+      setValue('sku', res.sku, { shouldValidate: true, shouldDirty: true });
+    } catch (err) {
+      console.error('Failed to generate SKU', err);
+    } finally {
+      setIsGeneratingSku(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div 
@@ -140,11 +156,23 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   SKU
                 </label>
-                <input
-                  {...register('sku')}
-                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
-                  placeholder="e.g. FLOUR-001"
-                />
+                <div className="flex gap-2">
+                  <input
+                    {...register('sku')}
+                    className="flex-1 px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
+                    placeholder="e.g. FLOUR-001"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleGenerateSku}
+                    disabled={isGeneratingSku || !watch('categoryId')}
+                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                    title="Auto-generate SKU based on category"
+                  >
+                    {isGeneratingSku ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                    Generate
+                  </button>
+                </div>
                 {errors.sku && <p className="mt-1.5 text-sm text-red-500">{errors.sku?.message}</p>}
               </div>
             </div>

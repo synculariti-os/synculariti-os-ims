@@ -63,6 +63,9 @@ describe('ItemService', () => {
       listCategories: vi.fn(),
       upsertUomConversion: vi.fn(),
       upsertItemOverride: vi.fn(),
+      deleteItem: vi.fn(),
+      deleteCategory: vi.fn(),
+      generateSku: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

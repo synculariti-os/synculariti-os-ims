@@ -3,9 +3,27 @@
 import React, { useEffect, useState } from 'react';
 import { Category } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
-import { Tag, Plus, Search } from 'lucide-react';
+import { Tag, Plus, Search, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { CreateCategoryDialog } from './create-category-dialog';
 import { EditCategoryDialog } from './edit-category-dialog';
+
+function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => void; onCancel: () => void; name: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onCancel}>
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-zinc-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full"><AlertTriangle className="w-5 h-5 text-red-500" /></div>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Delete Category</h3>
+        </div>
+        <p className="text-zinc-600 dark:text-zinc-400 mb-6 text-sm">Delete the category <span className="font-semibold text-zinc-900 dark:text-white">{name}</span>? Items in this category won&apos;t be deleted.</p>
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="px-4 py-2 rounded-xl text-sm font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+          <button onClick={onConfirm} className="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export function CategoriesTable() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -13,6 +31,7 @@ export function CategoriesTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
 
   const fetchCategories = async () => {
     try {
@@ -93,12 +112,22 @@ export function CategoriesTable() {
                     {category.description || '-'}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      className="text-blue-600 dark:text-blue-400 hover:underline text-sm font-medium"
-                      onClick={() => setEditingCategory(category)}
-                    >
-                      Edit
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                        onClick={() => setEditingCategory(category)}
+                        title="Edit category"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                        onClick={() => setDeletingCategory(category)}
+                        title="Delete category"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -119,6 +148,22 @@ export function CategoriesTable() {
           category={editingCategory}
           onOpenChange={(open) => !open && setEditingCategory(null)}
           onSuccess={fetchCategories}
+        />
+      )}
+
+      {deletingCategory && (
+        <ConfirmDeleteModal
+          name={deletingCategory.name}
+          onConfirm={async () => {
+            try {
+              await apiClient(`/items/categories/${deletingCategory.id}`, { method: 'DELETE' });
+              setDeletingCategory(null);
+              fetchCategories();
+            } catch (err) {
+              console.error('Failed to delete category', err);
+            }
+          }}
+          onCancel={() => setDeletingCategory(null)}
         />
       )}
     </div>

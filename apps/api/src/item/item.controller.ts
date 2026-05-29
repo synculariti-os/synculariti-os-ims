@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Patch, Param, Body, Inject, Query } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Body, Inject, Query, HttpCode, HttpStatus } from '@nestjs/common';
 import { ITEM_WRITE_SERVICE_TOKEN, IItemWriteService } from './interfaces/i-item.service';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -49,6 +49,25 @@ export class ItemController {
     return this.itemService.updateCategory(id, dto);
   }
 
+  @Delete('categories/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
+  async deleteCategory(@Param('id') id: string): Promise<void> {
+    return this.itemService.deleteCategory(id);
+  }
+
+  @Get('generate-sku')
+  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
+  async generateSku(
+    @CurrentUser() user: JwtPayload,
+    @Query('categoryId') categoryId: string,
+  ): Promise<{ sku: string }> {
+    const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as import('@ims/types').RestaurantId;
+    const restaurantId = user?.restaurantId ?? mockRestaurantId;
+    const sku = await this.itemService.generateSku(categoryId, restaurantId);
+    return { sku };
+  }
+
   @Post('uom-conversions')
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async upsertUomConversion(@Body(new ZodValidationPipe(createUomConversionSchema)) dto: CreateUomConversionDto) {
@@ -92,6 +111,13 @@ export class ItemController {
   @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
   async updateItem(@Param('id') id: string, @Body(new ZodValidationPipe(updateItemSchema)) dto: UpdateItemDto) {
     return this.itemService.updateItem(asItemId(id), dto);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @RequirePermission(PERMISSION_CODES.ADMIN_TENANTS)
+  async deleteItem(@Param('id') id: string): Promise<void> {
+    return this.itemService.deleteItem(asItemId(id));
   }
 
   @Patch(':id/overrides')

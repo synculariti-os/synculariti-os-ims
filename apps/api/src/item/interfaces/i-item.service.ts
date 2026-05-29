@@ -31,10 +31,13 @@ export interface IItemReadService {
 export interface IItemWriteService extends IItemReadService {
   createItem(dto: CreateItemDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Item>;
   updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item>;
+  deleteItem(itemId: ItemId): Promise<void>;
   createCategory(dto: CreateCategoryDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
+  deleteCategory(categoryId: string): Promise<void>;
   upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion>;
   updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;
+  generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string>;
 }
 
 export const ITEM_READ_SERVICE_TOKEN = Symbol('IItemReadService');

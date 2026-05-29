@@ -1,10 +1,12 @@
 import type { BomExpansion, Recipe, RecipeIngredient, RecipeId, RestaurantId, MenuItemMapping } from '@ims/types';
-import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
+import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto, RecipeIngredientDto } from '@ims/validators';
 import type { FranchiseGroupId } from '@ims/types';
 
-export type CreateRecipeCommand = Omit<CreateRecipeDto, 'producesItemId'> & {
+export type CreateRecipeCommand = {
   producesItemId?: string | null;
   recipeName?: string | null;
+  yieldQuantity: number;
+  ingredients: RecipeIngredientDto[];
   restaurantId: RestaurantId | null;
   franchiseGroupId: FranchiseGroupId | null;
 };
@@ -18,7 +20,10 @@ export interface IRecipeService {
   getIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]>;
   createRecipe(dto: CreateRecipeDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Recipe>;
   updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe>;
+  deleteRecipe(recipeId: RecipeId): Promise<void>;
   createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void>;
+  deleteMapping(mappingId: string): Promise<void>;
+  getUnmappedRows(restaurantId: RestaurantId, batchId: string): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>>;
 }
 
 export const RECIPE_SERVICE_TOKEN = Symbol('IRecipeService');

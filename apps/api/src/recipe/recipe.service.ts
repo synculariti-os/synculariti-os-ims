@@ -52,13 +52,24 @@ export class RecipeService implements IRecipeService {
       return [];
     }
 
-    // Scale: consumedQty = (soldQty / yieldQuantity) * quantityRequired
     const scaleFactor = soldQty / recipe.yieldQuantity;
+    const result: BomExpansion = [];
 
-    return ingredients.map((ing) => ({
-      itemId: ing.ingredientItemId,
-      consumedQty: ing.quantityRequired * scaleFactor,
-    }));
+    for (const ing of ingredients) {
+      if (ing.ingredientItemId) {
+        // Raw ingredient
+        result.push({
+          itemId: ing.ingredientItemId,
+          consumedQty: ing.quantityRequired * scaleFactor,
+        });
+      } else if (ing.subRecipeId) {
+        // Sub-recipe: recursively expand it
+        const subExpansion = await this.expandBOM(ing.subRecipeId, ing.quantityRequired * scaleFactor);
+        result.push(...subExpansion);
+      }
+    }
+
+    return result;
   }
 
   async resolveRecipeByPosString(
@@ -80,7 +91,7 @@ export class RecipeService implements IRecipeService {
   }
 
   async createRecipe(
-    dto: CreateRecipeDto, 
+    dto: CreateRecipeDto,
     restaurantId: RestaurantId | null,
     franchiseGroupId: string | null
   ): Promise<Recipe> {
@@ -94,9 +105,8 @@ export class RecipeService implements IRecipeService {
     }
 
     if (dto.producesItemId) {
-      // Validate that the produces item exists
       const item = await this.itemService.findById(
-        asItemId(dto.producesItemId), 
+        asItemId(dto.producesItemId),
         resolvedRestaurantId as RestaurantId
       );
       if (!item) {
@@ -124,6 +134,14 @@ export class RecipeService implements IRecipeService {
     return this.recipeRepo.update(recipeId, dto);
   }
 
+  async deleteRecipe(recipeId: RecipeId): Promise<void> {
+    const existing = await this.recipeRepo.findById(recipeId);
+    if (!existing) {
+      throw new NotFoundException(`Recipe ${recipeId} not found`);
+    }
+    await this.recipeRepo.deleteRecipe(recipeId);
+  }
+
   async createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void> {
     const existing = await this.recipeRepo.findById(dto.recipeId as RecipeId);
     if (!existing) {
@@ -131,5 +149,16 @@ export class RecipeService implements IRecipeService {
     }
 
     await this.recipeRepo.upsertMapping(restaurantId, dto.rawExcelString, dto.recipeId as RecipeId);
+  }
+
+  async deleteMapping(mappingId: string): Promise<void> {
+    await this.recipeRepo.deleteMapping(mappingId);
+  }
+
+  async getUnmappedRows(
+    restaurantId: RestaurantId,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
+    return this.recipeRepo.getUnmappedRows(restaurantId, batchId);
   }
 }

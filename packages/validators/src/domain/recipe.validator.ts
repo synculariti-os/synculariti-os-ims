@@ -1,9 +1,19 @@
 import { z } from 'zod';
 
-export const recipeIngredientSchema = z.object({
-  ingredientItemId: z.string().uuid(),
-  quantityRequired: z.number().positive(),
-});
+export const recipeIngredientSchema = z.union([
+  z.object({
+    lineType: z.literal('ingredient'),
+    ingredientItemId: z.string().uuid(),
+    subRecipeId: z.null().optional(),
+    quantityRequired: z.number().positive(),
+  }),
+  z.object({
+    lineType: z.literal('sub_recipe'),
+    subRecipeId: z.string().uuid(),
+    ingredientItemId: z.null().optional(),
+    quantityRequired: z.number().positive(),
+  }),
+]);
 export type RecipeIngredientDto = z.infer<typeof recipeIngredientSchema>;
 
 export const createRecipeSchema = z.object({

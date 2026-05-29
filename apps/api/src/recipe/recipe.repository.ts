@@ -1,7 +1,12 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
-import { Database, Recipe, RecipeIngredient, RecipeId, ItemId, RestaurantId, RecipeIngredientId, MenuItemMappingId, asRecipeId, asItemId, asFranchiseGroupId, asRestaurantId, asRecipeIngredientId, asMenuItemMappingId } from '@ims/types';
-import { CreateRecipeDto, UpdateRecipeDto } from '@ims/validators';
+import {
+  Database, Recipe, RecipeIngredient, RecipeId, ItemId, RestaurantId,
+  RecipeIngredientId, MenuItemMappingId, MenuItemMapping,
+  asRecipeId, asItemId, asFranchiseGroupId, asRestaurantId,
+  asRecipeIngredientId, asMenuItemMappingId,
+} from '@ims/types';
+import { UpdateRecipeDto } from '@ims/validators';
 import { v4 as uuidv4 } from 'uuid';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
 import type { CreateRecipeCommand } from './interfaces/i-recipe.service';
@@ -18,9 +23,8 @@ export class RecipeRepository implements IRecipeRepository {
       .leftJoin('items', 'items.id', 'recipes.produces_item_id')
       .selectAll('recipes')
       .select('items.name as produces_item_name')
-      // Usually recipes are owned by franchise group, but we filter by the context
       .execute();
-      
+
     return rows.map((r: Record<string, unknown>) => {
       const recipe = this.mapRecipeRow(r);
       if (r.produces_item_name) recipe.producesItemName = r.produces_item_name as string;
@@ -28,13 +32,16 @@ export class RecipeRepository implements IRecipeRepository {
     });
   }
 
-  async findAllMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]> {
+  async findAllMappings(restaurantId: RestaurantId): Promise<MenuItemMapping[]> {
     const rows = await this.db
       .selectFrom('menu_item_mappings')
       .leftJoin('recipes', 'recipes.id', 'menu_item_mappings.recipe_id')
       .leftJoin('items', 'items.id', 'recipes.produces_item_id')
       .selectAll('menu_item_mappings')
-      .select('items.name as target_recipe_name')
+      .select([
+        'items.name as target_recipe_name',
+        'recipes.recipe_name as virtual_recipe_name',
+      ])
       .where('menu_item_mappings.restaurant_id', '=', restaurantId)
       .execute();
 
@@ -43,7 +50,7 @@ export class RecipeRepository implements IRecipeRepository {
       restaurantId: asRestaurantId(r.restaurant_id as string),
       rawExcelString: r.raw_excel_string as string,
       recipeId: asRecipeId(r.recipe_id as string),
-      targetRecipeName: r.target_recipe_name ? (r.target_recipe_name as string) : undefined,
+      targetRecipeName: (r.target_recipe_name || r.virtual_recipe_name) as string | undefined,
       createdAt: r.created_at as string,
     }));
   }
@@ -71,17 +78,19 @@ export class RecipeRepository implements IRecipeRepository {
   async findIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]> {
     const rows = await this.db
       .selectFrom('recipe_ingredients')
-      .selectAll()
-      .where('recipe_id', '=', recipeId)
+      .leftJoin('items', 'items.id', 'recipe_ingredients.ingredient_item_id')
+      .leftJoin('recipes as sub', 'sub.id', 'recipe_ingredients.sub_recipe_id')
+      .selectAll('recipe_ingredients')
+      .select([
+        'items.name as ingredient_item_name',
+        'sub.recipe_name as sub_recipe_name_virtual',
+      ])
+      .where('recipe_ingredients.recipe_id', '=', recipeId)
       .execute();
 
     return rows.map((r: Record<string, unknown>) => this.mapIngredientRow(r));
   }
 
-  /**
-   * Resolves a POS excel string to a recipe by joining through menu_item_mappings.
-   * Matches on restaurant_id + raw_excel_string (case-insensitive trim).
-   */
   async resolveByPosString(restaurantId: RestaurantId, rawString: string): Promise<Recipe | null> {
     const row = await this.db
       .selectFrom('menu_item_mappings')
@@ -91,6 +100,7 @@ export class RecipeRepository implements IRecipeRepository {
         'recipes.franchise_group_id as franchise_group_id',
         'recipes.restaurant_id as restaurant_id',
         'recipes.produces_item_id as produces_item_id',
+        'recipes.recipe_name as recipe_name',
         'recipes.yield_quantity as yield_quantity',
         'recipes.created_at as created_at',
         'recipes.updated_at as updated_at',
@@ -105,22 +115,42 @@ export class RecipeRepository implements IRecipeRepository {
   async resolveRecipesByPosStrings(
     restaurantId: RestaurantId,
     rawStrings: string[],
-  ): Promise<import('@ims/types').MenuItemMapping[]> {
+  ): Promise<MenuItemMapping[]> {
     if (rawStrings.length === 0) return [];
-    
+
     const rows = await this.db
       .selectFrom('menu_item_mappings')
       .selectAll()
       .where('restaurant_id', '=', restaurantId)
       .where('raw_excel_string', 'in', rawStrings.map(s => s.trim()))
       .execute();
-      
+
     return rows.map((r: Record<string, unknown>) => ({
       id: asMenuItemMappingId(r.id as string),
       restaurantId: asRestaurantId(r.restaurant_id as string),
       rawExcelString: r.raw_excel_string as string,
       recipeId: asRecipeId(r.recipe_id as string),
       createdAt: r.created_at as string,
+    }));
+  }
+
+  async getUnmappedRows(
+    restaurantId: RestaurantId,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
+    const rows = await this.db
+      .selectFrom('sales_import_rows')
+      .innerJoin('sales_import_batches', 'sales_import_batches.id', 'sales_import_rows.batch_id')
+      .select(['sales_import_rows.id', 'sales_import_rows.raw_item_name', 'sales_import_rows.quantity_sold'])
+      .where('sales_import_rows.batch_id', '=', batchId as any)
+      .where('sales_import_rows.is_mapped', '=', false)
+      .where('sales_import_batches.restaurant_id', '=', restaurantId)
+      .execute();
+
+    return rows.map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      rawItemName: r.raw_item_name as string,
+      quantitySold: Number(r.quantity_sold),
     }));
   }
 
@@ -148,7 +178,12 @@ export class RecipeRepository implements IRecipeRepository {
             command.ingredients.map((ing) => ({
               id: uuidv4() as RecipeIngredientId,
               recipe_id: recipe.id,
-              ingredient_item_id: asItemId(ing.ingredientItemId),
+              ingredient_item_id: ing.lineType === 'ingredient' && ing.ingredientItemId
+                ? asItemId(ing.ingredientItemId)
+                : null,
+              sub_recipe_id: ing.lineType === 'sub_recipe' && ing.subRecipeId
+                ? asRecipeId(ing.subRecipeId)
+                : null,
               quantity_required: ing.quantityRequired,
             })),
           )
@@ -174,7 +209,6 @@ export class RecipeRepository implements IRecipeRepository {
         .execute();
 
       if (dto.ingredients !== undefined) {
-        // Replace all ingredients atomically
         await trx
           .deleteFrom('recipe_ingredients')
           .where('recipe_id', '=', recipeId)
@@ -187,7 +221,12 @@ export class RecipeRepository implements IRecipeRepository {
               dto.ingredients.map((ing) => ({
                 id: uuidv4() as RecipeIngredientId,
                 recipe_id: recipeId,
-                ingredient_item_id: asItemId(ing.ingredientItemId),
+                ingredient_item_id: ing.lineType === 'ingredient' && ing.ingredientItemId
+                  ? asItemId(ing.ingredientItemId)
+                  : null,
+                sub_recipe_id: ing.lineType === 'sub_recipe' && ing.subRecipeId
+                  ? asRecipeId(ing.subRecipeId)
+                  : null,
                 quantity_required: ing.quantityRequired,
               })),
             )
@@ -197,6 +236,13 @@ export class RecipeRepository implements IRecipeRepository {
 
       return this.mapRecipeRow(recipe);
     });
+  }
+
+  async deleteRecipe(recipeId: RecipeId): Promise<void> {
+    await this.db
+      .deleteFrom('recipes')
+      .where('id', '=', recipeId)
+      .execute();
   }
 
   async upsertMapping(
@@ -220,6 +266,13 @@ export class RecipeRepository implements IRecipeRepository {
       .execute();
   }
 
+  async deleteMapping(mappingId: string): Promise<void> {
+    await this.db
+      .deleteFrom('menu_item_mappings')
+      .where('id', '=', mappingId as MenuItemMappingId)
+      .execute();
+  }
+
   // ── Mappers ───────────────────────────────────────────────────────────────
 
   private mapRecipeRow(row: Record<string, unknown>): Recipe {
@@ -239,7 +292,11 @@ export class RecipeRepository implements IRecipeRepository {
     return {
       id: asRecipeIngredientId(row.id as string),
       recipeId: asRecipeId(row.recipe_id as string),
-      ingredientItemId: asItemId(row.ingredient_item_id as string),
+      lineType: row.ingredient_item_id ? 'ingredient' : 'sub_recipe',
+      ingredientItemId: row.ingredient_item_id ? asItemId(row.ingredient_item_id as string) : null,
+      ingredientItemName: row.ingredient_item_name ? (row.ingredient_item_name as string) : undefined,
+      subRecipeId: row.sub_recipe_id ? asRecipeId(row.sub_recipe_id as string) : null,
+      subRecipeName: row.sub_recipe_name_virtual ? (row.sub_recipe_name_virtual as string) : undefined,
       quantityRequired: Number(row.quantity_required),
       createdAt: row.created_at as string,
     };

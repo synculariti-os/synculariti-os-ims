@@ -119,4 +119,16 @@ export class ItemService implements IItemWriteService {
   async updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride> {
     return this.itemRepo.upsertItemOverride(itemId, restaurantId, dto);
   }
+
+  async deleteItem(itemId: ItemId): Promise<void> {
+    await this.itemRepo.deleteItem(itemId);
+  }
+
+  async deleteCategory(categoryId: string): Promise<void> {
+    await this.itemRepo.deleteCategory(categoryId);
+  }
+
+  async generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string> {
+    return this.itemRepo.generateSku(categoryId, restaurantId);
+  }
 }
