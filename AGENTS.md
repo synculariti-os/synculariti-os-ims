@@ -145,6 +145,7 @@ interface ITenantService {
 
 ### UI Views
 - `/items` — Main catalog list and Create Item dialog.
+  - *Note:* The "Create Item" wizard for `PREP` items dynamically orchestrates a `POST /items` followed immediately by a `POST /recipes` call to seamlessly define the Bill of Materials inline.
 
 ### Contracts Exposed
 ```typescript
