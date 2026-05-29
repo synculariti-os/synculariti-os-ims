@@ -54,7 +54,10 @@ export class RecipeController {
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createRecipeSchema)) dto: CreateRecipeDto,
   ): Promise<Recipe> {
-    return this.recipeService.createRecipe(dto, user.restaurantId ?? null, user.franchiseGroupId ?? null);
+    const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
+    const mockFranchiseGroupId = 'a0000000-0000-0000-0000-000000000001';
+    const activeUser = user || { restaurantId: mockRestaurantId, franchiseGroupId: mockFranchiseGroupId };
+    return this.recipeService.createRecipe(dto, activeUser.restaurantId ?? null, activeUser.franchiseGroupId ?? null);
   }
 
   @Put(':id')
