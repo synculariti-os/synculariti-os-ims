@@ -34,7 +34,7 @@ export class RecipeController {
   @RequirePermission(PERMISSION_CODES.RECIPE_READ)
   async getRecipes(@CurrentUser() user: JwtPayload): Promise<{ data: Recipe[] }> {
     const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
-    const activeUser = user || { restaurantId: mockRestaurantId };
+    const activeUser = user?.restaurantId ? user : { restaurantId: mockRestaurantId };
     const recipes = await this.recipeService.listRecipes(activeUser.restaurantId as RestaurantId);
     return { data: recipes };
   }
@@ -43,7 +43,7 @@ export class RecipeController {
   @RequirePermission(PERMISSION_CODES.RECIPE_READ)
   async getMappings(@CurrentUser() user: JwtPayload): Promise<{ data: MenuItemMapping[] }> {
     const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
-    const activeUser = user || { restaurantId: mockRestaurantId };
+    const activeUser = user?.restaurantId ? user : { restaurantId: mockRestaurantId };
     const mappings = await this.recipeService.listMappings(activeUser.restaurantId as RestaurantId);
     return { data: mappings };
   }
@@ -56,7 +56,7 @@ export class RecipeController {
   ): Promise<Recipe> {
     const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
     const mockFranchiseGroupId = 'a0000000-0000-0000-0000-000000000001';
-    const activeUser = user || { restaurantId: mockRestaurantId, franchiseGroupId: mockFranchiseGroupId };
+    const activeUser = user?.restaurantId ? user : { restaurantId: mockRestaurantId, franchiseGroupId: mockFranchiseGroupId };
     return this.recipeService.createRecipe(dto, activeUser.restaurantId ?? null, activeUser.franchiseGroupId ?? null);
   }
 
@@ -76,7 +76,7 @@ export class RecipeController {
     @Body(new ZodValidationPipe(menuItemMappingSchema)) dto: MenuItemMappingDto,
   ): Promise<void> {
     const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
-    const activeUser = user || { restaurantId: mockRestaurantId };
+    const activeUser = user?.restaurantId ? user : { restaurantId: mockRestaurantId };
     return this.recipeService.createMenuItemMapping(activeUser.restaurantId as RestaurantId, dto);
   }
 }
