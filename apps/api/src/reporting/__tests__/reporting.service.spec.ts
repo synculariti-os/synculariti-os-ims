@@ -107,7 +107,7 @@ describe('ReportingService', () => {
       // Mock db queries to get active restaurants and their items
       // Since it's a cron, it processes everything.
       mockDb.execute.mockResolvedValueOnce([{ id: 'r1' }]); // restaurants
-      mockItemService.listParLevels = vi.fn().mockResolvedValue({ data: [{ id: 'i1', is_active: true }], meta: { total: 1 } });
+      mockItemService.listParLevels = vi.fn().mockResolvedValue({ data: [{ id: 'i1', isActive: true }], meta: { total: 1 } });
       mockStockQueryService.getCurrentStockBulk.mockResolvedValue([{ itemId: 'i1' as any, qty: 100 }]);
 
       await service.runEodSnapshots();

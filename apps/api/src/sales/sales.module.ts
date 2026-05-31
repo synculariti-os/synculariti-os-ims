@@ -7,6 +7,7 @@ import { SALES_SERVICE_TOKEN } from './interfaces/i-sales.service';
 import { SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
 import { RECIPE_SERVICE_TOKEN } from '../recipe/interfaces/i-recipe.service';
 import { RecipeModule } from '../recipe/recipe.module';
+import { InventoryModule } from '../inventory/inventory.module';
 
 import { SalesImportProcessor } from './sales.processor';
 
@@ -16,6 +17,7 @@ import { SalesImportProcessor } from './sales.processor';
       name: 'sales_import',
     }),
     RecipeModule,
+    InventoryModule,
   ],
   controllers: [SalesController],
   providers: [
