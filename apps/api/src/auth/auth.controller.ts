@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Body, Inject } from '@nestjs/common';
 import { AUTH_SERVICE_TOKEN, IAuthService } from './interfaces/i-auth.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import type { JwtPayload, UserId } from '@ims/types';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { updateProfileSchema, UpdateProfileDto } from '@ims/validators';
+import type { JwtPayload } from '@ims/types';
 
 @Controller('auth')
 export class AuthController {
@@ -27,5 +29,13 @@ export class AuthController {
     // that the user has access to the x-restaurant-id and enriched the user context
     // with the appropriate permissions.
     return user;
+  }
+
+  @Patch('profile')
+  async updateProfile(
+    @CurrentUser() user: JwtPayload,
+    @Body(new ZodValidationPipe(updateProfileSchema)) dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(user.sub, dto);
   }
 }

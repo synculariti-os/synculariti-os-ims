@@ -2,17 +2,10 @@ import { Module, Global } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { Kysely, PostgresDialect } from 'kysely';
 import { Pool } from 'pg';
-import { LEDGER_SERVICE_TOKEN } from '../inventory/interfaces/i-ledger.service';
 import { STORAGE_SERVICE_TOKEN } from '../sales/interfaces/i-storage.service';
 import * as WebSocket from 'ws';
 import * as fs from 'fs';
 import { TenantContextDriver } from '../common/kysely/tenant-context.driver';
-
-const mockLedgerService = {
-  record: async (trx: unknown, entry: unknown) => {
-    console.log('Mock LedgerService record called', { entry });
-  },
-};
 
 @Global()
 @Module({
@@ -54,10 +47,6 @@ const mockLedgerService = {
       },
     },
     {
-      provide: LEDGER_SERVICE_TOKEN,
-      useValue: mockLedgerService,
-    },
-    {
       provide: STORAGE_SERVICE_TOKEN,
       useFactory: (supabase: ReturnType<typeof createClient>) => ({
         downloadFile: async (path: string) => {
@@ -75,7 +64,6 @@ const mockLedgerService = {
   exports: [
     'SUPABASE_ADMIN_CLIENT',
     'DB_CLIENT',
-    LEDGER_SERVICE_TOKEN,
     STORAGE_SERVICE_TOKEN,
   ],
 })

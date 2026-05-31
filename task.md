@@ -1,21 +1,74 @@
-# Audit & Fix Task — Complete
+# Task Tracker — Synculariti OS IMS
 
-## Summary
-All planned audit remediation work is complete. The codebase now conforms to RULES.md, SYMBOLS.md, and AGENTS.md.
+## Current Phase: Phase 2B — Backend Remediation & Gap Closure
 
-## What Was Done
-- Initial audit identified 23 violations (9 critical, 9 high, 5 medium)
-- All 23 violations addressed across 6 phases
-- 21 of 23 violations fully resolved
-- 2 remain partially open (low priority):
-  1. Frontend type imports blocked on API migration from direct Supabase to NestJS
-  2. Unit test coverage gaps — services need more tests
+> Full detail in `implementation_plan.md`. Concepts from `pepperoni_pizza_ims_analysis.md` reconciled.
+> Note: Recursive BOM expansion, prep/waste/count/procurement UIs are **already implemented** (doc was outdated).
 
-## Final Verification
-- **pnpm type-check**: ✅ Passes on all 5 packages (0 errors)
-- **pnpm test**: ✅ 54/54 tests pass across 9 test files
-- **Last fix**: Registered `PermissionsGuard` globally, fixed `(req as any).user` cast, updated `item.controller.spec.ts` to expect pagination params
+---
 
-## Remaining Items (Low Priority)
-1. `batches-table.tsx` — frontend still defines local types due to Supabase snake_case vs @ims/types camelCase mismatch
-2. Unit test coverage — `AuthService`, `InventoryCountService`, `SalesService` have partial coverage
+### Sprint 1: Critical Bug Fixes (Detailed)
+
+| # | Task | Files | Status | Priority |
+|---|---|---|---|---|
+| 1.1 | **Remove mock `LEDGER_SERVICE_TOKEN` from `CoreModule`** — delete mock provider + unused imports + export | `core.module.ts` | PENDING | 🔴 CRITICAL |
+| 1.2 | **Fix Recipe controller auth** — remove `@Public()`, remove mock fallback IDs, use direct `user.restaurantId` | `recipe.controller.ts` | PENDING | 🔴 CRITICAL |
+| 1.3 | **Add `PATCH /auth/profile`** — new route + `ZodValidationPipe(updateProfileSchema)` + delegate to service | `auth.controller.ts` | PENDING | 🟠 HIGH |
+| 1.4 | **Create initial DB migration** — full 26-table schema + `set_tenant_context` + ledger triggers + mat view | `supabase/migrations/20260531230000_initial_schema.sql` | PENDING | 🟠 HIGH |
+| 1.5 | **Implement `StockQueryService`** — new class delegating to `LedgerService`, register under `STOCK_QUERY_SERVICE_TOKEN` in module | `inventory/stock-query.service.ts`, `inventory.module.ts` | PENDING | 🟠 HIGH |
+
+**Verify**: `pnpm type-check && pnpm test && pnpm lint`
+
+### Sprint 2: Reporting Module
+
+| # | Task | Status | Priority |
+|---|---|---|---|
+| 2.1 | Create service: variance queries, par alerts, EOD snapshots | PENDING | 🟠 HIGH |
+| 2.2 | Create controller: `GET /reports/variance`, `/snapshots`, `/par-alerts` | PENDING | 🟠 HIGH |
+| 2.3 | Create repository: Kysely queries to mat views + items | PENDING | 🟠 HIGH |
+| 2.4 | Create EOD cron job (`@nestjs/schedule`) | PENDING | 🟠 HIGH |
+| 2.5 | Write unit tests | PENDING | 🟠 HIGH |
+
+### Sprint 3: Missing CRUD
+
+| # | Task | Status | Priority |
+|---|---|---|---|
+| 3.1 | Add vendor CRUD to Procurement | PENDING | 🟡 MED |
+| 3.2 | Add inventory transfers | PENDING | 🟡 MED |
+| 3.3 | Add `updateVendorSchema` to validators | PENDING | 🟡 MED |
+
+### Sprint 4: Prep Items as Countable Inventory + Two-Phase Depletion
+
+| # | Task | Status | Priority |
+|---|---|---|---|
+| 4.1 | Verify `producesItemId` flow — PREP type promotion for countable prep items | PENDING | 🔴 CRITICAL |
+| 4.2 | Fix `expandBOM` — add `mode` param: `'deplete'` vs `'expand'` to prevent double-depletion | PENDING | 🔴 CRITICAL |
+| 4.3 | Wire `yield_percent` into `expandBOM` scale factor | PENDING | 🟠 HIGH |
+| 4.4 | Update sub-recipe BOM tests for two-phase + yield_percent | PENDING | 🟠 HIGH |
+
+### Sprint 5: DIP & Architecture
+
+| # | Task | Status | Priority |
+|---|---|---|---|
+| 5.1 | Create `ISalesFileParser` interface + XLSX/CSV impls | PENDING | 🟡 MED |
+| 5.2 | Refactor processor to use injected parser | PENDING | 🟡 MED |
+| 5.3 | Configurable column mappings | PENDING | 🟢 LOW |
+| 5.4 | Implement `@Transactional()` as real interceptor | PENDING | 🟡 MED |
+
+### Sprint 6: Workflow & Operational Fixes
+
+| # | Task | Status | Priority |
+|---|---|---|---|
+| 6.1 | Consolidate dual WORKFLOW.md files | PENDING | 🟡 MED |
+| 6.2 | Fix frontmatter in `.agents/workflows/workflow.md` | PENDING | 🟢 LOW |
+| 6.3 | Add global `ZodValidationPipe` in `main.ts` | PENDING | 🟡 MED |
+| 6.4 | Run `pnpm type-check` + `pnpm test` | PENDING | 🟠 HIGH |
+
+---
+
+## Completed
+- Audit fixed 23 violations across 6 phases (resolved)
+- `pnpm type-check`: ✅ Passes (0 errors)
+- `pnpm test`: ✅ 54/54 tests pass
+- `implementation_plan.md`: ✅ Created with full reconciliation
+- `pepperoni_pizza_ims_analysis.md` gaps reconciled with actual codebase

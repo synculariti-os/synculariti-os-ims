@@ -25,20 +25,7 @@ import { RequirePermission } from '../common/decorators/require-permission.decor
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { IRecipeService, RECIPE_SERVICE_TOKEN } from './interfaces/i-recipe.service';
-import { Public } from '../common/decorators/public.decorator';
-
-const MOCK_RESTAURANT_ID = 'b0000000-0000-0000-0000-000000000001' as RestaurantId;
-const MOCK_FRANCHISE_GROUP_ID = 'a0000000-0000-0000-0000-000000000001';
-
-function resolveUser(user: JwtPayload): { restaurantId: RestaurantId; franchiseGroupId: string } {
-  return {
-    restaurantId: user?.restaurantId ?? MOCK_RESTAURANT_ID,
-    franchiseGroupId: user?.franchiseGroupId ?? MOCK_FRANCHISE_GROUP_ID,
-  };
-}
-
 @Controller('recipes')
-@Public()
 export class RecipeController {
   constructor(
     @Inject(RECIPE_SERVICE_TOKEN) private readonly recipeService: IRecipeService,
@@ -47,16 +34,14 @@ export class RecipeController {
   @Get()
   @RequirePermission(PERMISSION_CODES.RECIPE_READ)
   async getRecipes(@CurrentUser() user: JwtPayload): Promise<{ data: Recipe[] }> {
-    const { restaurantId } = resolveUser(user);
-    const recipes = await this.recipeService.listRecipes(restaurantId);
+    const recipes = await this.recipeService.listRecipes(user.restaurantId);
     return { data: recipes };
   }
 
   @Get('mappings')
   @RequirePermission(PERMISSION_CODES.RECIPE_READ)
   async getMappings(@CurrentUser() user: JwtPayload): Promise<{ data: MenuItemMapping[] }> {
-    const { restaurantId } = resolveUser(user);
-    const mappings = await this.recipeService.listMappings(restaurantId);
+    const mappings = await this.recipeService.listMappings(user.restaurantId);
     return { data: mappings };
   }
 
@@ -66,8 +51,7 @@ export class RecipeController {
     @CurrentUser() user: JwtPayload,
     @Query('batchId') batchId: string,
   ): Promise<{ data: Array<{ id: string; rawItemName: string; quantitySold: number }> }> {
-    const { restaurantId } = resolveUser(user);
-    const rows = await this.recipeService.getUnmappedRows(restaurantId, batchId);
+    const rows = await this.recipeService.getUnmappedRows(user.restaurantId, batchId);
     return { data: rows };
   }
 
@@ -86,8 +70,7 @@ export class RecipeController {
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createRecipeSchema)) dto: CreateRecipeDto,
   ): Promise<Recipe> {
-    const { restaurantId, franchiseGroupId } = resolveUser(user);
-    return this.recipeService.createRecipe(dto, restaurantId, franchiseGroupId);
+    return this.recipeService.createRecipe(dto, user.restaurantId, user.franchiseGroupId);
   }
 
   @Put(':id')
@@ -114,8 +97,7 @@ export class RecipeController {
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(menuItemMappingSchema)) dto: MenuItemMappingDto,
   ): Promise<void> {
-    const { restaurantId } = resolveUser(user);
-    return this.recipeService.createMenuItemMapping(restaurantId, dto);
+    return this.recipeService.createMenuItemMapping(user.restaurantId, dto);
   }
 
   @Delete('mappings/:id')

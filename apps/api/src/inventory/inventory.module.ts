@@ -11,12 +11,14 @@ import { LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 import { INVENTORY_COUNT_SERVICE_TOKEN } from './interfaces/i-inventory-count.service';
 import { WASTE_SERVICE_TOKEN } from './interfaces/i-waste.service';
 import { PREP_SERVICE_TOKEN } from './interfaces/i-prep.service';
+import { STOCK_QUERY_SERVICE_TOKEN } from './interfaces/i-stock-query.service';
 import { LEDGER_REPOSITORY_TOKEN } from './ledger.service';
 import { COUNT_REPOSITORY_TOKEN } from './inventory-count.service';
 import { InventoryController } from './inventory.controller';
 import { InventoryCountController } from './inventory-count.controller';
 import { WasteController } from './waste.controller';
 import { PrepController } from './prep.controller';
+import { StockQueryService } from './stock-query.service';
 import { RecipeModule } from '../recipe/recipe.module';
 
 @Module({
@@ -55,7 +57,11 @@ import { RecipeModule } from '../recipe/recipe.module';
       provide: PREP_REPOSITORY_TOKEN,
       useClass: PrepRepository,
     },
+    {
+      provide: STOCK_QUERY_SERVICE_TOKEN,
+      useClass: StockQueryService,
+    },
   ],
-  exports: [LEDGER_SERVICE_TOKEN, INVENTORY_COUNT_SERVICE_TOKEN, WASTE_SERVICE_TOKEN, PREP_SERVICE_TOKEN, LEDGER_REPOSITORY_TOKEN, COUNT_REPOSITORY_TOKEN, WASTE_REPOSITORY_TOKEN, PREP_REPOSITORY_TOKEN],
+  exports: [LEDGER_SERVICE_TOKEN, INVENTORY_COUNT_SERVICE_TOKEN, WASTE_SERVICE_TOKEN, PREP_SERVICE_TOKEN, STOCK_QUERY_SERVICE_TOKEN, LEDGER_REPOSITORY_TOKEN, COUNT_REPOSITORY_TOKEN, WASTE_REPOSITORY_TOKEN, PREP_REPOSITORY_TOKEN],
 })
 export class InventoryModule {}
