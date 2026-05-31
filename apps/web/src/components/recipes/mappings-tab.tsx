@@ -44,7 +44,7 @@ export function MappingsTab() {
     }
   }, []);
 
-  useEffect(() => { fetchMappings(); }, [fetchMappings]);
+  useEffect(() => { fetchMappings(); }, []);
 
   const handleDelete = async () => {
     if (!deletingMapping) return;

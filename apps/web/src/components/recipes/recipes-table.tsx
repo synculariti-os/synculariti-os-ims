@@ -43,7 +43,7 @@ function RecipeDetailRow({ recipe }: { recipe: Recipe }) {
     }
   }, [recipe.id, ingredients]);
 
-  useEffect(() => { fetchIngredients(); }, [fetchIngredients]);
+  useEffect(() => { fetchIngredients(); }, [recipe.id]);
 
   if (isLoading) {
     return (
@@ -106,7 +106,7 @@ export function RecipesTable() {
     }
   }, []);
 
-  useEffect(() => { fetchRecipes(); }, [fetchRecipes]);
+  useEffect(() => { fetchRecipes(); }, []);
 
   const toggleRow = (id: string) => {
     setExpandedRows(prev => {
