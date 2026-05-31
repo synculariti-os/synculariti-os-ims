@@ -14,6 +14,7 @@ export interface CreateCountRowInput {
 export interface IInventoryCountRepository {
   createBatch(db: unknown, restaurantId: RestaurantId): Promise<InventoryCountBatch>;
   findBatchById(batchId: CountBatchId): Promise<InventoryCountBatch | null>;
+  listBatches(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<InventoryCountBatch[]>;
   updateBatchStatus(
     trx: unknown,
     batchId: CountBatchId,

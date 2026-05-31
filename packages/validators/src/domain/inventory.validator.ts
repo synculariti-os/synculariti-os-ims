@@ -19,14 +19,12 @@ export const closeCountBatchSchema = z.object({
 });
 
 export const createWasteLogSchema = z.object({
-  restaurantId: z.string().uuid(),
   itemId: z.string().uuid(),
   quantity: z.number().positive(),
   reason: z.string().optional().nullable(),
 });
 
 export const createPrepLogSchema = z.object({
-  restaurantId: z.string().uuid(),
   prepItemId: z.string().uuid(),
   yieldQtyProduced: z.number().positive(),
 });

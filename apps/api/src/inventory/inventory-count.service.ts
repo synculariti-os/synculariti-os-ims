@@ -50,6 +50,16 @@ export class InventoryCountService {
     return batch;
   }
 
+  async listBatches(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<InventoryCountBatch[]> {
+    return this.countRepo.listBatches(restaurantId, limit, offset);
+  }
+
+  async getBatchById(batchId: CountBatchId): Promise<{ batch: InventoryCountBatch; rows: InventoryCountRow[] }> {
+    const batch = await this.findBatchOrThrow(batchId);
+    const rows = await this.countRepo.findRowsByBatchId(batchId);
+    return { batch, rows };
+  }
+
   async submitActualCount(
     batchId: CountBatchId,
     rowId: CountRowId,

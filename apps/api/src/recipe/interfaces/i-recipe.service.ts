@@ -19,6 +19,7 @@ export interface IRecipeService {
   resolveRecipeByPosString(restaurantId: RestaurantId, rawString: string): Promise<Recipe | null>;
   resolveRecipesByPosStrings(restaurantId: RestaurantId, rawStrings: string[]): Promise<MenuItemMapping[]>;
   getIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]>;
+  getRecipeByProducesItemId(itemId: string): Promise<Recipe | null>;
   createRecipe(dto: CreateRecipeDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Recipe>;
   updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe>;
   deleteRecipe(recipeId: RecipeId): Promise<void>;

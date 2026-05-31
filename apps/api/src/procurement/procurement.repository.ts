@@ -97,6 +97,18 @@ export class ProcurementRepository implements IProcurementRepository {
     return row ? this.mapPO(row) : null;
   }
 
+  async listPOs(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<PurchaseOrder[]> {
+    const rows = await this.db
+      .selectFrom('purchase_orders')
+      .selectAll()
+      .where('restaurant_id', '=', restaurantId)
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+      .offset(offset)
+      .execute();
+    return rows.map(r => this.mapPO(r));
+  }
+
   async updatePOStatus(poId: PurchaseOrderId, status: string): Promise<PurchaseOrder> {
     const row = await this.db
       .updateTable('purchase_orders')

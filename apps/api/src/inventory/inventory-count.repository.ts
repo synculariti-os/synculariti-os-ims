@@ -68,6 +68,19 @@ export class InventoryCountRepository implements IInventoryCountRepository {
     return row ? this.mapBatch(row) : null;
   }
 
+  async listBatches(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<InventoryCountBatch[]> {
+    const rows = await this.db
+      .selectFrom('inventory_count_batches')
+      .selectAll()
+      .where('restaurant_id', '=', restaurantId)
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+      .offset(offset)
+      .execute();
+      
+    return rows.map(r => this.mapBatch(r));
+  }
+
   async updateBatchStatus(
     trx: any,
     batchId: CountBatchId,

@@ -230,6 +230,8 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 | `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk` |
 | `IStockQueryService` | `interface` | `InventoryModule` | Read-only: `getCurrentStock`, `getCurrentStockBulk` (for Reporting) |
 | `IInventoryCountService` | `interface` | `InventoryModule` | `startBatch`, `submitActualCount`, `closeBatch` |
+| `IWasteService` | `interface` | `InventoryModule` | `logWaste`, `listWasteLogs` |
+| `IPrepService` | `interface` | `InventoryModule` | `logPrepProduction`, `listPrepLogs` |
 | `ISalesService` | `interface` | `SalesModule` | `uploadSalesFile`, `listBatches` |
 | `IAuditService` | `interface` | `AuditModule` | `log(entry: AuditEntryDto): Promise<void>` |
 

@@ -7,4 +7,6 @@ export interface IInventoryCountService {
   startBatch(restaurantId: RestaurantId): Promise<InventoryCountBatch>;
   submitActualCount(batchId: CountBatchId, rowId: CountRowId, dto: SubmitCountRowDto): Promise<InventoryCountRow>;
   closeBatch(batchId: CountBatchId, dto: CloseCountBatchDto): Promise<void>;
+  listBatches(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<InventoryCountBatch[]>;
+  getBatchById(batchId: CountBatchId): Promise<{ batch: InventoryCountBatch; rows: InventoryCountRow[] }>;
 }

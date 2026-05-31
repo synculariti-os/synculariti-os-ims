@@ -109,6 +109,10 @@ export class RecipeService implements IRecipeService {
     return this.recipeRepo.findIngredients(recipeId);
   }
 
+  async getRecipeByProducesItemId(itemId: string): Promise<Recipe | null> {
+    return this.recipeRepo.findByProducesItemId(itemId);
+  }
+
   async createRecipe(
     dto: CreateRecipeDto,
     restaurantId: RestaurantId | null,

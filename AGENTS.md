@@ -314,6 +314,16 @@ interface IInventoryCountService {
   submitActualCount(batchId: CountBatchId, rowId: CountRowId, dto: SubmitCountRowDto): Promise<InventoryCountRow>;
   closeBatch(batchId: CountBatchId, dto: CloseCountBatchDto): Promise<void>;
 }
+
+interface IWasteService {
+  logWaste(restaurantId: RestaurantId, dto: CreateWasteLogDto): Promise<WasteLog>;
+  listWasteLogs(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<WasteLog[]>;
+}
+
+interface IPrepService {
+  logPrepProduction(restaurantId: RestaurantId, dto: CreatePrepLogDto): Promise<PrepProductionLog>;
+  listPrepLogs(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<PrepProductionLog[]>;
+}
 ```
 
 ### SOLID Notes

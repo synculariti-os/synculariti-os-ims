@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 interface StockLevel {
   itemId: string;
   itemName: string;
-  baseUom: string;
+  inventoryUom: string;
   qty: number;
 }
 
@@ -106,7 +106,7 @@ export function StockTable() {
                       </span>
                     </td>
                     <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400 whitespace-nowrap">
-                      {item.baseUom}
+                      {item.inventoryUom}
                     </td>
                     <td className="p-4 px-6 whitespace-nowrap">
                       {item.qty <= 0 ? (

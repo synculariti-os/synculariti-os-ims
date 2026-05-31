@@ -32,8 +32,9 @@ When starting a new feature from the **Phase Task List** (e.g., implementing the
 - Review `SYMBOLS.md` to identify existing domain types or Zod schemas in `@ims/types` and `@ims/validators` to use.
 
 ### Step 2: Define Interfaces & DTOs
-- If not already present, create the necessary types in `packages/types/src/domain/`.
+- If not already present, create the necessary types in `packages/types/src/`.
 - If not already present, create the validation schemas in `packages/validators/src/`.
+- **Note**: Per R-ARCH-05, server-context fields (`restaurantId`, `franchiseGroupId`) must NOT be in shared Zod schemas. They belong in backend-only command types.
 - Export them correctly in their respective `index.ts` files.
 
 ### Step 3: Write the Unit Tests (The "Red" Phase)
@@ -43,20 +44,21 @@ When starting a new feature from the **Phase Task List** (e.g., implementing the
 - **Run the test** and verify it fails (Red).
 
 ### Step 4: Define the Service Interface
-- Create the `i-[service-name].service.ts` interface definition.
-- Create the `i-[service-name].repository.ts` interface definition.
+- Create the `interfaces/i-[service-name].service.ts` file, exposing an `I + PascalCase` interface (e.g., `IProcurementService`).
+- Create the `interfaces/i-[service-name].repository.ts` interface definition.
 - This enforces the Dependency Inversion Principle (DIP).
 
 ### Step 5: Implement the Service (The "Green" Phase)
 - Create the `[service-name].service.ts` file implementing the interface.
 - Implement the methods, adhering strictly to SOLID and ACID principles.
-- Use `db.transaction()` via Kysely for any multi-table writes.
+- Use the `@Transactional()` decorator or `db.transaction()` via Kysely for any multi-table writes.
 - Do NOT directly inject another module's repository — only use their exported Service.
 - **Run the test** and verify it passes (Green).
 
 ### Step 6: Implement the Infrastructure
 - Once tests pass with mocks, implement the concrete Repository using Kysely.
 - Implement the Controller, applying `@RequirePermission()` and `ZodValidationPipe`.
+- For BullMQ workers, ensure execution is wrapped in `tenantContext.run(...)` (R-DB-02).
 - Wire up the NestJS Module (`[agent].module.ts`).
 
 ### Step 7: Verification & CI
@@ -78,9 +80,9 @@ The project is executed in the following phases. Always consult the active Task 
   1. Auth Module
   2. Tenant Module
   3. Item Module
-  4. Procurement Module
-  5. Recipe Module
-  6. Inventory Module
+  4. Recipe Module
+  5. Inventory Module
+  6. Procurement Module
   7. Sales Module
   8. Reporting Module
   9. Audit Module

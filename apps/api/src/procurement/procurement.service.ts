@@ -39,6 +39,10 @@ export class ProcurementService {
     return this.procurementRepo.createPO(restaurantId, dto);
   }
 
+  async listPOs(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<PurchaseOrder[]> {
+    return this.procurementRepo.listPOs(restaurantId, limit, offset);
+  }
+
   async submitPO(poId: PurchaseOrderId): Promise<PurchaseOrder> {
     const po = await this.findOrThrow(poId);
 
