@@ -20,6 +20,8 @@ export const createRecipeSchema = z.object({
   producesItemId: z.string().uuid().nullable().optional(),
   recipeName: z.string().min(1).nullable().optional(),
   yieldQuantity: z.number().positive(),
+  /** Cooking yield as decimal 0–1 (e.g. 0.8 = 80% yield). UI sends as %; backend divides by 100. */
+  yieldPercent: z.number().gt(0).lte(1).default(1),
   ingredients: z.array(recipeIngredientSchema).min(1),
 }).refine(data => data.producesItemId || data.recipeName, {
   message: "Either a Produces Item or a Recipe Name must be provided",
@@ -29,6 +31,7 @@ export type CreateRecipeDto = z.infer<typeof createRecipeSchema>;
 
 export const updateRecipeSchema = z.object({
   yieldQuantity: z.number().positive().optional(),
+  yieldPercent: z.number().gt(0).lte(1).optional(),
   ingredients: z.array(recipeIngredientSchema).min(1).optional(),
 });
 export type UpdateRecipeDto = z.infer<typeof updateRecipeSchema>;

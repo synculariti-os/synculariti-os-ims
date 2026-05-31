@@ -73,7 +73,7 @@
 
 | Symbol | Kind | Source Table(s) | Description |
 |---|---|---|---|
-| `Recipe` | `interface` | `recipes` | BOM header: `producesItemId`, `yieldQuantity`, scope (`franchiseGroupId?` or `restaurantId?`) |
+| `Recipe` | `interface` | `recipes` | BOM header: `producesItemId`, `yieldQuantity`, `yieldPercent`, scope (`franchiseGroupId?` or `restaurantId?`) |
 | `RecipeIngredient` | `interface` | `recipe_ingredients` | BOM line: `ingredientItemId`, `quantityRequired` |
 | `MenuItemMapping` | `interface` | `menu_item_mappings` | POS string → recipe mapping: `rawExcelString`, `recipeId`, `restaurantId` |
 | `BomExpansion` | `interface` | — | Result of BOM expansion: `{ itemId: ItemId; consumedQty: number }[]` |
@@ -157,7 +157,7 @@
 
 | Symbol | Kind | Description |
 |---|---|---|
-| `createRecipeSchema` | `ZodObject` | producesItemId: ItemId | null; // Nullable to support Virtual Recipes (Menu Items)<br>recipeName: string | null;     // Virtual recipe name if no producesItemId<br>producesItemName?: string;<br>yieldQuantity: number;<br>createdAt: string;<br>updatedAt: string; |
+| `createRecipeSchema` | `ZodObject` | producesItemId: ItemId | null; // Nullable to support Virtual Recipes (Menu Items)<br>recipeName: string | null;     // Virtual recipe name if no producesItemId<br>producesItemName?: string;<br>yieldQuantity: number;<br>yieldPercent: number;<br>createdAt: string;<br>updatedAt: string; |
 | `recipeIngredientSchema` | `ZodObject` | `{ ingredientItemId, quantityRequired: z.number().positive() }` |
 | `menuItemMappingSchema` | `ZodObject` | `{ rawExcelString: z.string().min(1), recipeId }` |
 

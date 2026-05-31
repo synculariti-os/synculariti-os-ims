@@ -182,15 +182,21 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
                 <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Item Type
                 </label>
-                <select
-                  {...register('type')}
-                  className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white appearance-none"
-                >
-                  <option value="RAW">Raw Ingredient</option>
-                  <option value="PREP">Prep Item</option>
-                  <option value="PACKAGING">Packaging</option>
-                  <option value="MERCHANDISE">Merchandise</option>
-                </select>
+                {item.type === 'PREP' ? (
+                  <div className="w-full px-4 py-2.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-500 dark:text-zinc-400 border border-zinc-200 dark:border-zinc-700 rounded-xl cursor-not-allowed">
+                    Prep Item (Recipe Attached)
+                    <input type="hidden" {...register('type')} value="PREP" />
+                  </div>
+                ) : (
+                  <select
+                    {...register('type')}
+                    className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white appearance-none"
+                  >
+                    <option value="RAW">Raw Ingredient</option>
+                    <option value="PACKAGING">Packaging</option>
+                    <option value="MERCHANDISE">Merchandise</option>
+                  </select>
+                )}
                 {errors.type && <p className="mt-1.5 text-sm text-red-500">{errors.type?.message}</p>}
               </div>
               

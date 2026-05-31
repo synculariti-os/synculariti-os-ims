@@ -38,6 +38,7 @@ export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialo
   const [items, setItems] = useState<ItemWithOverride[]>([]);
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [yieldQuantity, setYieldQuantity] = useState(recipe.yieldQuantity);
+  const [yieldPercent, setYieldPercent] = useState(recipe.yieldPercent ? Math.round(recipe.yieldPercent * 100) : 100);
   const [lines, setLines] = useState<IngredientLine[]>([]);
 
   const fetchData = useCallback(async () => {
@@ -77,7 +78,7 @@ export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialo
         ? { lineType: 'ingredient' as const, ingredientItemId: l.ingredientItemId, quantityRequired: l.quantityRequired }
         : { lineType: 'sub_recipe' as const, subRecipeId: l.subRecipeId, quantityRequired: l.quantityRequired }
       );
-      await apiClient(`/recipes/${recipe.id}`, { method: 'PUT', body: { yieldQuantity, ingredients } });
+      await apiClient(`/recipes/${recipe.id}`, { method: 'PUT', body: { yieldQuantity, yieldPercent: yieldPercent / 100, ingredients } });
       onSuccess();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to update recipe');
@@ -117,15 +118,35 @@ export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialo
             </div>
           ) : (
             <form id="edit-recipe-form" onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Yield Quantity</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={yieldQuantity}
-                  onChange={e => setYieldQuantity(parseFloat(e.target.value) || 1)}
-                  className="w-full max-w-[160px] px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">Yield Quantity</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={yieldQuantity}
+                    onChange={e => setYieldQuantity(parseFloat(e.target.value) || 1)}
+                    className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" title="If cooking reduces weight, enter the % that remains.">
+                    Cooking Yield %
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      step="1"
+                      min="1"
+                      max="100"
+                      value={yieldPercent}
+                      onChange={e => setYieldPercent(parseInt(e.target.value) || 100)}
+                      className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white pr-8"
+                    />
+                    <span className="absolute right-3 top-3 text-zinc-400 pointer-events-none">%</span>
+                  </div>
+                </div>
               </div>
 
               <div>

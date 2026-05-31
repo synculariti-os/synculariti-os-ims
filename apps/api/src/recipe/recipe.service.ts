@@ -16,8 +16,8 @@ import { asItemId } from '@ims/types';
 import type { IRecipeService, CreateRecipeCommand } from './interfaces/i-recipe.service';
 import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
-import type { IItemReadService } from '../item/interfaces/i-item.service';
-import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
+import type { IItemWriteService } from '../item/interfaces/i-item.service';
+import { ITEM_WRITE_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
 export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
 
@@ -25,7 +25,7 @@ export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
 export class RecipeService implements IRecipeService {
   constructor(
     @Inject(RECIPE_REPOSITORY_TOKEN) private readonly recipeRepo: IRecipeRepository,
-    @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
+    @Inject(ITEM_WRITE_SERVICE_TOKEN) private readonly itemService: IItemWriteService,
   ) {}
 
   async listRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
@@ -37,9 +37,24 @@ export class RecipeService implements IRecipeService {
   }
 
   async expandBOM(recipeId: RecipeId, soldQty: number): Promise<BomExpansion> {
+    return this._expandBOMInternal(recipeId, soldQty, new Set<string>());
+  }
+
+  private async _expandBOMInternal(
+    recipeId: RecipeId,
+    soldQty: number,
+    visited: Set<string>,
+  ): Promise<BomExpansion> {
     if (soldQty <= 0) {
       throw new BadRequestException('soldQty must be positive');
     }
+
+    if (visited.has(recipeId)) {
+      throw new BadRequestException(
+        `Circular sub-recipe reference detected at recipe ${recipeId}`,
+      );
+    }
+    visited.add(recipeId);
 
     const recipe = await this.recipeRepo.findById(recipeId);
     if (!recipe) {
@@ -64,7 +79,11 @@ export class RecipeService implements IRecipeService {
         });
       } else if (ing.subRecipeId) {
         // Sub-recipe: recursively expand it
-        const subExpansion = await this.expandBOM(ing.subRecipeId, ing.quantityRequired * scaleFactor);
+        const subExpansion = await this._expandBOMInternal(
+          ing.subRecipeId,
+          ing.quantityRequired * scaleFactor,
+          new Set(visited), // pass a copy so sibling branches don't block each other
+        );
         result.push(...subExpansion);
       }
     }
@@ -122,7 +141,13 @@ export class RecipeService implements IRecipeService {
       franchiseGroupId: resolvedFranchiseGroupId ? (resolvedFranchiseGroupId as any) : null,
     };
 
-    return this.recipeRepo.create(command);
+    const createdRecipe = await this.recipeRepo.create(command);
+
+    if (command.producesItemId) {
+      await this.itemService.updateItem(asItemId(command.producesItemId), { type: 'PREP' });
+    }
+
+    return createdRecipe;
   }
 
   async updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
@@ -139,7 +164,19 @@ export class RecipeService implements IRecipeService {
     if (!existing) {
       throw new NotFoundException(`Recipe ${recipeId} not found`);
     }
-    await this.recipeRepo.deleteRecipe(recipeId);
+    
+    if (existing.producesItemId) {
+      const otherRecipe = await this.recipeRepo.findByProducesItemId(existing.producesItemId);
+      const isOnlyProducer = !otherRecipe || otherRecipe.id === recipeId;
+      
+      await this.recipeRepo.deleteRecipe(recipeId);
+      
+      if (isOnlyProducer) {
+        await this.itemService.updateItem(existing.producesItemId, { type: 'RAW' });
+      }
+    } else {
+      await this.recipeRepo.deleteRecipe(recipeId);
+    }
   }
 
   async createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void> {

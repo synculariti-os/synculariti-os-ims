@@ -10,8 +10,7 @@ export function Navbar() {
 
   const navItems = [
     { name: 'Item Master', href: '/items', icon: Package },
-    { name: 'Recipes', href: '/recipes', icon: Layers },
-    { name: 'POS Mappings', href: '/recipes/mappings', icon: LinkIcon },
+    { name: 'Recipes & BOM', href: '/recipes', icon: Layers },
     { name: 'Sales Import', href: '/sales/import', icon: UploadCloud },
     { name: 'Inventory', href: '/inventory', icon: Boxes },
   ];

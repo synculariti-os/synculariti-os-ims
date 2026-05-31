@@ -102,6 +102,7 @@ export class RecipeRepository implements IRecipeRepository {
         'recipes.produces_item_id as produces_item_id',
         'recipes.recipe_name as recipe_name',
         'recipes.yield_quantity as yield_quantity',
+        'recipes.yield_percent as yield_percent',
         'recipes.created_at as created_at',
         'recipes.updated_at as updated_at',
       ])
@@ -165,6 +166,7 @@ export class RecipeRepository implements IRecipeRepository {
           produces_item_id: command.producesItemId ? asItemId(command.producesItemId) : null,
           recipe_name: command.recipeName ? command.recipeName : null,
           yield_quantity: command.yieldQuantity,
+          yield_percent: command.yieldPercent ?? 1.0,
           franchise_group_id: command.franchiseGroupId ? asFranchiseGroupId(command.franchiseGroupId) : null,
           restaurant_id: command.restaurantId ? asRestaurantId(command.restaurantId) : null,
         })
@@ -199,6 +201,9 @@ export class RecipeRepository implements IRecipeRepository {
       const updateData: Record<string, unknown> = { updated_at: new Date().toISOString() };
       if (dto.yieldQuantity !== undefined) {
         updateData['yield_quantity'] = dto.yieldQuantity;
+      }
+      if (dto.yieldPercent !== undefined) {
+        updateData['yield_percent'] = dto.yieldPercent;
       }
 
       const [recipe] = await trx
@@ -283,6 +288,7 @@ export class RecipeRepository implements IRecipeRepository {
       producesItemId: row.produces_item_id ? asItemId(row.produces_item_id as string) : null,
       recipeName: row.recipe_name ? (row.recipe_name as string) : null,
       yieldQuantity: Number(row.yield_quantity),
+      yieldPercent: Number(row.yield_percent ?? 1.0),
       createdAt: row.created_at as string,
       updatedAt: row.updated_at as string,
     };

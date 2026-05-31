@@ -30,6 +30,7 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
   const [producesItemId, setProducesItemId] = useState('');
   const [recipeName, setRecipeName] = useState('');
   const [yieldQuantity, setYieldQuantity] = useState(1);
+  const [yieldPercent, setYieldPercent] = useState(100);
   const [lines, setLines] = useState<IngredientLine[]>([
     { id: crypto.randomUUID(), lineType: 'ingredient', ingredientItemId: '', subRecipeId: '', quantityRequired: 1 },
   ]);
@@ -80,6 +81,7 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
         producesItemId: recipeMode === 'prep' ? (producesItemId || null) : null,
         recipeName: recipeMode === 'menu' ? (recipeName || null) : null,
         yieldQuantity,
+        yieldPercent: yieldPercent / 100,
         ingredients,
       };
 
@@ -88,6 +90,7 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
       setProducesItemId('');
       setRecipeName('');
       setYieldQuantity(1);
+      setYieldPercent(100);
       onSuccess();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Failed to create recipe');
@@ -175,6 +178,25 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
                   className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
                   placeholder="1.0"
                 />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5" title="If cooking reduces weight, enter the % that remains.">
+                  Cooking Yield %
+                </label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="1"
+                    min="1"
+                    max="100"
+                    value={yieldPercent}
+                    onChange={e => setYieldPercent(parseInt(e.target.value) || 100)}
+                    className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white pr-8"
+                    placeholder="100"
+                  />
+                  <span className="absolute right-3 top-3 text-zinc-400 pointer-events-none">%</span>
+                </div>
               </div>
             </div>
 

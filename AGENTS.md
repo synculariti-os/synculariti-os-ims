@@ -145,7 +145,7 @@ interface ITenantService {
 
 ### UI Views
 - `/items` — Main catalog list and Create Item dialog.
-  - *Note:* The "Create Item" wizard for `PREP` items dynamically orchestrates a `POST /items` followed immediately by a `POST /recipes` call to seamlessly define the Bill of Materials inline.
+  - *Note:* The item type (RAW vs PREP) is now purely derived from recipes. Users create all items as RAW, and when a recipe is attached, the backend `RecipeService` infers and automatically converts the item to PREP.
 
 ### Contracts Exposed
 ```typescript
@@ -232,7 +232,7 @@ COMMIT
 - CRUD for `menu_item_mappings` (raw POS string ↔ recipe)
 
 ### Outputs
-- `expandBOM(recipeId, soldQty)` → list of `{ item_id, consumed_qty }` (consumed by Sales Agent)
+- `expandBOM(recipeId, soldQty)` → list of `{ item_id, consumed_qty }` (consumed by Sales Agent). Includes circular reference guards (`visited` Set) and scales outputs by the `yield_percent`.
 - `getRecipeForItem(itemId)` → recipe with ingredients (consumed by Reporting)
 
 ### Owned Tables

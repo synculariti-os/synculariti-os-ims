@@ -154,6 +154,7 @@ export interface Database {
     produces_item_id: ItemId | null;
     recipe_name: string | null;
     yield_quantity: number;
+    yield_percent: Generated<number>;
     created_at: Generated<string>;
     updated_at: Generated<string>;
   };

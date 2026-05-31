@@ -6,6 +6,7 @@ export type CreateRecipeCommand = {
   producesItemId?: string | null;
   recipeName?: string | null;
   yieldQuantity: number;
+  yieldPercent?: number;
   ingredients: RecipeIngredientDto[];
   restaurantId: RestaurantId | null;
   franchiseGroupId: FranchiseGroupId | null;

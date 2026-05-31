@@ -10,10 +10,7 @@ import { apiClient } from '@/lib/api-client';
 import { Category, ItemWithOverride } from '@ims/types';
 
 
-type CreateItemForm = z.infer<typeof createItemSchema> & {
-  ingredients?: { ingredientItemId: string; quantityRequired: number }[];
-  recipeYieldQuantity?: number;
-};
+type CreateItemForm = z.infer<typeof createItemSchema>;
 
 interface CreateItemDialogProps {
   isOpen: boolean;
@@ -49,14 +46,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
       invToRecipeRatio: 1,
       isActive: true,
       categoryId: '',
-      ingredients: [{ ingredientItemId: '', quantityRequired: 1 }],
-      recipeYieldQuantity: 1,
     },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control,
-    name: 'ingredients',
   });
 
   const itemType = watch('type');
@@ -89,7 +79,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
     setError(null);
     try {
       // 1. Create the Item Master record
-      const itemResponse = await apiClient<{ data: { id: string } }>('/items', {
+      await apiClient<{ data: { id: string } }>('/items', {
         method: 'POST',
         body: {
           name: data.name,
@@ -104,23 +94,6 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
         },
       });
 
-      // 2. If it's a PREP item and we have ingredients, create the Recipe
-      if (data.type === 'PREP' && data.ingredients && data.ingredients.length > 0 && data.ingredients[0].ingredientItemId) {
-        // Filter out any empty ingredient rows
-        const validIngredients = data.ingredients.filter(ing => ing.ingredientItemId && ing.quantityRequired > 0);
-        
-        if (validIngredients.length > 0) {
-          await apiClient('/recipes', {
-            method: 'POST',
-            body: {
-              producesItemId: itemResponse.data.id,
-              yieldQuantity: data.recipeYieldQuantity || 1,
-              ingredients: validIngredients,
-            },
-          });
-        }
-      }
-
       reset();
       onSuccess();
     } catch (err: unknown) {
@@ -131,7 +104,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
     }
   };
 
-  const rawItems = items.filter(i => i.type === 'RAW');
+
 
   const handleGenerateSku = async () => {
     const categoryId = watch('categoryId');
@@ -223,7 +196,6 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
                   className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white appearance-none"
                 >
                   <option value="RAW">Raw Ingredient</option>
-                  <option value="PREP">Prep Item</option>
                   <option value="PACKAGING">Packaging</option>
                   <option value="MERCHANDISE">Merchandise</option>
                 </select>
@@ -276,73 +248,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
               )}
             </div>
 
-            {/* Dynamic Recipe / BOM Section for PREP items */}
-            {itemType === 'PREP' && (
-              <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 animate-in fade-in slide-in-from-top-4">
-                <div className="flex items-center space-x-2 mb-4">
-                  <div className="p-1.5 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                    <PackagePlus className="w-4 h-4 text-green-600 dark:text-green-400" />
-                  </div>
-                  <h3 className="text-lg font-medium text-zinc-900 dark:text-white">Recipe / Ingredients</h3>
-                </div>
 
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
-                    Yield Quantity (Units produced)
-                  </label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    {...register('recipeYieldQuantity', { valueAsNumber: true })}
-                    className="w-full md:w-1/2 px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white"
-                    placeholder="1.0"
-                  />
-                </div>
-
-                <div className="space-y-3">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="flex items-start space-x-3 bg-zinc-50 dark:bg-zinc-800/30 p-3 rounded-xl border border-zinc-200 dark:border-zinc-800">
-                      <div className="flex-1">
-                        <select
-                          {...register(`ingredients.${index}.ingredientItemId`)}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white"
-                        >
-                          <option value="">Select Ingredient...</option>
-                          {rawItems.map(item => (
-                            <option key={item.id} value={item.id}>{item.name}</option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="w-32">
-                        <input
-                          type="number"
-                          step="0.001"
-                          {...register(`ingredients.${index}.quantityRequired`, { valueAsNumber: true })}
-                          className="w-full px-3 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white"
-                          placeholder="Qty"
-                        />
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => remove(index)}
-                        className="p-2 text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors mt-0.5"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                
-                <button
-                  type="button"
-                  onClick={() => append({ ingredientItemId: '', quantityRequired: 1 })}
-                  className="mt-3 inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
-                >
-                  <Plus className="w-4 h-4 mr-1" />
-                  Add Another Ingredient
-                </button>
-              </div>
-            )}
           </form>
         </div>
 

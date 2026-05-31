@@ -180,6 +180,7 @@ export function RecipesTable() {
                   <th className="p-4 px-6 font-medium">Name</th>
                   <th className="p-4 px-6 font-medium">Type</th>
                   <th className="p-4 px-6 font-medium">Yield Qty</th>
+                  <th className="p-4 px-6 font-medium">Yield %</th>
                   <th className="p-4 px-6 font-medium text-right">Actions</th>
                 </tr>
               </thead>
@@ -210,6 +211,7 @@ export function RecipesTable() {
                           )}
                         </td>
                         <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400">{recipe.yieldQuantity}</td>
+                        <td className="p-4 px-6 text-zinc-500 dark:text-zinc-400">{recipe.yieldPercent ? `${Math.round(recipe.yieldPercent * 100)}%` : '100%'}</td>
                         <td className="p-4 px-6 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button

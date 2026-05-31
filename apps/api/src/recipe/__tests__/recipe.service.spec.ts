@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { RecipeService } from '../recipe.service';
 import type { IRecipeRepository } from '../interfaces/i-recipe.repository';
-import type { IItemReadService } from '../../item/interfaces/i-item.service';
+import type { IItemWriteService } from '../../item/interfaces/i-item.service';
 import type { BomExpansion } from '@ims/types';
 
 // ---------------------------------------------------------------------------
@@ -48,11 +48,20 @@ const mockRecipeRepo: IRecipeRepository = {
   getUnmappedRows: vi.fn(),
 };
 
-const mockItemService: IItemReadService = {
+const mockItemService: IItemWriteService = {
   findById: vi.fn(),
   convertUom: vi.fn(),
   listParLevels: vi.fn(),
-      listCategories: vi.fn(),
+  listCategories: vi.fn(),
+  createItem: vi.fn(),
+  updateItem: vi.fn(),
+  deleteItem: vi.fn(),
+  createCategory: vi.fn(),
+  updateCategory: vi.fn(),
+  deleteCategory: vi.fn(),
+  upsertUomConversion: vi.fn(),
+  updateOverride: vi.fn(),
+  generateSku: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------
