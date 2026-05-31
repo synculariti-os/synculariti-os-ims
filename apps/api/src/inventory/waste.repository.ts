@@ -5,7 +5,8 @@ import {
   Database,
   WasteLog,
   RestaurantId,
-  asWasteLogId,
+  CountRowId,
+  WasteLogId,
   asRestaurantId,
   asItemId
 } from '@ims/types';
@@ -18,7 +19,7 @@ export class WasteRepository implements IWasteRepository {
 
   private mapWasteLog(row: any): WasteLog {
     return {
-      id: asWasteLogId(row.id),
+      id: row.id as WasteLogId,
       restaurantId: asRestaurantId(row.restaurant_id),
       itemId: asItemId(row.item_id),
       quantity: row.quantity,
@@ -29,7 +30,7 @@ export class WasteRepository implements IWasteRepository {
 
   async createWasteLog(db: any, restaurantId: RestaurantId, dto: CreateWasteLogDto): Promise<WasteLog> {
     const trx = db as Kysely<Database>;
-    const id = asWasteLogId(randomUUID());
+    const id = randomUUID() as WasteLogId;
     
     const row = await trx
       .insertInto('waste_logs')

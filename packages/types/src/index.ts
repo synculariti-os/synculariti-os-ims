@@ -15,3 +15,4 @@ export interface PaginationMeta {
   limit: number;
   totalPages: number;
 }
+export * from './domain/reporting';

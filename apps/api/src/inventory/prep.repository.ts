@@ -5,7 +5,7 @@ import {
   Database,
   PrepProductionLog,
   RestaurantId,
-  asPrepLogId,
+  PrepLogId,
   asRestaurantId,
   asItemId
 } from '@ims/types';
@@ -18,7 +18,7 @@ export class PrepRepository implements IPrepRepository {
 
   private mapPrepLog(row: any): PrepProductionLog {
     return {
-      id: asPrepLogId(row.id),
+      id: row.id as PrepLogId,
       restaurantId: asRestaurantId(row.restaurant_id),
       prepItemId: asItemId(row.prep_item_id),
       yieldQtyProduced: row.yield_qty_produced,
@@ -28,7 +28,7 @@ export class PrepRepository implements IPrepRepository {
 
   async createPrepLog(db: any, restaurantId: RestaurantId, dto: CreatePrepLogDto): Promise<PrepProductionLog> {
     const trx = db as Kysely<Database>;
-    const id = asPrepLogId(randomUUID());
+    const id = randomUUID() as PrepLogId;
     
     const row = await trx
       .insertInto('prep_production_logs')

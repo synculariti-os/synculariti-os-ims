@@ -40,7 +40,7 @@ describe('WasteService', () => {
   describe('logWaste', () => {
     it('should create a waste log and record ledger deduction', async () => {
       const dto = { itemId: 'item-1', quantity: 5, reason: 'dropped' };
-      const mockLog = { id: 'waste-1' as WasteLogId, ...dto, restaurantId: mockRestaurantId, recordedAt: '' };
+      const mockLog = { id: 'waste-1' as WasteLogId, ...dto, restaurantId: mockRestaurantId, recordedAt: '' } as any;
       
       wasteRepo.createWasteLog.mockResolvedValue(mockLog);
 

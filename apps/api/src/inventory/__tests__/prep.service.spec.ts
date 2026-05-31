@@ -60,8 +60,8 @@ describe('PrepService', () => {
       const mockBom = [
         { itemId: 'ing-1', consumedQty: 20 },
         { itemId: 'ing-2', consumedQty: 5 }
-      ];
-      const mockLog = { id: 'prep-1' as PrepLogId, ...dto, restaurantId: mockRestaurantId, producedAt: '' };
+      ] as any;
+      const mockLog = { id: 'prep-1' as PrepLogId, ...dto, restaurantId: mockRestaurantId, producedAt: '' } as any;
 
       recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
       recipeService.expandBOM.mockResolvedValue(mockBom);

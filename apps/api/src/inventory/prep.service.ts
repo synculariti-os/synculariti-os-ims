@@ -37,7 +37,7 @@ export class PrepService implements IPrepService {
       // 4. Record yield (+ qty)
       await this.ledgerService.record(trx, {
         restaurantId,
-        itemId: dto.prepItemId,
+        itemId: dto.prepItemId as any,
         changeAmount: dto.yieldQtyProduced,
         reasonCode: LEDGER_REASON_CODES.PREP_PRODUCTION,
         referenceId: log.id,
@@ -47,7 +47,7 @@ export class PrepService implements IPrepService {
       for (const ing of consumedIngredients) {
         await this.ledgerService.record(trx, {
           restaurantId,
-          itemId: ing.itemId,
+          itemId: ing.itemId as any,
           changeAmount: -ing.consumedQty,
           reasonCode: LEDGER_REASON_CODES.PREP_CONSUMPTION,
           referenceId: log.id,

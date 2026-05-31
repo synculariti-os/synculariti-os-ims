@@ -167,8 +167,9 @@ describe('RecipeService', () => {
       const dto = {
         producesItemId: PRODUCED_ITEM_ID,
         yieldQuantity: 10,
-        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 }],
-      };
+        yieldPercent: 100,
+        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 } as any],
+      } as any;
       
       vi.mocked(mockItemService.findById).mockResolvedValueOnce({} as any);
       vi.mocked(mockRecipeRepo.create).mockResolvedValueOnce(MOCK_RECIPE as any);
@@ -190,8 +191,9 @@ describe('RecipeService', () => {
       const dto = {
         producesItemId: PRODUCED_ITEM_ID,
         yieldQuantity: 10,
-        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 }],
-      };
+        yieldPercent: 100,
+        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 } as any],
+      } as any;
       
       vi.mocked(mockItemService.findById).mockResolvedValueOnce(null as any);
 

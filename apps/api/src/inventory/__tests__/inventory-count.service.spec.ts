@@ -44,6 +44,7 @@ const mockCountRepo: IInventoryCountRepository = {
   findRowsByBatchId: vi.fn() as any,
   updateCountRow: vi.fn() as any,
   createCountRows: vi.fn() as any,
+  listBatches: vi.fn() as any,
 };
 
 const mockLedgerService: ILedgerService = {

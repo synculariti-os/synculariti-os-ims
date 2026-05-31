@@ -24,7 +24,7 @@ export class WasteService implements IWasteService {
       // 2. Record the ledger entry for the deduction
       await this.ledgerService.record(trx, {
         restaurantId,
-        itemId: dto.itemId,
+        itemId: dto.itemId as any,
         changeAmount: -dto.quantity,
         reasonCode: LEDGER_REASON_CODES.WASTE,
         referenceId: log.id,

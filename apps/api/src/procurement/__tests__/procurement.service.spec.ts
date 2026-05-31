@@ -74,6 +74,7 @@ const mockProcurementRepo: IProcurementRepository = {
   findLineItemsByPOId: vi.fn(),
   updateLineItemReceived: vi.fn(),
   createInventoryBatch: vi.fn(),
+  listPOs: vi.fn(),
 };
 
 const mockLedgerService: ILedgerService = {

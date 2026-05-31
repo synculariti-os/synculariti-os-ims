@@ -67,7 +67,7 @@ describe('InventoryCountController', () => {
     it('should call service.submitActualCount', async () => {
       const batchId = 'batch-1' as CountBatchId;
       const rowId = 'row-1' as CountRowId;
-      const dto = { actualQty: 5 };
+      const dto = { actualQty: 5 } as any;
       const mockResult = { id: rowId, actualQty: 5 } as any;
       service.submitActualCount.mockResolvedValue(mockResult);
 
@@ -81,7 +81,7 @@ describe('InventoryCountController', () => {
   describe('closeBatch', () => {
     it('should call service.closeBatch', async () => {
       const batchId = 'batch-1' as CountBatchId;
-      const dto = { version: 1 };
+      const dto = { version: 1 } as any;
       service.closeBatch.mockResolvedValue(undefined);
 
       const result = await controller.closeBatch(batchId, dto);
