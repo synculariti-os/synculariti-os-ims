@@ -26,6 +26,7 @@ export function FileUploader({ onFileAccepted, isUploading = false }: FileUpload
     accept: {
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
       'text/csv': ['.csv'],
+      'application/pdf': ['.pdf'],
     },
     maxFiles: 1,
     disabled: isUploading,
@@ -60,7 +61,7 @@ export function FileUploader({ onFileAccepted, isUploading = false }: FileUpload
             {isDragActive ? "Drop the file here..." : "Upload POS Sales Data"}
           </h3>
           <p className="text-sm text-zinc-500 dark:text-zinc-400 max-w-[250px] mx-auto leading-relaxed">
-            Drag and drop your Excel (.xlsx) or CSV file here, or click to browse.
+            Drag and drop your Excel (.xlsx), CSV (.csv), or PDF (.pdf) file here, or click to browse.
           </p>
 
           {isDragReject && (

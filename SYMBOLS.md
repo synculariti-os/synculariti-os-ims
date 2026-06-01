@@ -242,8 +242,10 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 
 | Symbol | Kind | Queue Name | Description |
 |---|---|---|---|
-| `SALES_IMPORT_QUEUE` | `const` | `sales-import` | Queue for async XLS/CSV processing |
+| `SALES_IMPORT_QUEUE` | `const` | `sales-import` | Queue for async XLS/CSV/PDF processing |
 | `SalesImportProcessor` | `class` | — | BullMQ worker that processes sales import jobs |
+| `ISalesFileParser` | `interface` | `SalesModule` | Interface for parsing different POS export file formats |
+| `ISalesFileParserFactory` | `interface` | `SalesModule` | Factory to inject the correct parser based on file extension |
 | `SalesImportJob` | `interface` | — | Job payload: `{ batchId: string; restaurantId: RestaurantId; filePath: string }` |
 
 ---

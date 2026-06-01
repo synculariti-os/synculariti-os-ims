@@ -5,7 +5,8 @@ import { SalesService } from './sales.service';
 import { SalesRepository } from './sales.repository';
 import { SALES_SERVICE_TOKEN } from './interfaces/i-sales.service';
 import { SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
-import { RECIPE_SERVICE_TOKEN } from '../recipe/interfaces/i-recipe.service';
+import { SALES_FILE_PARSER_FACTORY_TOKEN } from './interfaces/i-sales-file-parser';
+import { SalesParserFactory } from './parsers/sales-parser.factory';
 import { RecipeModule } from '../recipe/recipe.module';
 import { InventoryModule } from '../inventory/inventory.module';
 
@@ -29,9 +30,12 @@ import { SalesImportProcessor } from './sales.processor';
       provide: SALES_REPOSITORY_TOKEN,
       useClass: SalesRepository,
     },
+    {
+      provide: SALES_FILE_PARSER_FACTORY_TOKEN,
+      useClass: SalesParserFactory,
+    },
     SalesImportProcessor,
   ],
   exports: [SALES_SERVICE_TOKEN],
 })
 export class SalesModule {}
-

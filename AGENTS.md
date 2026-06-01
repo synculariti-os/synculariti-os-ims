@@ -343,7 +343,7 @@ interface IPrepService {
 
 ## 7. Sales Ingestion Agent
 
-**Responsibility**: Accept XLSX/CSV POS export files, parse them asynchronously, map rows to recipes via `menu_item_mappings`, and trigger BOM-based inventory depletion.
+**Responsibility**: Accept XLSX/CSV/PDF POS export files, parse them asynchronously, map rows to recipes via `menu_item_mappings`, and trigger BOM-based inventory depletion.
 
 ### Inputs
 - `POST /sales-imports/upload` → multipart file upload
@@ -366,7 +366,7 @@ interface IPrepService {
 
 ### Processing Pipeline (BullMQ Worker)
 ```
-1. Parse file (xlsx/csv)
+1. Parse file (xlsx/csv/pdf via ISalesFileParserFactory)
 2. Wrap execution in tenantContext.run(franchiseGroupId, restaurantId)
 3. BEGIN Kysely TRANSACTION
    a. Upsert rows into sales_import_rows
@@ -379,7 +379,7 @@ interface IPrepService {
 ```
 
 ### SOLID Notes
-- **DIP**: Parser is an injected `ISalesFileParser` interface — swap xlsx ↔ csv ↔ JSON without changing the worker.
+- **DIP**: Parser is an injected `ISalesFileParser` interface and resolved via `ISalesFileParserFactory` — swap xlsx ↔ csv ↔ pdf ↔ JSON without changing the worker.
 
 ---
 

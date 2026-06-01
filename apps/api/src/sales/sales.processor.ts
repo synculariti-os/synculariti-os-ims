@@ -2,12 +2,13 @@ import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger } from '@nestjs/common';
 import { asRestaurantId, asRecipeId, asItemId } from '@ims/types';
 import { Job } from 'bullmq';
-import * as xlsx from 'xlsx';
+import { ISalesFileParserFactory, SALES_FILE_PARSER_FACTORY_TOKEN } from './interfaces/i-sales-file-parser';
 import { ISalesRepository, SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
 import { IRecipeService, RECIPE_SERVICE_TOKEN } from '../recipe/interfaces/i-recipe.service';
 import { ILedgerService, LEDGER_SERVICE_TOKEN } from '../inventory/interfaces/i-ledger.service';
 import { IStorageService, STORAGE_SERVICE_TOKEN } from './interfaces/i-storage.service';
 import { Database } from '@ims/types';
+import * as path from 'path';
 import { Kysely } from 'kysely';
 import { tenantContext } from '../common/context/tenant.context';
 
@@ -20,6 +21,7 @@ export class SalesImportProcessor extends WorkerHost {
     @Inject(RECIPE_SERVICE_TOKEN) private readonly recipeService: IRecipeService,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
     @Inject(STORAGE_SERVICE_TOKEN) private readonly storageService: IStorageService,
+    @Inject(SALES_FILE_PARSER_FACTORY_TOKEN) private readonly parserFactory: ISalesFileParserFactory,
     @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
   ) {
     super();
@@ -37,29 +39,10 @@ export class SalesImportProcessor extends WorkerHost {
         // 1. Download file from storage
         const localFilePath = await this.storageService.downloadFile(filePath);
         
-        // 2. Parse Excel
-        const workbook = xlsx.readFile(localFilePath);
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        
-        // Convert to JSON
-        const rows: Record<string, string | number>[] = xlsx.utils.sheet_to_json(sheet);
-        
-        const parsedRows = rows
-          .map(row => {
-            const rawItemName = row['Názov'];
-            const quantitySold = Number(row['Množstvo']);
-            
-            if (!rawItemName || typeof rawItemName !== 'string') return null;
-            if (isNaN(quantitySold) || quantitySold <= 0) return null;
-            
-            return { rawItemName, quantitySold };
-          })
-          .filter((row): row is { rawItemName: string; quantitySold: number } => row !== null);
-
-        if (parsedRows.length === 0) {
-          throw new Error('No valid sales rows found in the uploaded file');
-        }
+        // 2. Parse file using injected factory
+        const ext = path.extname(localFilePath);
+        const parser = this.parserFactory.getParser(ext);
+        const parsedRows = await parser.parse(localFilePath);
 
         // Execute Database Transaction (Bulk Insert Rows + Ledger) + BOM expansion
         // Wrapping everything inside the transaction ensures partial transaction management (H2) is fixed
