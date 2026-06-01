@@ -29,6 +29,7 @@ function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => vo
 function RecipeDetailRow({ recipe }: { recipe: Recipe }) {
   const [ingredients, setIngredients] = useState<RecipeIngredient[] | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [targetYield, setTargetYield] = useState<number>(recipe.yieldQuantity || 1);
 
   const fetchIngredients = useCallback(async () => {
     if (ingredients !== null) return;
@@ -58,27 +59,60 @@ function RecipeDetailRow({ recipe }: { recipe: Recipe }) {
   }
 
   return (
-    <div className="space-y-2">
-      {ingredients.map((ing) => (
-        <div key={ing.id} className="flex items-center gap-3 text-sm">
-          {ing.subRecipeId ? (
-            <>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
-                <Link2 className="w-3 h-3 mr-1" /> Sub-recipe
-              </span>
-              <span className="font-medium text-zinc-800 dark:text-zinc-200">{ing.subRecipeName || ing.subRecipeId}</span>
-            </>
-          ) : (
-            <>
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
-                <Package className="w-3 h-3 mr-1" /> Ingredient
-              </span>
-              <span className="font-medium text-zinc-800 dark:text-zinc-200">{ing.ingredientItemName || ing.ingredientItemId}</span>
-            </>
-          )}
-          <span className="text-zinc-500 dark:text-zinc-400">× {ing.quantityRequired}</span>
-        </div>
-      ))}
+    <div className="space-y-4">
+      <div className="flex items-center gap-3">
+        <label className="text-sm font-medium text-zinc-700 dark:text-zinc-300">Target Yield:</label>
+        <input
+          type="number"
+          min="0.01"
+          step="0.01"
+          value={targetYield || ''}
+          onChange={(e) => setTargetYield(parseFloat(e.target.value) || 0)}
+          className="w-24 px-2 py-1 border border-zinc-200 dark:border-zinc-700 rounded-lg bg-white dark:bg-zinc-800 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+        {targetYield !== recipe.yieldQuantity && recipe.yieldQuantity > 0 && (
+          <span className="text-xs text-blue-600 dark:text-blue-400 font-medium">
+            (Scaled by {(targetYield / recipe.yieldQuantity).toFixed(2)}x)
+          </span>
+        )}
+      </div>
+      <div className="space-y-2">
+        {ingredients.map((ing) => {
+          const scaledQuantity = recipe.yieldQuantity > 0 
+            ? (ing.quantityRequired / recipe.yieldQuantity) * targetYield 
+            : ing.quantityRequired;
+            
+          return (
+            <div key={ing.id} className="flex items-center gap-3 text-sm">
+              {ing.subRecipeId ? (
+                <>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300">
+                    <Link2 className="w-3 h-3 mr-1" /> Sub-recipe
+                  </span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-200">{ing.subRecipeName || ing.subRecipeId}</span>
+                </>
+              ) : (
+                <>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">
+                    <Package className="w-3 h-3 mr-1" /> Ingredient
+                  </span>
+                  <span className="font-medium text-zinc-800 dark:text-zinc-200">{ing.ingredientItemName || ing.ingredientItemId}</span>
+                </>
+              )}
+              <div className="flex items-center gap-2">
+                <span className="text-zinc-900 dark:text-white font-mono font-medium">
+                  × {scaledQuantity.toFixed(2)}
+                </span>
+                {targetYield !== recipe.yieldQuantity && (
+                  <span className="text-zinc-400 text-xs line-through font-mono">
+                    ({ing.quantityRequired})
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

@@ -247,7 +247,7 @@ COMMIT
 | `menu_item_mappings` | CRUD |
 
 ### UI Views
-- `/recipes` — Recipe (BOM) list and Create Recipe dialog.
+- `/recipes` — Recipe (BOM) list, Create Recipe dialog, and dynamic Recipe Scaling (Target Yield adjustment).
 - `/recipes/mappings` — POS mapping list and linking dialog.
 
 ### Contracts Exposed
