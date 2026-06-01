@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pdfParse = require('pdf-parse');
 import { ISalesFileParser, ParsedSalesRow } from '../interfaces/i-sales-file-parser';
 

@@ -1,23 +1,18 @@
-import { Controller, Get, Query, UseGuards, Inject } from '@nestjs/common';
-import { IReportingService } from './interfaces/i-reporting.service';
+import { Controller, Get, Query, Inject } from '@nestjs/common';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
-import { PERMISSION_CODES } from '@ims/types';
+import { PERMISSION_CODES, JwtPayload } from '@ims/types';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '@ims/types';
-import { IProcurementReadService, PROCUREMENT_READ_SERVICE_TOKEN } from '../procurement/interfaces/i-procurement-read.service';
 import { vendorPriceHistoryQuerySchema } from '@ims/validators';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 
 import { IReportingService, REPORTING_SERVICE_TOKEN } from './interfaces/i-reporting.service';
-import { REPORTING_COGS_SERVICE_TOKEN } from './interfaces/i-reporting-cogs.service';
-import type { IReportingCogsService } from './interfaces/i-reporting-cogs.service';
+import { IReportingCogsService, REPORTING_COGS_SERVICE_TOKEN } from './interfaces/i-reporting-cogs.service';
 
 @Controller('reports')
 export class ReportingController {
   constructor(
     @Inject(REPORTING_SERVICE_TOKEN) private readonly reportingService: IReportingService,
     @Inject(REPORTING_COGS_SERVICE_TOKEN) private readonly cogsService: IReportingCogsService,
-    @Inject(PROCUREMENT_READ_SERVICE_TOKEN) private readonly procurementReadService: IProcurementReadService,
   ) {}
 
   @Get('variance')
@@ -66,6 +61,6 @@ export class ReportingController {
     @CurrentUser() user: JwtPayload,
     @Query(new ZodValidationPipe(vendorPriceHistoryQuerySchema)) query: { itemId: string },
   ) {
-    return this.procurementReadService.getVendorPriceHistory(user.restaurantId, query.itemId);
+    return this.cogsService.getVendorPriceHistory(user.restaurantId, query.itemId);
   }
 }

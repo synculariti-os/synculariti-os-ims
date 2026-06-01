@@ -17,4 +17,5 @@ export const SALES_IMPORT_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 export const SALES_IMPORT_ALLOWED_MIME_TYPES = [
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   'text/csv', 'application/csv',
+  'application/pdf',
 ] as const;

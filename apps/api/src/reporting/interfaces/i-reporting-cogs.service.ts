@@ -1,4 +1,4 @@
-import { RestaurantId, MenuItemCostReport } from '@ims/types';
+import { RestaurantId, MenuItemCostReport, VendorPriceHistoryRow } from '@ims/types';
 
 export const REPORTING_COGS_SERVICE_TOKEN = Symbol('IReportingCogsService');
 
@@ -8,4 +8,9 @@ export interface IReportingCogsService {
    * based on the latest average inventory batch costs.
    */
   getMenuCostingReport(restaurantId: RestaurantId): Promise<MenuItemCostReport[]>;
+
+  /**
+   * Returns historical vendor pricing for a given item.
+   */
+  getVendorPriceHistory(restaurantId: RestaurantId, itemId: string): Promise<VendorPriceHistoryRow[]>;
 }

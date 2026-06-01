@@ -8,6 +8,14 @@ import {
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { AUDIT_SERVICE_TOKEN, IAuditService } from '../../audit/interfaces/i-audit.service';
+import { getAuditBeforeState } from '../utils/audit.utils';
+import type { Json } from '@ims/types';
+
+function resolveOldValue(request: any): Json {
+  const beforeState = getAuditBeforeState(request);
+  if (beforeState !== undefined) return beforeState as Json;
+  return (request.body as Json) || null;
+}
 
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
@@ -36,7 +44,7 @@ export class AuditInterceptor implements NestInterceptor {
             action: `${method} ${request.route?.path || request.url}`,
             entityType: request.route?.path?.split('/')[1] ?? 'unknown',
             entityId: request.params?.id ?? 'unknown',
-            oldValue: request.body || null,
+            oldValue: resolveOldValue(request),
             newValue: response || null,
             success: true,
             sourceIp: request.ip,
@@ -52,7 +60,7 @@ export class AuditInterceptor implements NestInterceptor {
             action: `${method} ${request.route?.path || request.url}`,
             entityType: request.route?.path?.split('/')[1] ?? 'unknown',
             entityId: request.params?.id ?? 'unknown',
-            oldValue: request.body || null,
+            oldValue: resolveOldValue(request),
             newValue: null,
             success: false,
             errorMessage: error.message,

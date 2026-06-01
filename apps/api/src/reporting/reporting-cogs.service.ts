@@ -6,7 +6,7 @@ import { IRecipeService } from '../recipe/interfaces/i-recipe.service';
 import { IProcurementReadService } from '../procurement/interfaces/i-procurement-read.service';
 import { IItemReadService } from '../item/interfaces/i-item.service';
 import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
-import { RestaurantId, MenuItemCostReport, CostReportIngredient } from '@ims/types';
+import { RestaurantId, MenuItemCostReport, CostReportIngredient, VendorPriceHistoryRow } from '@ims/types';
 
 @Injectable()
 export class ReportingCogsService implements IReportingCogsService {
@@ -18,6 +18,10 @@ export class ReportingCogsService implements IReportingCogsService {
     @Inject(ITEM_READ_SERVICE_TOKEN)
     private readonly itemReadService: IItemReadService,
   ) {}
+
+  async getVendorPriceHistory(restaurantId: RestaurantId, itemId: string): Promise<VendorPriceHistoryRow[]> {
+    return this.procurementReadService.getVendorPriceHistory(restaurantId, itemId);
+  }
 
   async getMenuCostingReport(restaurantId: RestaurantId): Promise<MenuItemCostReport[]> {
     const recipes = await this.recipeService.listMenuRecipes(restaurantId);

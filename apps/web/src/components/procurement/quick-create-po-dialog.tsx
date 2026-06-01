@@ -58,7 +58,6 @@ export function QuickCreatePoDialog({
       
       setIsCreating(true);
       await procurementApi.createDraftPO({
-        restaurantId: 'REPLACED_BY_BACKEND_CONTEXT', // The backend pulls from JWT, this is just a placeholder to satisfy the validator currently
         vendorId: selectedVendorId,
         freightCharge: 0,
         taxAmount: 0,

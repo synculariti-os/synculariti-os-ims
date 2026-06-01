@@ -47,13 +47,13 @@ export interface Database {
     role_id: RoleId;
   };
   franchise_groups: {
-    id: FranchiseGroupId;
+    id: Generated<FranchiseGroupId>;
     name: string;
     created_at: Generated<string>;
     updated_at: Generated<string>;
   };
   restaurants: {
-    id: RestaurantId;
+    id: Generated<RestaurantId>;
     franchise_group_id: FranchiseGroupId;
     name: string;
     timezone: string;

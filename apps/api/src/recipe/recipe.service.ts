@@ -11,6 +11,7 @@ import type {
   BomExpansion,
   RecipeId,
   RestaurantId,
+  FranchiseGroupId,
   RecipeNutritionReport
 } from '@ims/types';
 import { asItemId } from '@ims/types';
@@ -238,7 +239,7 @@ export class RecipeService implements IRecipeService {
       producesItemId: dto.producesItemId ?? null,
       recipeName: dto.recipeName ?? null,
       restaurantId: resolvedRestaurantId,
-      franchiseGroupId: resolvedFranchiseGroupId ? (resolvedFranchiseGroupId as any) : null,
+      franchiseGroupId: resolvedFranchiseGroupId as FranchiseGroupId | null,
     };
 
     return await this.db.transaction().execute(async (trx) => {

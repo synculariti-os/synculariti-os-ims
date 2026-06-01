@@ -177,7 +177,6 @@
 
 | Symbol | Kind | Description |
 |---|---|---|
-| `salesImportFileSchema` | `ZodObject` | Multer file validation: size ≤ 10MB, MIME in allowed list |
 | `listBatchesQuerySchema` | `ZodObject` | Pagination parameters for fetching batches (`page`, `limit`) |
 | `ListBatchesQueryDto` | `inferred type` | `z.infer<typeof listBatchesQuerySchema>` |
 
@@ -240,13 +239,11 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 
 ### BullMQ Queues
 
-| Symbol | Kind | Queue Name | Description |
-|---|---|---|---|
-| `SALES_IMPORT_QUEUE` | `const` | `sales-import` | Queue for async XLS/CSV/PDF processing |
-| `SalesImportProcessor` | `class` | — | BullMQ worker that processes sales import jobs |
-| `ISalesFileParser` | `interface` | `SalesModule` | Interface for parsing different POS export file formats |
-| `ISalesFileParserFactory` | `interface` | `SalesModule` | Factory to inject the correct parser based on file extension |
-| `SalesImportJob` | `interface` | — | Job payload: `{ batchId: string; restaurantId: RestaurantId; filePath: string }` |
+| Symbol | Kind | Description |
+|---|---|---|
+| `SalesImportProcessor` | `class` | BullMQ worker that processes sales import jobs |
+| `ISalesFileParser` | `interface` | Interface for parsing different POS export file formats |
+| `ISalesFileParserFactory` | `interface` | Factory to inject the correct parser based on file extension |
 
 ---
 
@@ -295,4 +292,4 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 | `ITEM_TYPES` | `@ims/types` | `['RAW', 'PREP']` | Valid item type values |
 | `TRANSFER_STATUSES` | `@ims/types` | object | Valid transfer status values |
 | `COUNT_STATUSES` | `@ims/types` | object | Valid count batch status values |
-| `IMPORT_STATUSES` | `@ims/types` | object | Valid sales import status values |
+| `IMPORT_STATUS` | `@ims/types` | object | Valid sales import status values |

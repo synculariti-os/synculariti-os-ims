@@ -78,7 +78,7 @@ export class TenantRepository implements ITenantRepository {
   }
 
   async updateFranchiseGroup(id: string, name?: string): Promise<FranchiseGroup> {
-    const query = this.db.updateTable('franchise_groups').where('id', '=', id).returningAll();
+    const query = this.db.updateTable('franchise_groups').where('id', '=', id as FranchiseGroupId).returningAll();
     if (name !== undefined) {
       query.set({ name });
     }
@@ -89,14 +89,14 @@ export class TenantRepository implements ITenantRepository {
   async createRestaurant(name: string, franchiseGroupId: string, timezone: string): Promise<Restaurant> {
     const result = await this.db
       .insertInto('restaurants')
-      .values({ name, franchise_group_id: franchiseGroupId, timezone })
+      .values({ name, franchise_group_id: franchiseGroupId as FranchiseGroupId, timezone })
       .returningAll()
       .executeTakeFirstOrThrow();
     return this.findById(result.id as RestaurantId);
   }
 
   async updateRestaurant(id: string, name?: string, timezone?: string): Promise<Restaurant> {
-    let query = this.db.updateTable('restaurants').where('id', '=', id).returningAll();
+    let query = this.db.updateTable('restaurants').where('id', '=', id as RestaurantId).returningAll();
     const updates: any = {};
     if (name !== undefined) updates.name = name;
     if (timezone !== undefined) updates.timezone = timezone;
@@ -108,10 +108,10 @@ export class TenantRepository implements ITenantRepository {
   }
 
   async deleteFranchiseGroup(id: string): Promise<void> {
-    await this.db.deleteFrom('franchise_groups').where('id', '=', id).execute();
+    await this.db.deleteFrom('franchise_groups').where('id', '=', id as FranchiseGroupId).execute();
   }
 
   async deleteRestaurant(id: string): Promise<void> {
-    await this.db.deleteFrom('restaurants').where('id', '=', id).execute();
+    await this.db.deleteFrom('restaurants').where('id', '=', id as RestaurantId).execute();
   }
 }

@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import { randomUUID } from 'crypto';
 import {
   Database,
@@ -203,7 +203,7 @@ export class ProcurementRepository implements IProcurementRepository {
       .select([
         'item_id',
         this.db.fn.sum<number>('remaining_qty').as('total_qty'),
-        this.db.fn.sum<number>(this.db.raw('remaining_qty * landed_unit_cost')).as('total_value')
+        this.db.fn.sum<number>(sql<number>`remaining_qty * landed_unit_cost`).as('total_value')
       ])
       .where('restaurant_id', '=', restaurantId as RestaurantId)
       .where('remaining_qty', '>', 0)

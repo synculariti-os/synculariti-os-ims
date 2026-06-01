@@ -17,6 +17,7 @@ import type {
 import { PURCHASE_ORDER_STATUS, LEDGER_REASON_CODES } from '@ims/types';
 import type { CreatePoDto, ReceivePoDto } from '@ims/validators';
 
+import type { IProcurementService } from './interfaces/i-procurement.service';
 import type { IProcurementRepository } from './interfaces/i-procurement.repository';
 import type { ILedgerService } from '../inventory/interfaces/i-ledger.service';
 import type { IItemReadService } from '../item/interfaces/i-item.service';
@@ -26,7 +27,7 @@ import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 export const PROCUREMENT_REPOSITORY_TOKEN = Symbol('IProcurementRepository');
 
 @Injectable()
-export class ProcurementService {
+export class ProcurementService implements IProcurementService {
   constructor(
     @Inject('DB_CLIENT')
     private readonly db: Kysely<Database>,

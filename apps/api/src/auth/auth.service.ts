@@ -66,7 +66,7 @@ export class AuthService implements IAuthService {
     }
 
     // 4. Resolve franchise group
-    const restaurant = await this.tenantService.getRestaurant(restaurantId as string);
+    const restaurant = await this.tenantService.getRestaurant(restaurantId as RestaurantId);
     const franchiseGroupId = restaurant.franchiseGroupId;
 
     // 5. Resolve permissions

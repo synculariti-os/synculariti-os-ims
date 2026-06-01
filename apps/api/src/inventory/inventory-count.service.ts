@@ -19,6 +19,7 @@ import { COUNT_STATUS, LEDGER_REASON_CODES } from '@ims/types';
 import type { CloseCountBatchDto, SubmitCountRowDto } from '@ims/validators';
 
 import type { IInventoryCountRepository } from './interfaces/i-inventory-count.repository';
+import type { IInventoryCountService } from './interfaces/i-inventory-count.service';
 import type { ILedgerService } from './interfaces/i-ledger.service';
 import { LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 
