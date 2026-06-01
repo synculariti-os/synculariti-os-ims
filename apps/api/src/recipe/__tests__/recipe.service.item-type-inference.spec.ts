@@ -54,7 +54,6 @@ const mockRecipeRepo: IRecipeRepository = {
   findAllMappings:            vi.fn(),
   deleteRecipe:               vi.fn(),
   deleteMapping:              vi.fn(),
-  getUnmappedRows:            vi.fn(),
 };
 
 const mockItemService: IItemWriteService = {
@@ -73,6 +72,12 @@ const mockItemService: IItemWriteService = {
   generateSku:         vi.fn(),
 };
 
+const mockDb = {
+  transaction: vi.fn().mockReturnValue({
+    execute: vi.fn(async (cb) => cb({} as any)),
+  }),
+} as any;
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -81,7 +86,7 @@ describe('RecipeService — item type inference', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new RecipeService(mockRecipeRepo, mockItemService);
+    service = new RecipeService(mockDb, mockRecipeRepo, mockItemService);
   });
 
   // ── createRecipe — type promotion ─────────────────────────────────────────
@@ -105,6 +110,7 @@ describe('RecipeService — item type inference', () => {
       expect(mockItemService.updateItem).toHaveBeenCalledWith(
         PRODUCED_ITEM_ID,
         expect.objectContaining({ type: 'PREP' }),
+        expect.anything()
       );
     });
 
@@ -137,10 +143,11 @@ describe('RecipeService — item type inference', () => {
 
       await service.deleteRecipe(RECIPE_ID);
 
-      expect(mockRecipeRepo.deleteRecipe).toHaveBeenCalledWith(RECIPE_ID);
+      expect(mockRecipeRepo.deleteRecipe).toHaveBeenCalledWith(RECIPE_ID, expect.anything());
       expect(mockItemService.updateItem).toHaveBeenCalledWith(
         PRODUCED_ITEM_ID,
         expect.objectContaining({ type: 'RAW' }),
+        expect.anything()
       );
     });
 
@@ -155,7 +162,7 @@ describe('RecipeService — item type inference', () => {
 
       await service.deleteRecipe(RECIPE_ID);
 
-      expect(mockRecipeRepo.deleteRecipe).toHaveBeenCalledWith(RECIPE_ID);
+      expect(mockRecipeRepo.deleteRecipe).toHaveBeenCalledWith(RECIPE_ID, expect.anything());
       expect(mockItemService.updateItem).not.toHaveBeenCalled();
     });
 

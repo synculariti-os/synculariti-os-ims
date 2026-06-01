@@ -261,7 +261,7 @@ export class ItemRepository implements IItemRepository {
     return this.mapItemRecord(item);
   }
 
-  async updateItem(itemId: ItemId, data: UpdateItemDto): Promise<Item> {
+  async updateItem(itemId: ItemId, data: UpdateItemDto, trx?: unknown): Promise<Item> {
     const updateData: Record<string, unknown> = {};
     if (data.categoryId !== undefined) updateData.category_id = data.categoryId;
     if (data.name !== undefined) updateData.name = data.name;
@@ -279,7 +279,9 @@ export class ItemRepository implements IItemRepository {
     if (data.carbsGrams !== undefined) updateData.carbs_grams = data.carbsGrams;
     updateData.updated_at = new Date().toISOString();
 
-    const [item] = await this.db
+    const db = trx ? (trx as Kysely<Database>) : this.db;
+
+    const [item] = await db
       .updateTable('items')
       .set(updateData)
       .where('id', '=', itemId)
@@ -439,8 +441,9 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
-  async deleteItem(itemId: ItemId): Promise<void> {
-    await this.db
+  async deleteItem(itemId: ItemId, trx?: unknown): Promise<void> {
+    const db = trx ? (trx as Kysely<Database>) : this.db;
+    await db
       .deleteFrom('items')
       .where('id', '=', itemId)
       .execute();

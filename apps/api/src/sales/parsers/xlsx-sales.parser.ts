@@ -15,7 +15,7 @@ export class XlsxSalesParser implements ISalesFileParser {
         const quantitySold = Number(row['Množstvo']);
         
         if (!rawItemName || typeof rawItemName !== 'string') return null;
-        if (isNaN(quantitySold) || quantitySold <= 0) return null;
+        if (isNaN(quantitySold) || quantitySold < 0) return null;
         
         return { rawItemName, quantitySold };
       })

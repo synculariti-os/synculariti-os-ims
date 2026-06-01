@@ -14,6 +14,8 @@ import type {
   RecipeNutritionReport
 } from '@ims/types';
 import { asItemId } from '@ims/types';
+import type { Kysely } from 'kysely';
+import type { Database } from '@ims/types';
 import type { IRecipeService, CreateRecipeCommand } from './interfaces/i-recipe.service';
 import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto } from '@ims/validators';
 import type { IRecipeRepository } from './interfaces/i-recipe.repository';
@@ -25,12 +27,24 @@ export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
 @Injectable()
 export class RecipeService implements IRecipeService {
   constructor(
+    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
     @Inject(RECIPE_REPOSITORY_TOKEN) private readonly recipeRepo: IRecipeRepository,
     @Inject(ITEM_WRITE_SERVICE_TOKEN) private readonly itemService: IItemWriteService,
   ) {}
 
   async listRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
-    return this.recipeRepo.findAllRecipes(restaurantId);
+    const recipes = await this.recipeRepo.findAllRecipes(restaurantId);
+    await Promise.all(recipes.map(async (recipe) => {
+      if (recipe.producesItemId) {
+        try {
+          const item = await this.itemService.findById(recipe.producesItemId, restaurantId);
+          recipe.producesItemName = item.name;
+        } catch (e) {
+          recipe.producesItemName = 'Unknown Item';
+        }
+      }
+    }));
+    return recipes;
   }
 
   async listMenuRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
@@ -38,7 +52,18 @@ export class RecipeService implements IRecipeService {
   }
 
   async listMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]> {
-    return this.recipeRepo.findAllMappings(restaurantId);
+    const mappings = await this.recipeRepo.findAllMappings(restaurantId);
+    await Promise.all(mappings.map(async (mapping: any) => {
+      if (mapping.producesItemId) {
+        try {
+          const item = await this.itemService.findById(mapping.producesItemId, restaurantId);
+          mapping.targetRecipeName = item.name;
+        } catch (e) {
+          mapping.targetRecipeName = 'Unknown Item';
+        }
+      }
+    }));
+    return mappings;
   }
 
   async expandBOM(recipeId: RecipeId, soldQty: number): Promise<BomExpansion> {
@@ -111,7 +136,25 @@ export class RecipeService implements IRecipeService {
   }
 
   async getIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]> {
-    return this.recipeRepo.findIngredients(recipeId);
+    const ingredients = await this.recipeRepo.findIngredients(recipeId);
+    
+    // We need restaurantId to fetch item names, but we only have recipeId.
+    // Let's fetch the recipe first.
+    const recipe = await this.recipeRepo.findById(recipeId);
+    if (!recipe || !recipe.restaurantId) return ingredients;
+
+    await Promise.all(ingredients.map(async (ingredient) => {
+      if (ingredient.ingredientItemId) {
+        try {
+          const item = await this.itemService.findById(ingredient.ingredientItemId, recipe.restaurantId as RestaurantId);
+          ingredient.ingredientItemName = item.name;
+        } catch (e) {
+          ingredient.ingredientItemName = 'Unknown Item';
+        }
+      }
+    }));
+
+    return ingredients;
   }
 
   
@@ -198,13 +241,15 @@ export class RecipeService implements IRecipeService {
       franchiseGroupId: resolvedFranchiseGroupId ? (resolvedFranchiseGroupId as any) : null,
     };
 
-    const createdRecipe = await this.recipeRepo.create(command);
+    return await this.db.transaction().execute(async (trx) => {
+      const createdRecipe = await this.recipeRepo.create(command, trx);
 
-    if (command.producesItemId) {
-      await this.itemService.updateItem(asItemId(command.producesItemId), { type: 'PREP' });
-    }
+      if (command.producesItemId) {
+        await this.itemService.updateItem(asItemId(command.producesItemId), { type: 'PREP' }, trx);
+      }
 
-    return createdRecipe;
+      return createdRecipe;
+    });
   }
 
   async updateRecipe(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
@@ -222,18 +267,20 @@ export class RecipeService implements IRecipeService {
       throw new NotFoundException(`Recipe ${recipeId} not found`);
     }
     
-    if (existing.producesItemId) {
-      const otherRecipe = await this.recipeRepo.findByProducesItemId(existing.producesItemId);
-      const isOnlyProducer = !otherRecipe || otherRecipe.id === recipeId;
-      
-      await this.recipeRepo.deleteRecipe(recipeId);
-      
-      if (isOnlyProducer) {
-        await this.itemService.updateItem(existing.producesItemId, { type: 'RAW' });
+    return await this.db.transaction().execute(async (trx) => {
+      if (existing.producesItemId) {
+        const otherRecipe = await this.recipeRepo.findByProducesItemId(existing.producesItemId);
+        const isOnlyProducer = !otherRecipe || otherRecipe.id === recipeId;
+        
+        await this.recipeRepo.deleteRecipe(recipeId, trx);
+        
+        if (isOnlyProducer) {
+          await this.itemService.updateItem(existing.producesItemId, { type: 'RAW' }, trx);
+        }
+      } else {
+        await this.recipeRepo.deleteRecipe(recipeId, trx);
       }
-    } else {
-      await this.recipeRepo.deleteRecipe(recipeId);
-    }
+    });
   }
 
   async createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void> {
@@ -247,12 +294,5 @@ export class RecipeService implements IRecipeService {
 
   async deleteMapping(mappingId: string): Promise<void> {
     await this.recipeRepo.deleteMapping(mappingId);
-  }
-
-  async getUnmappedRows(
-    restaurantId: RestaurantId,
-    batchId: string,
-  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
-    return this.recipeRepo.getUnmappedRows(restaurantId, batchId);
   }
 }

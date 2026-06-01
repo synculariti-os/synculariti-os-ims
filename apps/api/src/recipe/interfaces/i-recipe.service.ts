@@ -27,7 +27,6 @@ export interface IRecipeService {
   deleteRecipe(recipeId: RecipeId): Promise<void>;
   createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void>;
   deleteMapping(mappingId: string): Promise<void>;
-  getUnmappedRows(restaurantId: RestaurantId, batchId: string): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>>;
 }
 
 export const RECIPE_SERVICE_TOKEN = Symbol('IRecipeService');

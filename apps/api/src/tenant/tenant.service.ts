@@ -28,4 +28,28 @@ export class TenantService implements ITenantService {
   async listRestaurantsForUser(userId: UserId): Promise<Restaurant[]> {
     return this.tenantRepository.findRestaurantsByUserId(userId);
   }
+
+  async createFranchiseGroup(dto: import('@ims/validators').CreateFranchiseGroupDto): Promise<FranchiseGroup> {
+    return this.tenantRepository.createFranchiseGroup(dto.name);
+  }
+
+  async updateFranchiseGroup(id: string, dto: import('@ims/validators').UpdateFranchiseGroupDto): Promise<FranchiseGroup> {
+    return this.tenantRepository.updateFranchiseGroup(id, dto.name);
+  }
+
+  async createRestaurant(dto: import('@ims/validators').CreateRestaurantDto): Promise<Restaurant> {
+    return this.tenantRepository.createRestaurant(dto.name, dto.franchiseGroupId, dto.timezone);
+  }
+
+  async updateRestaurant(id: string, dto: import('@ims/validators').UpdateRestaurantDto): Promise<Restaurant> {
+    return this.tenantRepository.updateRestaurant(id, dto.name, dto.timezone);
+  }
+
+  async deleteFranchiseGroup(id: string): Promise<void> {
+    return this.tenantRepository.deleteFranchiseGroup(id);
+  }
+
+  async deleteRestaurant(id: string): Promise<void> {
+    return this.tenantRepository.deleteRestaurant(id);
+  }
 }

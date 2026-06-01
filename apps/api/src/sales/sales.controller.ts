@@ -19,7 +19,7 @@ export class SalesController {
     @UploadedFile(
       new ParseFilePipeBuilder()
         .addFileTypeValidator({
-          fileType: /(csv|xlsx|xls|vnd.openxmlformats-officedocument.spreadsheetml.sheet|vnd.ms-excel)$/i,
+          fileType: /(csv|xlsx|xls|pdf|vnd.openxmlformats-officedocument.spreadsheetml.sheet|vnd.ms-excel)$/i,
         })
         .addMaxSizeValidator({
           maxSize: 10 * 1024 * 1024, // 10MB
@@ -47,5 +47,16 @@ export class SalesController {
   ) {
     const { restaurantId } = (req as unknown as { user: JwtPayload }).user;
     return this.salesService.listBatches(restaurantId, query.page, query.limit);
+  }
+
+  @Get('unmapped-rows')
+  @RequirePermission(PERMISSION_CODES.SALES_IMPORT)
+  async getUnmappedRows(
+    @Req() req: import('express').Request,
+    @Query('batchId') batchId: string,
+  ): Promise<{ data: Array<{ id: string; rawItemName: string; quantitySold: number }> }> {
+    const { restaurantId } = (req as unknown as { user: JwtPayload }).user;
+    const rows = await this.salesService.getUnmappedRows(restaurantId, batchId);
+    return { data: rows };
   }
 }

@@ -409,7 +409,7 @@ interface IPrepService {
 | `mat_view_variance_analytics` | READ |
 
 ### SOLID Notes
-- **ISP**: Depends only on `IStockQueryService` and `IItemReadService`, never on write services.
+- **ISP**: Depends only on read interfaces (`IStockQueryService`, `IItemReadService`, `IRecipeService`, `IProcurementReadService`), never on write services.
 
 ---
 

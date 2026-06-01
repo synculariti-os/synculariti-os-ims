@@ -36,18 +36,19 @@ export class InventoryCountService {
   async startBatch(restaurantId: RestaurantId): Promise<InventoryCountBatch> {
     // Snapshot current stock levels for all items
     const stockLevels = await this.ledger.getCurrentStockBulk(restaurantId);
-    
-    const batch = await this.countRepo.createBatch(this.db, restaurantId);
+    return await this.db.transaction().execute(async (trx) => {
+      const batch = await this.countRepo.createBatch(trx, restaurantId);
 
-    // Create count rows with expected quantities from the ledger
-    const rows = stockLevels.map((s) => ({
-      item_id: s.itemId,
-      expected_qty: s.qty,
-    }));
+      // Create count rows with expected quantities from the ledger
+      const rows = stockLevels.map((s) => ({
+        item_id: s.itemId,
+        expected_qty: s.qty,
+      }));
 
-    await this.countRepo.createCountRows(this.db, batch.id, rows);
+      await this.countRepo.createCountRows(trx, batch.id, rows);
 
-    return batch;
+      return batch;
+    });
   }
 
   async listBatches(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<InventoryCountBatch[]> {

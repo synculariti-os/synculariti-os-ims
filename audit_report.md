@@ -1,388 +1,142 @@
-# Audit Report: Codebase Conformance to RULES.md, SYMBOLS.md & AGENTS.md
+# Synculariti OS IMS — Full Codebase Re-Audit Report
 
-**Date**: 2026-05-23  
-**Scope**: Full monorepo — `apps/api`, `apps/web`, `packages/types`, `packages/validators`, `packages/config`  
-**Reference**: `RULES.md` (239 lines), `SYMBOLS.md` (274 lines), `AGENTS.md` (389 lines)
+> **Audit Date**: 2026-06-01 (Round 2)
+> **Scope**: All 9 Agent modules — current state after user fixes
 
 ---
 
 ## Executive Summary
 
-The codebase is in an **advanced construction phase**. All 9 NestJS agent modules exist, all missing service interfaces have been created, all Zod validation schemas are implemented, auth guards are registered globally, database types are strongly typed, cross-agent dependency rules are enforced, and the type-check passes cleanly across all 5 packages (0 errors). The initial audit identified **23 violations**; the majority have been remediated, with only a few low-severity items remaining.
+| Severity | Count | Change from Round 1 |
+|---|---|---|
+| **CRITICAL** | 3 | +1 (new broken test issues) |
+| **HIGH** | 11 | -1 (ACID fix) |
+| **MEDIUM** | 11 | -3 |
+| **LOW** | 19 | -6 |
+| **Total** | **44** | **-9** |
 
-| Criticality | Original | Fixed | Remaining |
+**9 previously-reported violations FIXED, 1 partially fixed, 34 remain unfixed + 5 new findings.**
+
+---
+
+## ✅ FIXED (9)
+
+| # | Module | Violation | Notes |
 |---|---|---|---|
-| 🔴 Critical | 9 | 8 | 1 (partial) |
-| 🟠 High | 9 | 9 | 0 |
-| 🟡 Medium | 5 | 3 | 2 |
+| C1 | Auth | PermissionRepository querying `restaurants` table | `getFranchiseGroupForRestaurant()` removed; delegates to `ITenantService` |
+| C2 | Procurement | `updatePOStatus` outside ACID transaction | Now passes `trx` to all 4 operations in `receivePO` |
+| R1 | Inventory | `LedgerRepository` joining `items` table | Joins removed; enrichment moved to service layer via `IItemReadService` |
+| R2 | Inventory | `startBatch()` writing 2 tables without transaction | Now wrapped in `db.transaction()` in `inventory-count.service.ts:36` |
+| R3 | Recipe | `getUnmappedRows` querying Sales tables | Removed from Recipe; lives in Sales module |
+| R4 | Recipe | `createRecipe`/`deleteRecipe` without shared transaction | Both now propagate `trx` to `itemService.updateItem()` |
+| R5 | Recipe | Repository JOIN-reading `items` table | Enrichment moved to service layer |
+| T1 | Tenant | Missing CRUD endpoints | `POST`/`PUT` for franchise-groups and restaurants added (deletes still missing) |
+| S1 | Sales | POST returns 200 instead of 201 | Default NestJS behavior is 201 — was never broken |
 
 ---
 
-## 🔴 Critical Violations
+## ❌ NOT FIXED — Critical (3)
 
-### C1. R-ARCH-01 / AGENTS.md: Cross-Repository Table Access
+### C1 (NEW) — Recipe: All 3 test files have constructor mismatch — tests are broken
 
-**[FIXED]**
+- **Files**: `recipe.service.spec.ts`, `recipe.service.sub-recipe-bom.spec.ts`, `recipe.service.item-type-inference.spec.ts`
+- **Issue**: `RecipeService` constructor now takes 3 params `(db, recipeRepo, itemService)` but all tests pass only 2: `new RecipeService(mockRecipeRepo, mockItemService)`. This means `this.db` receives `mockRecipeRepo`, `this.recipeRepo` receives `mockItemService`, and `this.itemService` is `undefined`. Every test calling `createRecipe()`, `deleteRecipe()`, `findById()`, or `transaction()` will fail at runtime with `TypeError`.
+- **Root cause**: `db` param was added to the constructor after the `@immutable-test` tests were written. Tests were never updated.
+- **Recommendation**: Add `mockDb` as first argument to all 3 constructor calls.
 
-**Location**: `apps/api/src/sales/sales.repository.ts:51-58`
+### C2 (persistent) — Auth: Auth test is broken — missing `tenantService` argument
 
-**Violation**: `SalesRepository.getMenuItemMappings()` queried the `menu_item_mappings` table, which is **owned by the Recipe Agent** (AGENTS.md §5). Sales Agent must call `RecipeService.resolveRecipeByPosString()` instead.
+- **File**: `auth.service.spec.ts:70-74`
+- **Issue**: After fixing PermissionRepository (C1 from round 1), `AuthService` now has a 4-param constructor including `tenantService`. The test only passes 3 args. The `verifyAndEnrich` test will throw `TypeError: Cannot read properties of undefined` at `this.tenantService.getRestaurant()`.
+- **Recommendation**: Update test constructor to include `mockTenantService`.
 
-**Fix**: Mapping resolution moved — `SalesRepository` no longer queries `menu_item_mappings`. The `SalesProcessor` now injects `RecipeService` via DI to resolve POS strings.
+### C3 (persistent) — Procurement: Immutable test assertion mismatched after ACID fix
 
----
-
-### C2. R-TS-01: Pervasive `any` Abuse
-
-**[FIXED — remaining `any` in test files only]**
-
-**Locations**:
-- ~~`packages/types/src/database.types.ts:4`~~ — Fully typed `Database` interface
-- ~~Every repository file~~ — All use `Kysely<Database>` 
-- ~~`packages/validators/src/index.ts`~~ — All Zod schemas implemented, no `any` stubs
-- ~~`apps/api/src/procurement/procurement.service.ts`~~ — Uses `Kysely<Database>`
-- ~~`apps/api/src/item/interfaces/i-item.repository.ts`~~ — Proper typed returns (no `Promise<any>`)
-- ~~`apps/api/src/sales/interfaces/i-sales.repository.ts`~~ — `createBatch()` returns proper typed interface
-
-**R-TS-01 rule**: No `any` type except with an `eslint-disable` comment explaining why.
-
-**Remaining `any` usage**:
-1. **Test files** (acceptable for mocks): ~87 `as any` occurrences across `__tests__/` dirs. These are test-specific mocks that don't affect production type safety.
-2. **`response.interceptor.ts:12,28`**: `Response<T>.meta?: any` and `data as any` — minor; the generic `T` constraint makes destructuring unknown shapes necessary.
-3. ~~`sales.controller.ts:34`~~ — Changed from `(req as any).user` to `(req as { user: JwtPayload }).user`.
-
-**Fix**: 
-1. ✅ Generate proper `database.types.ts` from Supabase schema
-2. ✅ Replace `as Kysely<any>` with typed `Kysely<Database>` in all non-test files
-3. ✅ Replace `Promise<any>` returns with proper typed interfaces
-4. ✅ Implement all stubbed validator schemas
+- **File**: `procurement.service.spec.ts:179`
+- **Issue**: Asserts `toHaveBeenCalledWith(PO_ID, 'RECEIVED')` but the fixed code now calls `updatePOStatus(PO_ID, 'RECEIVED', trx)` — 3 args vs 2. Vitest's exact matching will fail.
+- **Recommendation**: Update assertion to expect 3 args, or relax matching.
 
 ---
 
-### C3. R-DB-04: Missing Transactions for Multi-Table Writes
+## ❌ NOT FIXED — High (11)
 
-**[FIXED]**
-
-**Location**: `apps/api/src/recipe/recipe.repository.ts`
-
-**`create()`**: Previously inserted into `recipes` then `recipe_ingredients` without a transaction — orphan risk on ingredient failure.
-
-**`update()`**: Previously deleted all `recipe_ingredients` then re-inserted without a transaction — data loss on crash between delete/insert.
-
-**Fix**: Both methods now wrapped in `db.transaction().execute()` via the `@Transactional()` decorator.
-
----
-
-### C4. R-ARCH-04 / R-ARCH-05: Duplicated Interfaces & No Shared Validation
-
-**[FIXED — except frontend types (see note)]**
-
-**Duplicated interfaces**:
-| Interface | Status |
-|---|---|
-| `ILedgerService` in `sales/interfaces/` | ✅ Deleted; Sales now imports from `inventory/interfaces/` |
-| `IRecipeService` in `sales/interfaces/` | ✅ Deleted; Sales now imports from `recipe/interfaces/` |
-
-**Hardcoded permission string**: ✅ `SalesController` now uses `PERMISSION_CODES.SALES_IMPORT` instead of `'SALES.IMPORT'`.
-
-**Frontend redefines types**: ⏳ `batches-table.tsx` still defines `ImportStatus` and `SalesImportBatch` locally. The types package (`@ims/types`) uses camelCase properties, but direct Supabase queries return snake_case. Until the frontend routes through the NestJS API (which transforms responses), the local type definition is necessary for correctness.
-
-**Fix**: 
-1. ✅ Delete duplicated interface files
-2. ✅ Use `PERMISSION_CODES` constant
-3. ⏳ Import types from `@ims/types` in frontend — blocked on migrating frontend from direct Supabase queries to NestJS API
+| # | Module | Violation | File |
+|---|---|---|---|
+| H1 | Recipe | `findMenuRecipes` accepts `restaurantId` but **never uses it in WHERE clause** — returns ALL restaurants' data | `recipe.repository.ts:30-37` |
+| H2 | Reporting | Depends on `IRecipeService` + `IProcurementReadService` beyond documented ISP contract (AGENTS.md says only `IStockQueryService` + `IItemReadService`) | `reporting-cogs.service.ts:14-19`, `reporting.module.ts:7-8` |
+| H3 | Audit | `IAuditService` method named `logAction` instead of `log`; uses inline params type instead of `AuditEntryDto` | `i-audit.service.ts:5-20`, `audit.service.ts:11` |
+| H4 | Audit | `oldValue`/`newValue` always `null` in `AuditInterceptor` — audit trail incomplete | `audit.interceptor.ts:39-40,55-56` |
+| H5 | Tenant | DELETE endpoints still missing for `franchise-groups` and `restaurants` (AGENTS.md says CRUD) | `tenant.controller.ts`, `tenant.service.ts`, `tenant.repository.ts` |
+| H6 | Auth | `PATCH /auth/profile` missing `@RequirePermission()` (R-SEC-02) | `auth.controller.ts:36-43` |
+| H7 | Auth | `POST /auth/select-restaurant` missing `@RequirePermission()` (R-SEC-02) | `auth.controller.ts:27-34` |
+| H8 | Auth | SYMBOLS.md `IAuthService` entry omits `verifyToken` | SYMBOLS.md:225 |
+| H9 | Auth | SYMBOLS.md `loginSchema` entry claims `restaurantId` field that doesn't exist | SYMBOLS.md:138 |
+| H10 | Auth | SYMBOLS.md `PermissionCode` documented as `const enum` (actually const object + type) | SYMBOLS.md:42 |
+| H11 | Sales | `fileUrl`/`uploadedBy` silently dropped — no DB columns exist | `sales.repository.ts:17-29` |
 
 ---
 
-### C5. R-SEC-01: No Auth Guard Applied Globally
+## ❌ NOT FIXED — Medium (11)
 
-**[FIXED]**
-
-**Location**: `apps/api/src/app.module.ts`
-
-**Violation**: No global auth guard was registered. The `SupabaseAuthGuard` and `PermissionsGuard` classes existed but were never instantiated or applied.
-
-**Fix**: Both `SupabaseAuthGuard` and `PermissionsGuard` registered via `APP_GUARD` in `AppModule`. `@Public()` decorator available for public routes.
-
----
-
-### C6. AGENTS.md: Missing NestJS Modules
-
-**[FIXED]**
-
-**Per AGENTS.md, agents map 1-to-1 with NestJS modules.**
-
-| Agent | Module Exists? | Status |
-|---|---|---|
-| Auth Agent | ✅ `AuthModule` | Created and registered |
-| Tenant Agent | ✅ `TenantModule` | Created and registered |
-| Item Master Agent | ✅ `ItemModule` | OK |
-| Procurement Agent | ✅ `ProcurementModule` | Created and registered |
-| Recipe/BOM Agent | ✅ `RecipeModule` | OK |
-| Inventory Operations Agent | ✅ `InventoryModule` | Created and registered |
-| Sales Ingestion Agent | ✅ `SalesModule` | OK |
-| Reporting Agent | ✅ `ReportingModule` | Created and registered |
-| Audit Agent | ✅ `AuditModule` | Created and registered |
-
-**Current `app.module.ts` imports**: All 9 modules registered.
-
-**Fix**: ✅ All missing modules created and registered.
+| # | Module | Violation | File |
+|---|---|---|---|
+| M1 | Procurement | `createPoSchema` contains `restaurantId` server-context field (R-ARCH-05 corollary) | `procurement.validator.ts:22` |
+| M2 | Procurement | `createDraftPO` signature mismatch with AGENTS.md (extra `restaurantId` param) | `i-procurement.service.ts:7` |
+| M3 | Procurement | `getAverageUnitCosts` does in-memory aggregation in repository (business logic in wrong layer) | `procurement.repository.ts:187-212` |
+| M4 | Procurement | `listPOs` uses `limit`/`offset` instead of `page`/`limit`; missing `meta` (R-API-03) | `procurement.controller.ts:42` |
+| M5 | Inventory | `InventoryCountService` missing `implements IInventoryCountService` | `inventory-count.service.ts:28` |
+| M6 | Inventory | Module exports repository tokens (`LEDGER_REPOSITORY_TOKEN`, etc.) — risks cross-repo injection | `inventory.module.ts:74` |
+| M7 | Inventory | 5 test files missing `@immutable-test` comment | `inventory-count.controller.spec.ts`, `waste.service.spec.ts`, `waste.controller.spec.ts`, `prep.service.spec.ts`, `prep.controller.spec.ts` |
+| M8 | Reporting | Controller directly injects `IProcurementReadService` — bypasses service layer (R-ARCH-02) | `reporting.controller.ts:16,61-66` |
+| M9 | Reporting | Raw SQL for `REFRESH MATERIALIZED VIEW` (R-DB-03) | `reporting.service.ts:130,132` |
+| M10 | Sales | `recipeId` resolved in processor but silently dropped by `insertImportRows` | `sales.processor.ts:58-67`, `sales.repository.ts` |
+| M11 | Item | `Category.id` typed as `string` instead of `CategoryId` (branded type exists) | `packages/types/src/domain/item.ts:14` |
 
 ---
 
-### C7. R-TS-04 / AGENTS.md: Missing Service Interface Contracts
+## ❌ NOT FIXED — Low (19)
 
-**[FIXED]**
-
-**Interfaces defined in AGENTS.md but missing from code**:
-
-| Interface | Mentioned in AGENTS.md | Status |
-|---|---|---|
-| `IProcurementService` | §4 Contracts | ✅ Created |
-| `ITenantService` | §2 Contracts | ✅ Created |
-| `IAuditService` | §9 Contracts | ✅ Created |
-| `IStockQueryService` | §6 (Reporting) | ✅ Created |
-
-Also created: `IInventoryCountService` (for Inventory Agent).
-
-**Fix**: ✅ All missing interface files created.
-
----
-
-### C8. R-ARCH-05 / SYMBOLS.md: Missing Zod Validation Schemas
-
-**[FIXED]**
-
-**Stubbed as `any` in `packages/validators/src/index.ts`**: All stubs removed and implemented.
-
-**Status per SYMBOLS.md**:
-| Schema | SYMBOLS.md Ref | Status |
-|---|---|---|
-| `loginSchema` / `LoginDto` | Auth Schemas | ✅ Implemented |
-| `createVendorSchema` | Procurement Schemas | ✅ Implemented |
-| `createPoSchema` / `receivePoSchema` / `poLineItemSchema` | Procurement Schemas | ✅ Implemented |
-| `createTransferSchema` | Inventory Schemas | ✅ Implemented |
-| `submitCountRowSchema` | Inventory Schemas | ✅ Implemented |
-| `createWasteLogSchema` | Inventory Schemas | ✅ Implemented |
-| `createPrepLogSchema` | Inventory Schemas | ✅ Implemented |
-| `salesImportFileSchema` | Sales Schemas | ✅ Implemented (via ParseFilePipeBuilder) |
-| `menuItemMappingSchema` | Recipe Schemas | ✅ Implemented and exported |
-
-** Fix**: ✅ All Zod schemas implemented, `any` stubs removed, file validation registered.
+| # | Module | Violation | File |
+|---|---|---|---|
+| L01 | Auth | `UpdateProfileInput` vs `UpdateProfileDto` naming mismatch | `i-auth.service.ts:9` |
+| L02 | Procurement | `ProcurementService` missing `implements IProcurementService` | `procurement.service.ts:29` |
+| L03 | Procurement | `getVendorPriceHistory` undocumented in AGENTS.md | `i-procurement-read.service.ts:17` |
+| L04 | Procurement | `listPOs`/`listVendors` undocumented in AGENTS.md | `i-procurement.service.ts` |
+| L05 | Item | `updateItemSchema = createItemSchema.partial()` preserves defaults — sparse PATCH applies unwanted defaults | `item.validator.ts:26` |
+| L06 | Recipe | `as any` cast at `franchiseGroupId` assignment | `recipe.service.ts:241` |
+| L07 | Recipe | Multiple `as any` casts in test files | 3 spec files |
+| L08 | Recipe | Test files mock `getUnmappedRows` which no longer exists on interface (dead mock code) | 3 spec files |
+| L09 | Tenant | Unsafe type casts (`as unknown as`) throughout repository | `tenant.repository.ts` (7+ occurrences) |
+| L10 | Sales | `salesImportFileSchema` dead code (defined, exported, never used) | `sales.validator.ts:7-13` |
+| L11 | Sales | `PdfSalesParser` unreachable (controller MIME regex doesn't allow PDF) | `parsers/pdf-sales.parser.ts` |
+| L12 | Sales | `SALES_IMPORT_QUEUE`, `SalesImportJob`, `IMPORT_STATUSES` documented in SYMBOLS.md but don't exist | SYMBOLS.md:245,249,298 |
+| L13 | Sales | `require()` without eslint-disable comment | `parsers/pdf-sales.parser.ts:2` |
+| L14 | Sales | MIME type mismatch — controller allows `.xls`, validator schema doesn't | `sales.controller.ts:22` vs `validator.ts:8-11` |
+| L15 | Sales | Widespread inline `import()` type annotations (7 files) | Multiple sales files |
+| L16 | Sales | `as any` casts in test files (9 occurrences) | 2 spec files |
+| L17 | Reporting | Inline `import()` type annotation | `reporting.controller.ts:15` |
+| L18 | Reporting | String tokens instead of Symbol tokens; `REPORTING_COGS_SERVICE_TOKEN` exported but unused | `reporting.module.ts:22,26,30` |
+| L19 | Reporting | `as any` casts in test mocks (24 occurrences across 3 files) | 3 spec files |
+| L20 | All | SYMBOLS.md not updated to match code (see H8-H10, L03-L04, L12) | SYMBOLS.md |
 
 ---
 
-### C9. R-TS-03: Branded Types Bypassed
+## Cross-Cutting Observations
 
-**[FIXED]**
+### Test Integrity Crisis
 
-**Location**: All repository files, Sales module.
+**3 modules have broken test suites** that would fail if executed:
 
-**Violation**: Branded types (`ItemId`, `RestaurantId`, `PurchaseOrderId`, etc.) existed but were pervasively bypassed with raw string types and `as any` casts.
+1. **Recipe** — All 3 spec files have 2-arg constructor for a 3-param constructor + `getUnmappedRows` mock on removed method
+2. **Auth** — 3-arg constructor for a 4-param constructor; mocks dead `getFranchiseGroupForRestaurant` on interface
+3. **Procurement** — Assertion expects 2-arg `updatePOStatus` call but actual code passes 3
 
-**Fix**: 
-1. ✅ `asItemId()`, `asRestaurantId()` etc. from `branded.ts` used throughout all repositories
-2. ✅ Kysely typed as `Kysely<Database>` instead of `Kysely<any>` in all production code
-3. ✅ Branded types used in all interface definitions (repository return types, service method signatures)
+These are all consequences of fixing production code without updating the `@immutable-test`-marked test files. The `@immutable-test` constraint creates a tension: the tests were explicitly marked "NEVER MODIFY after first GREEN" but the production code they test was changed.
 
----
+### SYMBOLS.md Documentation Drift
 
-## 🟠 High Violations
+Despite fixes to production code, SYMBOLS.md was not updated. All original inaccuracies remain: `verifyToken` missing from `IAuthService`, `loginSchema` claiming `restaurantId`, `PermissionCode` documented as `const enum`, `SALES_IMPORT_QUEUE`/`SalesImportJob`/`IMPORT_STATUSES` referencing non-existent symbols, BullMQ queue name mismatch (`sales-import` vs `sales_import`), `FranchiseGroup`/`Restaurant` field mismatches, etc.
 
-### H1. R-DB-02: Tenant Context Not Implemented
+### Tenant Module Progress
 
-**[FIXED]** `TenantContextInterceptor` created and applied.
-
-`TenantContextInterceptor` (required by R-DB-02) does not exist. No `set_tenant_context()` call occurs anywhere. No repository query filters by tenant scope. Every query is global — a user from restaurant A can potentially see data from restaurant B.
-
-**Fix**: 
-1. Create `TenantContextInterceptor` that calls `set_tenant_context()` before each request
-2. Create Supabase migration for the `set_tenant_context()` pg function
-3. Add restaurant_id/franchise_group_id filters to all repository queries
-
----
-
-### H2. R-API-01: Incorrect REST Route Casing
-
-**[FIXED]** `SalesController` renamed from `@Controller('sales')` to `@Controller('sales-imports')`.
-
-`SalesController` uses `@Controller('sales')` but handles file imports. It should be `@Controller('sales-imports')` to follow kebab-case plural noun conventions for the resource being created.
-
----
-
-### H3. R-API-02: Missing Response Envelopes
-
-**[FIXED]** Created and registered `TransformResponseInterceptor` globally.
-
-`ItemController` methods return raw domain models directly instead of wrapping them in `{ data: T }`. This breaks the standard frontend response parser.
-
----
-
-### H4. R-API-03: No Pagination on List Endpoints
-
-**[FIXED]** `listParLevels` in `ItemRepository` now takes `page` and `limit`, returning `{ data, meta }`.
-
-`GET /items/below-par` (`ItemController.listParLevels`) returns a potentially unbounded array of items. It must accept `?page=X&limit=Y` and return the `meta` object.
-
----
-
-### H5. R-DB-03: Kysely Type Safety Bypassed (Via `any`)
-
-**[FIXED]** Repositories now use strongly-typed Kysely DB clients and explicit Types instead of `any`.
-
-While no raw SQL strings exist, the constant use of `as Kysely<any>` in every repository method makes the Kysely query builder effectively untyped. This defeats the purpose of R-DB-03 (which mandates Kysely for type safety).
-
-**Fix**: Same as C2 — properly type `Kysely<Database>` and remove `any` casts.
-
----
-
-### H6. R-TEST-02: No Integration Tests
-
-**[FIXED]** Added integration test job structure to `ci.yml`. Actual integration tests are scheduled for a future PR.
-
-`vitest.integration.config.ts` exists but `test/integration/` directory does not exist. No integration test files found anywhere in the codebase.
-
-**Fix**: Create integration tests for all ACID-critical paths (PO receipt, count close, sales depletion).
-
----
-
-### H7. R-TEST-05: Coverage Thresholds Not Enforced in CI
-
-**[FIXED]** Added `--coverage` to CI test command.
-
-`vitest.config.ts` defines coverage thresholds (branches: 80%, lines: 85%) but CI workflow (`ci.yml`) does not run `pnpm test -- --coverage`. The threshold configuration is dead code.
-
-**Fix**: Add `--coverage` flag to CI test step and add a coverage enforcement action.
-
----
-
-### H8. Naming Conventions: Zod Schema PascalCase vs camelCase
-
-**[FIXED]** All Zod schemas have been confirmed to use the camelCase convention (e.g. `createItemSchema`). Any rogue PascalCase imports have been updated.
-
-RULES.md §6 specifies `camelCase + Schema` for Zod schemas (e.g., `createItemSchema`). Current code uses PascalCase: `CreateItemSchema`, `UpdateItemSchema`, `CreateUomConversionSchema`, `CreateCategorySchema`, `createRecipeSchema` (inconsistent — mixed convention).
-
-**Fix**: Rename all Zod schemas to camelCase per convention table.
-
----
-
-### H9. R-SEC-04: File Upload Validation Incomplete
-
-**[FIXED]** Implemented `ParseFilePipeBuilder` in `SalesController` for size and type validation.
-
-- `salesImportFileSchema` (required by SYMBOLS.md for file validation — max 10MB, allowed MIME types) does not exist
-- `UploadSalesFileDtoSchema` only validates `businessDate` string, not the file itself
-- The controller has no file size/MIME type guard
-
-**Fix**: Implement `salesImportFileSchema` in validators; apply it via `ZodValidationPipe` or a file interceptor.
-
----
-
-## 🟡 Medium Violations
-
-### M1. SYMBOLS.md: Missing Global Providers
-
-**[FIXED]**
-
-| Provider | SYMBOLS.md Ref | Status |
-|---|---|---|
-| `@Transactional()` decorator | Decorators | ✅ Created (metadata-only; actual tx scope handled by Kysely) |
-| `@TenantId()` decorator | Decorators | ✅ Created |
-| `TenantContextInterceptor` | Global Providers | ✅ Created and registered via `APP_INTERCEPTOR` |
-| `AuditInterceptor` | Global Providers | ✅ Created and registered via `APP_INTERCEPTOR` |
-| `ZodValidationPipe` | Global Providers | ✅ Exists (per-route usage via `new ZodValidationPipe(schema)`) |
-| `GlobalExceptionFilter` | Global Providers | ✅ Registered via `APP_FILTER` |
-
-**Fix**: ✅ All missing providers created; existing ones registered.
-
----
-
-### M2. AGENTS.md: `inventory_batches` Table Ownership
-
-**[FIXED]**
-
-`inventory_batches` is listed as owned by Procurement Agent (INSERT on receipt) in AGENTS.md §4. However, the Inventory Agent owns FIFO costing semantics per AGENTS.md §6. The dual ownership is architecturally valid per the ACID critical path but should be explicitly documented.
-
-**Fix**: ✅ Note added to AGENTS.md §4 clarifying the dual concern (Procurement owns INSERT, Inventory owns costing semantics).
-
----
-
-### M3. R-TS-02: Inconsistent Discriminated Union
-
-**[FIXED]**
-
-`ISalesRepository.updateBatchStatus()` previously restricted status to `'PROCESSING' | 'COMPLETED' | 'FAILED'` — missing `'PENDING'`. The union now includes all four values matching the canonical `ImportStatus` type.
-
-**Fix**: ✅ Interface aligned with canonical `ImportStatus` type.
-
-### M4. R-CI-01: CI Missing Required Steps
-
-**[FIXED]**
-
-`ci.yml` previously only ran basic tests without coverage enforcement or integration tests.
-
-**Fix**: CI pipeline now includes:
-1. ✅ `pnpm type-check` — type checking
-2. ✅ `pnpm lint` — linting
-3. ✅ `pnpm test -- --coverage` — unit tests with coverage threshold enforcement
-4. ✅ `pnpm test:integration` — integration test step (graceful if no tests exist yet)
-5. ✅ `pnpm build` — build verification
-
-### M5. R-TEST-01: Incomplete Unit Test Coverage
-
-| Service | Tests Exist? | Full Method Coverage? |
-|---|---|---|
-| `AuthService` | ✅ `auth.service.spec.ts` | Partial |
-| `ItemService` | ✅ `item.service.spec.ts` | Good |
-| `ProcurementService` | ✅ `procurement.service.spec.ts` | Good |
-| `RecipeService` | ✅ `recipe.service.spec.ts` | Unknown |
-| `LedgerService` | ✅ `ledger.service.spec.ts` | Unknown |
-| `InventoryCountService` | ✅ `inventory-count.service.spec.ts` | Partial |
-| `SalesService` | ✅ `sales.service.spec.ts` | Partial |
-| `SalesImportProcessor` | ✅ `sales.processor.spec.ts` | Unknown |
-
-Not every service method has at least one unit test (violates R-TEST-01).
-
-**Fix**: Audit each service; fill gaps in test coverage.
-
----
-
-## Remediation Plan — Status
-
-### ✅ Completed (Phase 1-6)
-
-All initial 23 violations have been addressed. 21 are fully resolved; 2 remain partially open as detailed below.
-
-### 📋 Remaining Items
-
-| # | Task | Priority | Status | Notes |
-|---|---|---|---|---|
-| 1 | Frontend type imports (`batches-table.tsx`) | P2 | ⏳ Open | Blocked on frontend API migration from direct Supabase to NestJS (types package uses camelCase, Supabase returns snake_case) |
-| 2 | Fill gaps in unit test coverage per service | P1 | ⏳ Incomplete | `AuthService`, `InventoryCountService`, `SalesService` have partial coverage; `RecipeService`, `LedgerService`, `SalesImportProcessor` have unknown coverage | |
-
----
-
-## Appendix: Files Referenced
-
-| File | Original Violations | Status |
-|---|---|---|
-| `apps/api/src/app.module.ts` | C6, C5 | ✅ All fixed |
-| `apps/api/src/sales/sales.controller.ts` | C4, H2 | ✅ All fixed |
-| `apps/api/src/sales/sales.repository.ts` | C1, C2 | ✅ All fixed |
-| `apps/api/src/sales/interfaces/i-ledger.service.ts` | C4 | ✅ Deleted |
-| `apps/api/src/sales/interfaces/i-recipe.service.ts` | C4 | ✅ Deleted |
-| `apps/api/src/sales/interfaces/i-sales.repository.ts` | C2, M3 | ✅ All fixed |
-| `apps/api/src/recipe/recipe.repository.ts` | C3 | ✅ Fixed |
-| `apps/api/src/common/interceptors/response.interceptor.ts` | H3 | ✅ Minor `any` remaining (acceptable) |
-| `apps/api/src/item/interfaces/i-item.repository.ts` | C2 | ✅ Fixed |
-| `apps/api/src/procurement/procurement.service.ts` | C2 | ✅ Fixed |
-| `apps/api/src/inventory/inventory-count.service.ts` | C7 | ✅ Fixed |
-| `packages/types/src/database.types.ts` | C2 | ✅ Fixed |
-| `packages/types/src/branded.ts` | C9 | ✅ Fixed |
-| `packages/validators/src/index.ts` | C2, C8 | ✅ Fixed |
-| `apps/web/src/components/sales/batches-table.tsx` | C4 | ⏳ Partial — needs API migration |
-| `.github/workflows/ci.yml` | H7, M4 | ✅ Fixed |
-
----
-
-*Report generated by codebase audit against RULES.md, SYMBOLS.md, and AGENTS.md on 2026-05-23. Updated with fix statuses on 2026-05-23.*
+Good progress — `create`/`update` endpoints added for both `franchise_groups` and `restaurants`. Still missing `delete` endpoints. AGENTS.md specifies "CRUD" which includes Delete.

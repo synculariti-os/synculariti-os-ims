@@ -29,7 +29,7 @@ export class PdfSalesParser implements ISalesFileParser {
         let rawItemName = match[1].trim();
         const quantitySold = Number(match[3]);
 
-        if (rawItemName && !isNaN(quantitySold) && quantitySold > 0) {
+        if (rawItemName && !isNaN(quantitySold) && quantitySold >= 0) {
           // Some products might have category prefixed, but POS mappings handle it.
           parsedRows.push({ rawItemName, quantitySold });
         }

@@ -73,8 +73,8 @@ export class ItemService implements IItemWriteService {
     return this.itemRepo.listCategories(restaurantId, franchiseGroupId);
   }
 
-  async updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item> {
-    const updated = await this.itemRepo.updateItem(itemId, dto);
+  async updateItem(itemId: ItemId, dto: UpdateItemDto, trx?: unknown): Promise<Item> {
+    const updated = await this.itemRepo.updateItem(itemId, dto, trx);
     if (!updated) {
       throw new NotFoundException(`Item ${itemId} not found`);
     }
@@ -120,8 +120,8 @@ export class ItemService implements IItemWriteService {
     return this.itemRepo.upsertItemOverride(itemId, restaurantId, dto);
   }
 
-  async deleteItem(itemId: ItemId): Promise<void> {
-    await this.itemRepo.deleteItem(itemId);
+  async deleteItem(itemId: ItemId, trx?: unknown): Promise<void> {
+    await this.itemRepo.deleteItem(itemId, trx);
   }
 
   async deleteCategory(categoryId: string): Promise<void> {

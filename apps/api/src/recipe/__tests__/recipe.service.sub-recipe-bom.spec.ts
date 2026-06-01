@@ -120,7 +120,6 @@ const mockRecipeRepo: IRecipeRepository = {
   findAllMappings:            vi.fn(),
   deleteRecipe:               vi.fn(),
   deleteMapping:              vi.fn(),
-  getUnmappedRows:            vi.fn(),
 };
 
 const mockItemService: IItemWriteService = {
@@ -139,6 +138,12 @@ const mockItemService: IItemWriteService = {
   generateSku:       vi.fn(),
 };
 
+const mockDb = {
+  transaction: vi.fn().mockReturnValue({
+    execute: vi.fn(async (cb) => cb({} as any)),
+  }),
+} as any;
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -147,7 +152,7 @@ describe('RecipeService — recursive BOM expansion', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new RecipeService(mockRecipeRepo, mockItemService);
+    service = new RecipeService(mockDb, mockRecipeRepo, mockItemService);
   });
 
   // ── 2-level expansion: Pizza → Dough sub-recipe → raw ingredients ────────

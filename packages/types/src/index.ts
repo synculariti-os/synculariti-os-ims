@@ -16,3 +16,4 @@ export interface PaginationMeta {
   totalPages: number;
 }
 export * from './domain/reporting';
+export * from './domain/audit';

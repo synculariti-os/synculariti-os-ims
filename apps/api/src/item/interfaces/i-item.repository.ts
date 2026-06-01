@@ -14,8 +14,8 @@ export interface IItemRepository {
   listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
   listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]>;
   createItem(data: CreateItemCommand): Promise<Item>;
-  updateItem(itemId: ItemId, data: UpdateItemDto): Promise<Item>;
-  deleteItem(itemId: ItemId): Promise<void>;
+  updateItem(itemId: ItemId, data: UpdateItemDto, trx?: unknown): Promise<Item>;
+  deleteItem(itemId: ItemId, trx?: unknown): Promise<void>;
   createCategory(data: CreateCategoryCommand): Promise<Category>;
   updateCategory(categoryId: string, data: UpdateCategoryDto): Promise<Category>;
   deleteCategory(categoryId: string): Promise<void>;

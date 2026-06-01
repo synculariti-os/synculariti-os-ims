@@ -176,7 +176,7 @@ describe('ProcurementService', () => {
         }),
       );
       // Must update PO status
-      expect(mockProcurementRepo.updatePOStatus).toHaveBeenCalledWith(PO_ID, 'RECEIVED');
+      expect(mockProcurementRepo.updatePOStatus).toHaveBeenCalledWith(PO_ID, 'RECEIVED', expect.anything());
     });
 
     it('throws ConflictException when receiving an already RECEIVED PO (idempotency)', async () => {

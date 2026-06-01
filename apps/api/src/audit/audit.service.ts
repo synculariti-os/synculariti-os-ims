@@ -2,27 +2,14 @@ import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import crypto from 'crypto';
 import { Database, Json, UserId, RestaurantId, FranchiseGroupId } from '@ims/types';
+import type { AuditEntryDto } from '@ims/types';
 import { IAuditService } from './interfaces/i-audit.service';
 
 @Injectable()
 export class AuditService implements IAuditService {
   constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
 
-  async logAction(params: {
-    userId: string | null;
-    userEmail: string | null;
-    action: string;
-    entityType: string;
-    entityId: string;
-    oldValue: Json | null;
-    newValue: Json | null;
-    success: boolean;
-    errorMessage?: string;
-    sourceIp?: string;
-    userAgent?: string;
-    restaurantId?: string;
-    franchiseGroupId?: string;
-  }): Promise<void> {
+  async log(params: AuditEntryDto): Promise<void> {
     try {
       await this.db
         .insertInto('audit_log')

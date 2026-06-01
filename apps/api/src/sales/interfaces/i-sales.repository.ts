@@ -10,4 +10,5 @@ export interface ISalesRepository {
   updateBatchStatus(batchId: string, status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED', errorMessage?: string): Promise<void>;
   insertImportRows(trx: import('kysely').Kysely<import('@ims/types').Database>, rows: { batchId: string, rawItemName: string, quantitySold: number, isMapped: boolean }[]): Promise<void>;
   listBatches(restaurantId: string, page: number, limit: number): Promise<{ data: import('@ims/types').SalesImportBatch[], total: number }>;
+  getUnmappedRows(restaurantId: string, batchId: string): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>>;
 }

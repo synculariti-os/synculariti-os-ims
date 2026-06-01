@@ -56,8 +56,13 @@ const mockUserRepository: IUserRepository = {
 
 const mockPermissionRepository: IPermissionRepository = {
   resolvePermissions: vi.fn(),
-  getFranchiseGroupForRestaurant: vi.fn(),
 };
+
+const mockTenantService = {
+  getRestaurant: vi.fn(),
+  getFranchiseGroup: vi.fn(),
+  listRestaurantsForUser: vi.fn(),
+} as any;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -71,6 +76,7 @@ describe('AuthService', () => {
       mockSupabaseAdmin,
       mockUserRepository,
       mockPermissionRepository,
+      mockTenantService,
     );
   });
 
@@ -83,9 +89,9 @@ describe('AuthService', () => {
         error: null,
       });
       vi.mocked(mockUserRepository.findById).mockResolvedValueOnce(MOCK_PUBLIC_USER);
-      vi.mocked(mockPermissionRepository.getFranchiseGroupForRestaurant).mockResolvedValueOnce(
-        FRANCHISE_GROUP_ID,
-      );
+      vi.mocked(mockTenantService.getRestaurant).mockResolvedValueOnce({
+        franchiseGroupId: FRANCHISE_GROUP_ID,
+      } as any);
       vi.mocked(mockPermissionRepository.resolvePermissions).mockResolvedValueOnce(
         MOCK_PERMISSIONS,
       );
@@ -144,9 +150,9 @@ describe('AuthService', () => {
         error: null,
       });
       vi.mocked(mockUserRepository.findById).mockResolvedValueOnce(MOCK_PUBLIC_USER);
-      vi.mocked(mockPermissionRepository.getFranchiseGroupForRestaurant).mockResolvedValueOnce(
-        FRANCHISE_GROUP_ID,
-      );
+      vi.mocked(mockTenantService.getRestaurant).mockResolvedValueOnce({
+        franchiseGroupId: FRANCHISE_GROUP_ID,
+      } as any);
       // No role assigned → empty permissions
       vi.mocked(mockPermissionRepository.resolvePermissions).mockResolvedValueOnce([]);
 

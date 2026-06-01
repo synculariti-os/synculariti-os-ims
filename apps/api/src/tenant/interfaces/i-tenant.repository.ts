@@ -6,4 +6,10 @@ export interface ITenantRepository {
   findById(restaurantId: RestaurantId): Promise<Restaurant>;
   findFranchiseGroupById(franchiseGroupId: FranchiseGroupId): Promise<FranchiseGroup>;
   findRestaurantsByUserId(userId: UserId): Promise<Restaurant[]>;
+  createFranchiseGroup(name: string): Promise<FranchiseGroup>;
+  updateFranchiseGroup(id: string, name?: string): Promise<FranchiseGroup>;
+  createRestaurant(name: string, franchiseGroupId: string, timezone: string): Promise<Restaurant>;
+  updateRestaurant(id: string, name?: string, timezone?: string): Promise<Restaurant>;
+  deleteFranchiseGroup(id: string): Promise<void>;
+  deleteRestaurant(id: string): Promise<void>;
 }

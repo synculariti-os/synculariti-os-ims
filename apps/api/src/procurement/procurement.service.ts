@@ -112,7 +112,7 @@ export class ProcurementService {
       }
 
       // 4. Update PO status
-      await this.procurementRepo.updatePOStatus(poId, PURCHASE_ORDER_STATUS.RECEIVED);
+      await this.procurementRepo.updatePOStatus(poId, PURCHASE_ORDER_STATUS.RECEIVED, trx);
     });
   }
 

@@ -20,16 +20,11 @@ export class RecipeRepository implements IRecipeRepository {
   async findAllRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
     const rows = await this.db
       .selectFrom('recipes')
-      .leftJoin('items', 'items.id', 'recipes.produces_item_id')
       .selectAll('recipes')
-      .select('items.name as produces_item_name')
+      .where('recipes.restaurant_id', '=', restaurantId)
       .execute();
 
-    return rows.map((r: Record<string, unknown>) => {
-      const recipe = this.mapRecipeRow(r);
-      if (r.produces_item_name) recipe.producesItemName = r.produces_item_name as string;
-      return recipe;
-    });
+    return rows.map((r: Record<string, unknown>) => this.mapRecipeRow(r));
   }
 
   async findMenuRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
@@ -37,6 +32,7 @@ export class RecipeRepository implements IRecipeRepository {
       .selectFrom('recipes')
       .selectAll('recipes')
       .where('recipes.produces_item_id', 'is', null)
+      .where('recipes.restaurant_id', '=', restaurantId)
       .execute();
 
     return rows.map((r: Record<string, unknown>) => this.mapRecipeRow(r));
@@ -46,10 +42,9 @@ export class RecipeRepository implements IRecipeRepository {
     const rows = await this.db
       .selectFrom('menu_item_mappings')
       .leftJoin('recipes', 'recipes.id', 'menu_item_mappings.recipe_id')
-      .leftJoin('items', 'items.id', 'recipes.produces_item_id')
       .selectAll('menu_item_mappings')
       .select([
-        'items.name as target_recipe_name',
+        'recipes.produces_item_id as produces_item_id',
         'recipes.recipe_name as virtual_recipe_name',
       ])
       .where('menu_item_mappings.restaurant_id', '=', restaurantId)
@@ -60,7 +55,8 @@ export class RecipeRepository implements IRecipeRepository {
       restaurantId: asRestaurantId(r.restaurant_id as string),
       rawExcelString: r.raw_excel_string as string,
       recipeId: asRecipeId(r.recipe_id as string),
-      targetRecipeName: (r.target_recipe_name || r.virtual_recipe_name) as string | undefined,
+      producesItemId: r.produces_item_id as string | undefined,
+      targetRecipeName: r.virtual_recipe_name as string | undefined, // Note: For actual targetRecipeName (if produces_item_id is set), it will be hydrated by the service
       createdAt: r.created_at as string,
     }));
   }
@@ -88,11 +84,9 @@ export class RecipeRepository implements IRecipeRepository {
   async findIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]> {
     const rows = await this.db
       .selectFrom('recipe_ingredients')
-      .leftJoin('items', 'items.id', 'recipe_ingredients.ingredient_item_id')
       .leftJoin('recipes as sub', 'sub.id', 'recipe_ingredients.sub_recipe_id')
       .selectAll('recipe_ingredients')
       .select([
-        'items.name as ingredient_item_name',
         'sub.recipe_name as sub_recipe_name_virtual',
       ])
       .where('recipe_ingredients.recipe_id', '=', recipeId)
@@ -145,65 +139,45 @@ export class RecipeRepository implements IRecipeRepository {
     }));
   }
 
-  async getUnmappedRows(
-    restaurantId: RestaurantId,
-    batchId: string,
-  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
-    const rows = await this.db
-      .selectFrom('sales_import_rows')
-      .innerJoin('sales_import_batches', 'sales_import_batches.id', 'sales_import_rows.batch_id')
-      .select(['sales_import_rows.id', 'sales_import_rows.raw_item_name', 'sales_import_rows.quantity_sold'])
-      .where('sales_import_rows.batch_id', '=', batchId as any)
-      .where('sales_import_rows.is_mapped', '=', false)
-      .where('sales_import_batches.restaurant_id', '=', restaurantId)
-      .execute();
-
-    return rows.map((r: Record<string, unknown>) => ({
-      id: r.id as string,
-      rawItemName: r.raw_item_name as string,
-      quantitySold: Number(r.quantity_sold),
-    }));
-  }
-
   // ── Write ─────────────────────────────────────────────────────────────────
 
-  async create(command: CreateRecipeCommand): Promise<Recipe> {
-    return await this.db.transaction().execute(async (trx) => {
-      const [recipe] = await trx
-        .insertInto('recipes')
-        .values({
-          id: uuidv4() as RecipeId,
-          produces_item_id: command.producesItemId ? asItemId(command.producesItemId) : null,
-          recipe_name: command.recipeName ? command.recipeName : null,
-          yield_quantity: command.yieldQuantity,
-          yield_percent: command.yieldPercent ?? 1.0,
-          franchise_group_id: command.franchiseGroupId ? asFranchiseGroupId(command.franchiseGroupId) : null,
-          restaurant_id: command.restaurantId ? asRestaurantId(command.restaurantId) : null,
-        })
-        .returningAll()
+  async create(command: CreateRecipeCommand, trx?: unknown): Promise<Recipe> {
+    const db = trx ? (trx as Kysely<Database>) : this.db;
+    
+    const [recipe] = await db
+      .insertInto('recipes')
+      .values({
+        id: uuidv4() as RecipeId,
+        produces_item_id: command.producesItemId ? asItemId(command.producesItemId) : null,
+        recipe_name: command.recipeName ? command.recipeName : null,
+        yield_quantity: command.yieldQuantity,
+        yield_percent: command.yieldPercent ?? 1.0,
+        franchise_group_id: command.franchiseGroupId ? asFranchiseGroupId(command.franchiseGroupId) : null,
+        restaurant_id: command.restaurantId ? asRestaurantId(command.restaurantId) : null,
+      })
+      .returningAll()
+      .execute();
+
+    if (command.ingredients && command.ingredients.length > 0) {
+      await db
+        .insertInto('recipe_ingredients')
+        .values(
+          command.ingredients.map((ing) => ({
+            id: uuidv4() as RecipeIngredientId,
+            recipe_id: recipe.id,
+            ingredient_item_id: ing.lineType === 'ingredient' && ing.ingredientItemId
+              ? asItemId(ing.ingredientItemId)
+              : null,
+            sub_recipe_id: ing.lineType === 'sub_recipe' && ing.subRecipeId
+              ? asRecipeId(ing.subRecipeId)
+              : null,
+            quantity_required: ing.quantityRequired,
+          })),
+        )
         .execute();
+    }
 
-      if (command.ingredients && command.ingredients.length > 0) {
-        await trx
-          .insertInto('recipe_ingredients')
-          .values(
-            command.ingredients.map((ing) => ({
-              id: uuidv4() as RecipeIngredientId,
-              recipe_id: recipe.id,
-              ingredient_item_id: ing.lineType === 'ingredient' && ing.ingredientItemId
-                ? asItemId(ing.ingredientItemId)
-                : null,
-              sub_recipe_id: ing.lineType === 'sub_recipe' && ing.subRecipeId
-                ? asRecipeId(ing.subRecipeId)
-                : null,
-              quantity_required: ing.quantityRequired,
-            })),
-          )
-          .execute();
-      }
-
-      return this.mapRecipeRow(recipe);
-    });
+    return this.mapRecipeRow(recipe);
   }
 
   async update(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe> {
@@ -253,8 +227,9 @@ export class RecipeRepository implements IRecipeRepository {
     });
   }
 
-  async deleteRecipe(recipeId: RecipeId): Promise<void> {
-    await this.db
+  async deleteRecipe(recipeId: RecipeId, trx?: unknown): Promise<void> {
+    const db = trx ? (trx as Kysely<Database>) : this.db;
+    await db
       .deleteFrom('recipes')
       .where('id', '=', recipeId)
       .execute();

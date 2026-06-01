@@ -56,4 +56,11 @@ export class SalesService implements ISalesService {
       }
     };
   }
+
+  async getUnmappedRows(
+    restaurantId: string,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
+    return this.repo.getUnmappedRows(restaurantId, batchId);
+  }
 }

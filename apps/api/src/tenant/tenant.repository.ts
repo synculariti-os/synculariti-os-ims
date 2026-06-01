@@ -67,4 +67,51 @@ export class TenantRepository implements ITenantRepository {
       updatedAt: r.updated_at,
     })) as unknown as Restaurant[];
   }
+
+  async createFranchiseGroup(name: string): Promise<FranchiseGroup> {
+    const result = await this.db
+      .insertInto('franchise_groups')
+      .values({ name })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return this.findFranchiseGroupById(result.id as FranchiseGroupId);
+  }
+
+  async updateFranchiseGroup(id: string, name?: string): Promise<FranchiseGroup> {
+    const query = this.db.updateTable('franchise_groups').where('id', '=', id).returningAll();
+    if (name !== undefined) {
+      query.set({ name });
+    }
+    const result = await query.executeTakeFirstOrThrow();
+    return this.findFranchiseGroupById(result.id as FranchiseGroupId);
+  }
+
+  async createRestaurant(name: string, franchiseGroupId: string, timezone: string): Promise<Restaurant> {
+    const result = await this.db
+      .insertInto('restaurants')
+      .values({ name, franchise_group_id: franchiseGroupId, timezone })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+    return this.findById(result.id as RestaurantId);
+  }
+
+  async updateRestaurant(id: string, name?: string, timezone?: string): Promise<Restaurant> {
+    let query = this.db.updateTable('restaurants').where('id', '=', id).returningAll();
+    const updates: any = {};
+    if (name !== undefined) updates.name = name;
+    if (timezone !== undefined) updates.timezone = timezone;
+    if (Object.keys(updates).length > 0) {
+        query = query.set(updates);
+    }
+    const result = await query.executeTakeFirstOrThrow();
+    return this.findById(result.id as RestaurantId);
+  }
+
+  async deleteFranchiseGroup(id: string): Promise<void> {
+    await this.db.deleteFrom('franchise_groups').where('id', '=', id).execute();
+  }
+
+  async deleteRestaurant(id: string): Promise<void> {
+    await this.db.deleteFrom('restaurants').where('id', '=', id).execute();
+  }
 }

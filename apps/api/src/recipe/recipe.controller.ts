@@ -45,15 +45,7 @@ export class RecipeController {
     return { data: mappings };
   }
 
-  @Get('unmapped-rows')
-  @RequirePermission(PERMISSION_CODES.RECIPE_READ)
-  async getUnmappedRows(
-    @CurrentUser() user: JwtPayload,
-    @Query('batchId') batchId: string,
-  ): Promise<{ data: Array<{ id: string; rawItemName: string; quantitySold: number }> }> {
-    const rows = await this.recipeService.getUnmappedRows(user.restaurantId, batchId);
-    return { data: rows };
-  }
+
 
   @Get(':id/ingredients')
   @RequirePermission(PERMISSION_CODES.RECIPE_READ)

@@ -30,8 +30,8 @@ export interface IItemReadService {
 
 export interface IItemWriteService extends IItemReadService {
   createItem(dto: CreateItemDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Item>;
-  updateItem(itemId: ItemId, dto: UpdateItemDto): Promise<Item>;
-  deleteItem(itemId: ItemId): Promise<void>;
+  updateItem(itemId: ItemId, dto: UpdateItemDto, trx?: unknown): Promise<Item>;
+  deleteItem(itemId: ItemId, trx?: unknown): Promise<void>;
   createCategory(dto: CreateCategoryDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
   deleteCategory(categoryId: string): Promise<void>;

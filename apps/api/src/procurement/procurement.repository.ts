@@ -124,8 +124,9 @@ export class ProcurementRepository implements IProcurementRepository {
     return rows.map(r => this.mapPO(r));
   }
 
-  async updatePOStatus(poId: PurchaseOrderId, status: string): Promise<PurchaseOrder> {
-    const row = await this.db
+  async updatePOStatus(poId: PurchaseOrderId, status: string, trx?: unknown): Promise<PurchaseOrder> {
+    const db = trx ? (trx as Kysely<Database>) : this.db;
+    const row = await db
       .updateTable('purchase_orders')
       .set({ status: status as any, updated_at: new Date().toISOString() })
       .where('id', '=', poId)

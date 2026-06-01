@@ -46,7 +46,6 @@ const mockRecipeRepo: IRecipeRepository = {
   findAllMappings:            vi.fn(),
   deleteRecipe:               vi.fn(),
   deleteMapping:              vi.fn(),
-  getUnmappedRows:            vi.fn(),
 };
 
 const mockItemService: IItemWriteService = {
@@ -65,6 +64,12 @@ const mockItemService: IItemWriteService = {
   generateSku: vi.fn(),
 };
 
+const mockDb = {
+  transaction: vi.fn().mockReturnValue({
+    execute: vi.fn(async (cb) => cb({} as any)),
+  }),
+} as any;
+
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
@@ -73,7 +78,7 @@ describe('RecipeService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new RecipeService(mockRecipeRepo, mockItemService);
+    service = new RecipeService(mockDb, mockRecipeRepo, mockItemService);
   });
 
   // ── expandBOM ─────────────────────────────────────────────────────────────
@@ -184,7 +189,7 @@ describe('RecipeService', () => {
         recipeName: null,
         restaurantId: 'restaurant-uuid',
         franchiseGroupId: null,
-      });
+      }, expect.anything());
       expect(result).toEqual(MOCK_RECIPE);
     });
 

@@ -85,4 +85,24 @@ export class SalesRepository implements ISalesRepository {
       total: totalResult?.total ? parseInt(totalResult.total, 10) : 0,
     };
   }
+
+  async getUnmappedRows(
+    restaurantId: string,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
+    const rows = await this.db
+      .selectFrom('sales_import_rows')
+      .innerJoin('sales_import_batches', 'sales_import_batches.id', 'sales_import_rows.batch_id')
+      .select(['sales_import_rows.id', 'sales_import_rows.raw_item_name', 'sales_import_rows.quantity_sold'])
+      .where('sales_import_rows.batch_id', '=', asSalesImportBatchId(batchId))
+      .where('sales_import_rows.is_mapped', '=', false)
+      .where('sales_import_batches.restaurant_id', '=', asRestaurantId(restaurantId))
+      .execute();
+
+    return rows.map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      rawItemName: r.raw_item_name as string,
+      quantitySold: Number(r.quantity_sold),
+    }));
+  }
 }

@@ -39,21 +39,16 @@ export class LedgerRepository implements ILedgerRepository {
   async sumChangeAmountBulk(restaurantId: RestaurantId): Promise<any[]> {
     const results = await this.db
       .selectFrom('inventory_ledger as il')
-      .leftJoin('items as i', 'i.id', 'il.item_id')
       .select([
         'il.item_id',
-        'i.name as item_name',
-        'i.inventory_uom',
         ({ fn }) => fn.sum<number>('il.change_amount').as('total')
       ])
       .where('il.restaurant_id', '=', restaurantId)
-      .groupBy(['il.item_id', 'i.name', 'i.inventory_uom'])
+      .groupBy(['il.item_id'])
       .execute();
       
     return results.map(r => ({
       itemId: asItemId(r.item_id),
-      itemName: r.item_name,
-      baseUom: r.inventory_uom,
       qty: Number(r.total || 0)
     }));
   }
@@ -61,16 +56,13 @@ export class LedgerRepository implements ILedgerRepository {
   async getLedgerEntries(restaurantId: RestaurantId, limit: number, offset: number): Promise<any[]> {
     return await this.db
       .selectFrom('inventory_ledger as il')
-      .leftJoin('items as i', 'i.id', 'il.item_id')
       .select([
         'il.id',
         'il.created_at',
         'il.reason_code',
         'il.change_amount',
         'il.reference_id',
-        'il.item_id',
-        'i.name as item_name',
-        'i.inventory_uom'
+        'il.item_id'
       ])
       .where('il.restaurant_id', '=', restaurantId)
       .orderBy('il.created_at', 'desc')

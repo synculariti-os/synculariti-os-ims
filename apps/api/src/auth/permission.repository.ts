@@ -22,19 +22,4 @@ export class PermissionRepository implements IPermissionRepository {
 
     return result.map(row => row.code as PermissionCode);
   }
-
-  async getFranchiseGroupForRestaurant(restaurantId: RestaurantId): Promise<FranchiseGroupId> {
-    // Read from restaurants table to get franchise_group_id
-    const result = await this.db
-      .selectFrom('restaurants')
-      .select('franchise_group_id')
-      .where('id', '=', restaurantId)
-      .executeTakeFirst();
-
-    if (!result) {
-      throw new NotFoundException(`Restaurant ${restaurantId} not found`);
-    }
-
-    return asFranchiseGroupId(result.franchise_group_id);
-  }
 }

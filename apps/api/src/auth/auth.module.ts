@@ -4,9 +4,11 @@ import { AUTH_SERVICE_TOKEN } from './interfaces/i-auth.service';
 import { UserRepository } from './user.repository';
 import { PermissionRepository } from './permission.repository';
 import { AuthController } from './auth.controller';
+import { TenantModule } from '../tenant/tenant.module';
 
 @Global()
 @Module({
+  imports: [TenantModule],
   controllers: [AuthController],
   providers: [
     {
