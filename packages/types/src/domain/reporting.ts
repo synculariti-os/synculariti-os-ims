@@ -39,3 +39,11 @@ export interface MenuItemCostReport {
   totalCost: number;
   ingredients: CostReportIngredient[];
 }
+
+export interface VendorPriceHistoryRow {
+  date: string;
+  landedUnitCost: number;
+  vendorId: string;
+  vendorName: string;
+  poId: string | null;
+}

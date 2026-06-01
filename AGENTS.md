@@ -391,12 +391,14 @@ interface IPrepService {
 - `GET /reports/snapshots` → query `daily_inventory_snapshots`
 - `GET /reports/par-alerts` → items below par level
 - `GET /reports/cogs` → theoretical menu item costing based on aggregate actual ingredient prices
+- `GET /reports/vendor-pricing` → historical unit cost trends by item and vendor
 
 ### Outputs
 - `daily_inventory_snapshots` rows (INSERT only via scheduled job)
 - Variance analytics data for the frontend dashboard
 - Par-level alert list
 - Menu item theoretical COGS breakdown
+- Vendor price history tracking
 
 ### Owned Tables
 | Table | Access |

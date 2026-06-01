@@ -9,13 +9,14 @@ import {
   PurchaseOrderId,
   RestaurantId,
   VendorId,
+  Vendor,
+  VendorPriceHistoryRow,
   asPurchaseOrderId,
   asRestaurantId,
   asVendorId,
   asPoLineItemId,
   asItemId,
   asInventoryBatchId,
-  Vendor,
 } from '@ims/types';
 import { CreatePoDto } from '@ims/validators';
 import { IProcurementRepository, CreateInventoryBatchInput } from './interfaces/i-procurement.repository';
@@ -222,5 +223,31 @@ export class ProcurementRepository implements IProcurementRepository {
       .execute();
 
     return rows.map(r => this.mapVendor(r));
+  }
+
+  async getVendorPriceHistory(restaurantId: string, itemId: string): Promise<VendorPriceHistoryRow[]> {
+    const records = await this.db
+      .selectFrom('inventory_batches')
+      .leftJoin('purchase_orders', 'inventory_batches.po_id', 'purchase_orders.id')
+      .leftJoin('vendors', 'purchase_orders.vendor_id', 'vendors.id')
+      .where('inventory_batches.restaurant_id', '=', restaurantId as any)
+      .where('inventory_batches.item_id', '=', itemId as any)
+      .select([
+        'inventory_batches.received_date',
+        'inventory_batches.landed_unit_cost',
+        'vendors.id as vendor_id',
+        'vendors.name as vendor_name',
+        'inventory_batches.po_id',
+      ])
+      .orderBy('inventory_batches.received_date', 'asc')
+      .execute();
+
+    return records.map(r => ({
+      date: r.received_date,
+      landedUnitCost: Number(r.landed_unit_cost),
+      vendorId: r.vendor_id || 'manual-entry',
+      vendorName: r.vendor_name || 'Manual Entry',
+      poId: r.po_id,
+    }));
   }
 }

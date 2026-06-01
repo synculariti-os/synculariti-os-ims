@@ -15,6 +15,7 @@ describe('ProcurementReadService', () => {
   beforeEach(async () => {
     mockRepo = {
       getAverageUnitCosts: vi.fn(),
+      getVendorPriceHistory: vi.fn(),
     } as any;
 
     const module: TestingModule = await Test.createTestingModule({
@@ -48,6 +49,27 @@ describe('ProcurementReadService', () => {
       
       const result = await service.getAverageUnitCosts(mockRestaurantId);
       expect(result).toEqual(mockCosts);
+    });
+  });
+
+  describe('getVendorPriceHistory', () => {
+    it('returns empty array when no history exists', async () => {
+      (mockRepo.getVendorPriceHistory as any).mockResolvedValue([]);
+      
+      const result = await service.getVendorPriceHistory(mockRestaurantId, 'item-1');
+      expect(result).toEqual([]);
+      expect(mockRepo.getVendorPriceHistory).toHaveBeenCalledWith(mockRestaurantId, 'item-1');
+    });
+
+    it('returns price history for an item', async () => {
+      const mockHistory = [
+        { date: '2023-01-01', landedUnitCost: 10, vendorId: 'v1', vendorName: 'Vendor 1', poId: 'po1' },
+        { date: '2023-02-01', landedUnitCost: 11, vendorId: 'v1', vendorName: 'Vendor 1', poId: 'po2' },
+      ];
+      (mockRepo.getVendorPriceHistory as any).mockResolvedValue(mockHistory);
+      
+      const result = await service.getVendorPriceHistory(mockRestaurantId, 'item-1');
+      expect(result).toEqual(mockHistory);
     });
   });
 });

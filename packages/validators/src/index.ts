@@ -4,6 +4,7 @@ export * from './domain/recipe.validator';
 export * from './domain/auth.validator';
 export * from './domain/procurement.validator';
 export * from './domain/inventory.validator';
+export * from './domain/reporting.validator';
 
 export type ApiError = {
   error: {

@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ItemWithOverride } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
-import { Package, Plus, Search, Tag, Scale, Pencil, Trash2, AlertTriangle } from 'lucide-react';
+import { Package, Plus, Search, Tag, Scale, Pencil, Trash2, AlertTriangle, TrendingUp } from 'lucide-react';
 import { CreateItemDialog } from './create-item-dialog';
 import { EditItemDialog } from './edit-item-dialog';
 
@@ -150,6 +150,13 @@ export function ItemsTable() {
                     </td>
                     <td className="p-4 px-6 text-right">
                       <div className="flex items-center justify-end gap-2">
+                        <a
+                          href={`/reports/vendor-pricing?itemId=${item.id}`}
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                          title="Price trends"
+                        >
+                          <TrendingUp className="w-4 h-4" />
+                        </a>
                         <button
                           className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                           onClick={() => setEditingItem(item)}
