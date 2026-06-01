@@ -127,7 +127,7 @@ describe('PrepService', () => {
       recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
       recipeService.expandBOM.mockResolvedValue(mockBom);
       stockQueryService.getCurrentStockBulk.mockResolvedValue([
-        { itemId: 'ing-1', quantity: 10 } as any // only 10 in stock, need 20
+        { itemId: 'ing-1', qty: 10 } as any // only 10 in stock, need 20
         // ing-2 is missing from stock, so 0
       ]);
 
@@ -159,7 +159,7 @@ describe('PrepService', () => {
       recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
       recipeService.expandBOM.mockResolvedValue(mockBom);
       stockQueryService.getCurrentStockBulk.mockResolvedValue([
-        { itemId: 'ing-1', quantity: 50 } as any // plenty
+        { itemId: 'ing-1', qty: 50 } as any // plenty
       ]);
 
       itemReadService.findById.mockResolvedValue({ id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as any);

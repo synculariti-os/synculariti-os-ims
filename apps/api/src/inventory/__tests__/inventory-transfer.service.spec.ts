@@ -50,7 +50,7 @@ describe('InventoryTransferService', () => {
       providers: [
         InventoryTransferService,
         { provide: LEDGER_SERVICE_TOKEN, useValue: ledgerService },
-        { provide: 'DATABASE_CONNECTION', useValue: mockDb },
+        { provide: 'DB_CLIENT', useValue: mockDb },
       ],
     }).compile();
 

@@ -8,6 +8,7 @@ import { ISalesRepository, SALES_REPOSITORY_TOKEN } from '../interfaces/i-sales.
 import { IRecipeService, RECIPE_SERVICE_TOKEN } from '../../recipe/interfaces/i-recipe.service';
 import { ILedgerService, LEDGER_SERVICE_TOKEN } from '../../inventory/interfaces/i-ledger.service';
 import { IStorageService, STORAGE_SERVICE_TOKEN } from '../interfaces/i-storage.service';
+import { SALES_FILE_PARSER_FACTORY_TOKEN, ISalesFileParserFactory, ISalesFileParser } from '../interfaces/i-sales-file-parser';
 
 describe('SalesImportProcessor', () => {
   let processor: SalesImportProcessor;
@@ -21,7 +22,17 @@ describe('SalesImportProcessor', () => {
       createBatch: vi.fn(),
       updateBatchStatus: vi.fn(),
       insertImportRows: vi.fn(),
+    } as any;
 
+    const mockParser: Mocked<ISalesFileParser> = {
+      parse: vi.fn().mockResolvedValue([
+        { rawItemName: 'BLUE HEAVEN COMBO', quantitySold: 9 },
+        { rawItemName: 'CHEESY SMASH', quantitySold: 19 },
+      ]),
+    } as any;
+
+    const parserFactory: Mocked<ISalesFileParserFactory> = {
+      getParser: vi.fn().mockReturnValue(mockParser),
     } as any;
 
     recipeService = {
@@ -46,6 +57,7 @@ describe('SalesImportProcessor', () => {
         { provide: RECIPE_SERVICE_TOKEN, useValue: recipeService },
         { provide: LEDGER_SERVICE_TOKEN, useValue: ledgerService },
         { provide: STORAGE_SERVICE_TOKEN, useValue: storageService },
+        { provide: SALES_FILE_PARSER_FACTORY_TOKEN, useValue: parserFactory },
         { provide: 'DB_CLIENT', useValue: { transaction: vi.fn().mockReturnValue({ execute: vi.fn((cb) => cb({} as any)) }) } }
       ],
     }).compile();

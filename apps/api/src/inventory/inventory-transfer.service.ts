@@ -11,7 +11,7 @@ import * as crypto from 'crypto';
 @Injectable()
 export class InventoryTransferService implements IInventoryTransferService {
   constructor(
-    @Inject('DATABASE_CONNECTION') private readonly db: Kysely<Database>,
+    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
   ) {}
 
