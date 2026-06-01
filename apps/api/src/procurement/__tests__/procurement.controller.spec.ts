@@ -28,6 +28,7 @@ describe('ProcurementController', () => {
       receivePO: vi.fn(),
       cancelPO: vi.fn(),
       listPOs: vi.fn(),
+      listVendors: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

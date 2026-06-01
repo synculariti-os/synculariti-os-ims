@@ -42,6 +42,13 @@ export class ProcurementController {
     return { data };
   }
 
+  @Get('vendors')
+  @RequirePermission('PROCUREMENT.READ')
+  async listVendors(@CurrentUser() user: JwtPayload) {
+    const data = await this.procurementService.listVendors(user.restaurantId);
+    return { data };
+  }
+
   @Patch(':id/submit')
   @RequirePermission('PROCUREMENT.WRITE')
   async submitPO(

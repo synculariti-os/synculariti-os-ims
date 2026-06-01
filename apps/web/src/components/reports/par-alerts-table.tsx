@@ -6,11 +6,19 @@ import { useAuthStore } from '@/store/use-auth-store';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { ParAlertRow } from '@ims/types';
+import { QuickCreatePoDialog } from '@/components/procurement/quick-create-po-dialog';
+import { ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export function ParAlertsTable() {
   const [data, setData] = useState<ParAlertRow[]>([]);
   const [loading, setLoading] = useState(true);
   const { restaurantId } = useAuthStore();
+  const [poDialogItem, setPoDialogItem] = useState<{
+    id: string;
+    name: string;
+    suggestedQty: number;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -76,6 +84,7 @@ export function ParAlertsTable() {
                   <th className="p-4 px-6 font-medium text-right">Deficit</th>
                   <th className="p-4 px-6 font-medium">UOM</th>
                   <th className="p-4 px-6 font-medium">Status</th>
+                  <th className="p-4 px-6 font-medium text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200/50 dark:divide-zinc-800/50 text-sm">
@@ -118,6 +127,21 @@ export function ParAlertsTable() {
                         </span>
                       )}
                     </td>
+                    <td className="p-4 px-6 text-right whitespace-nowrap">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:border-amber-800/50 dark:hover:bg-amber-900/20"
+                        onClick={() => setPoDialogItem({
+                          id: row.item.id,
+                          name: row.item.name,
+                          suggestedQty: Math.max(0, Math.ceil(Math.abs(row.varianceFromPar)))
+                        })}
+                      >
+                        <ShoppingCart className="w-4 h-4 mr-2" />
+                        Create PO
+                      </Button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -125,6 +149,14 @@ export function ParAlertsTable() {
           </div>
         )}
       </div>
+
+      <QuickCreatePoDialog 
+        isOpen={poDialogItem !== null}
+        onClose={() => setPoDialogItem(null)}
+        itemId={poDialogItem?.id || ''}
+        itemName={poDialogItem?.name || ''}
+        suggestedQuantity={poDialogItem?.suggestedQty || 0}
+      />
     </div>
   );
 }

@@ -4,6 +4,7 @@ import type {
   InventoryBatch,
   PurchaseOrderId,
   RestaurantId,
+  Vendor,
 } from '@ims/types';
 import type { CreatePoDto } from '@ims/validators';
 
@@ -25,4 +26,5 @@ export interface IProcurementRepository {
   updateLineItemReceived(trx: unknown, lineItemId: string, qty: number): Promise<void>;
   createInventoryBatch(trx: unknown, input: CreateInventoryBatchInput): Promise<InventoryBatch>;
   getAverageUnitCosts(restaurantId: string): Promise<Record<string, number>>;
+  findVendors(restaurantId: string): Promise<Vendor[]>;
 }

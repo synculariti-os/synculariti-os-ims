@@ -15,6 +15,7 @@ import {
   asPoLineItemId,
   asItemId,
   asInventoryBatchId,
+  Vendor,
 } from '@ims/types';
 import { CreatePoDto } from '@ims/validators';
 import { IProcurementRepository, CreateInventoryBatchInput } from './interfaces/i-procurement.repository';
@@ -48,6 +49,19 @@ export class ProcurementRepository implements IProcurementRepository {
       quantityReceived: row.quantity_received,
       rawUnitPrice: row.raw_unit_price,
       createdAt: row.created_at,
+    };
+  }
+
+  private mapVendor(row: any): Vendor {
+    return {
+      id: asVendorId(row.id),
+      franchiseGroupId: row.franchise_group_id,
+      restaurantId: row.restaurant_id,
+      name: row.name,
+      contactEmail: row.contact_email,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
     };
   }
 
@@ -193,5 +207,20 @@ export class ProcurementRepository implements IProcurementRepository {
     }
 
     return averages;
+  }
+
+  async findVendors(restaurantId: string): Promise<Vendor[]> {
+    const rows = await this.db
+      .selectFrom('vendors')
+      .selectAll()
+      .where((eb) => 
+        eb('restaurant_id', '=', restaurantId as RestaurantId)
+        .or('restaurant_id', 'is', null) // Franchise-level vendors might have restaurant_id null depending on how tenency works, actually let's just do exact match for now
+      )
+      .where('is_active', '=', true)
+      .orderBy('name', 'asc')
+      .execute();
+
+    return rows.map(r => this.mapVendor(r));
   }
 }

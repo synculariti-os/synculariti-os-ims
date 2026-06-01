@@ -76,6 +76,7 @@ const mockProcurementRepo: IProcurementRepository = {
   createInventoryBatch: vi.fn(),
   getAverageUnitCosts: vi.fn(),
   listPOs: vi.fn(),
+  findVendors: vi.fn(),
 };
 
 const mockLedgerService: ILedgerService = {
@@ -106,6 +107,20 @@ describe('ProcurementService', () => {
       mockLedgerService,
       mockItemService,
     );
+  });
+
+  // ── listVendors ─────────────────────────────────────────────────────────
+
+  describe('listVendors()', () => {
+    it('returns a list of vendors for a restaurant', async () => {
+      const mockVendors = [{ id: VENDOR_ID, name: 'Vendor 1' }];
+      vi.mocked(mockProcurementRepo.findVendors).mockResolvedValueOnce(mockVendors as any);
+
+      const result = await service.listVendors(RESTAURANT_ID);
+
+      expect(result).toEqual(mockVendors);
+      expect(mockProcurementRepo.findVendors).toHaveBeenCalledWith(RESTAURANT_ID);
+    });
   });
 
   // ── createDraftPO ─────────────────────────────────────────────────────────

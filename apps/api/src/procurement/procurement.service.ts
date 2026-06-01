@@ -12,6 +12,7 @@ import type {
   PurchaseOrder,
   PurchaseOrderId,
   RestaurantId,
+  Vendor,
 } from '@ims/types';
 import { PURCHASE_ORDER_STATUS, LEDGER_REASON_CODES } from '@ims/types';
 import type { CreatePoDto, ReceivePoDto } from '@ims/validators';
@@ -41,6 +42,10 @@ export class ProcurementService {
 
   async listPOs(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<PurchaseOrder[]> {
     return this.procurementRepo.listPOs(restaurantId, limit, offset);
+  }
+
+  async listVendors(restaurantId: string): Promise<Vendor[]> {
+    return this.procurementRepo.findVendors(restaurantId);
   }
 
   async submitPO(poId: PurchaseOrderId): Promise<PurchaseOrder> {
