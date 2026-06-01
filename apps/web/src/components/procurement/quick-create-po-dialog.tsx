@@ -1,9 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { procurementApi } from '@/lib/api/procurement';
-import { Button } from '@/components/ui/button';
 import { ShoppingCart, PackageOpen, AlertCircle } from 'lucide-react';
 import { Vendor } from '@ims/types';
 
@@ -22,12 +20,12 @@ export function QuickCreatePoDialog({
   isOpen,
   onClose,
 }: QuickCreatePoDialogProps) {
-  const queryClient = useQueryClient();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [selectedVendorId, setSelectedVendorId] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(suggestedQuantity);
   const [unitPrice, setUnitPrice] = useState<number>(0);
   const [isLoadingVendors, setIsLoadingVendors] = useState(false);
+  const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,12 +50,14 @@ export function QuickCreatePoDialog({
     }
   };
 
-  const createPoMutation = useMutation({
-    mutationFn: () => {
+  const handleCreatePo = async () => {
+    try {
+      setError(null);
       if (!selectedVendorId) throw new Error('Please select a vendor.');
       if (quantity <= 0) throw new Error('Quantity must be greater than zero.');
-
-      return procurementApi.createDraftPO({
+      
+      setIsCreating(true);
+      await procurementApi.createDraftPO({
         restaurantId: 'REPLACED_BY_BACKEND_CONTEXT', // The backend pulls from JWT, this is just a placeholder to satisfy the validator currently
         vendorId: selectedVendorId,
         freightCharge: 0,
@@ -71,16 +71,13 @@ export function QuickCreatePoDialog({
           },
         ],
       });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['reports', 'par-alerts'] });
-      queryClient.invalidateQueries({ queryKey: ['procurement', 'orders'] });
       onClose();
-    },
-    onError: (error: any) => {
+    } catch (error: any) {
       setError(error.message || 'Failed to create PO');
-    },
-  });
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -112,7 +109,7 @@ export function QuickCreatePoDialog({
             <select
               value={selectedVendorId}
               onChange={(e) => setSelectedVendorId(e.target.value)}
-              disabled={isLoadingVendors || createPoMutation.isPending}
+              disabled={isLoadingVendors || isCreating}
               className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 outline-none transition-all text-zinc-900 dark:text-white disabled:opacity-50"
             >
               <option value="" disabled>Select a vendor...</option>
@@ -138,7 +135,7 @@ export function QuickCreatePoDialog({
                 step="0.1"
                 value={quantity}
                 onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-                disabled={createPoMutation.isPending}
+                disabled={isCreating}
                 className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-zinc-900 dark:text-white"
               />
             </div>
@@ -152,7 +149,7 @@ export function QuickCreatePoDialog({
                 step="0.01"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
-                disabled={createPoMutation.isPending}
+                disabled={isCreating}
                 className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-zinc-900 dark:text-white"
               />
             </div>
@@ -160,20 +157,20 @@ export function QuickCreatePoDialog({
         </div>
 
         <div className="mt-8 flex justify-end gap-3">
-          <Button
-            variant="outline"
+          <button
             onClick={onClose}
-            disabled={createPoMutation.isPending}
+            disabled={isCreating}
+            className="px-4 py-2 bg-transparent text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
           >
             Cancel
-          </Button>
-          <Button
-            onClick={() => createPoMutation.mutate()}
-            disabled={createPoMutation.isPending || !selectedVendorId || quantity <= 0}
-            className="gap-2"
+          </button>
+          <button
+            onClick={handleCreatePo}
+            disabled={isCreating || !selectedVendorId || quantity <= 0}
+            className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {createPoMutation.isPending ? 'Creating...' : 'Create Draft PO'}
-          </Button>
+            {isCreating ? 'Creating...' : 'Create Draft PO'}
+          </button>
         </div>
       </div>
     </div>

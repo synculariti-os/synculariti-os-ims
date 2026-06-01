@@ -8,7 +8,6 @@ import { apiClient } from '@/lib/api-client';
 import { ParAlertRow } from '@ims/types';
 import { QuickCreatePoDialog } from '@/components/procurement/quick-create-po-dialog';
 import { ShoppingCart } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export function ParAlertsTable() {
   const [data, setData] = useState<ParAlertRow[]>([]);
@@ -128,10 +127,8 @@ export function ParAlertsTable() {
                       )}
                     </td>
                     <td className="p-4 px-6 text-right whitespace-nowrap">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-amber-600 border-amber-200 hover:bg-amber-50 hover:text-amber-700 dark:text-amber-400 dark:border-amber-800/50 dark:hover:bg-amber-900/20"
+                      <button
+                        className="inline-flex items-center justify-center rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zinc-950 disabled:pointer-events-none disabled:opacity-50 border border-amber-200 bg-transparent shadow-sm hover:bg-amber-50 hover:text-amber-700 text-amber-600 dark:text-amber-400 dark:border-amber-800/50 dark:hover:bg-amber-900/20 h-8 px-3"
                         onClick={() => setPoDialogItem({
                           id: row.item.id,
                           name: row.item.name,
@@ -140,7 +137,7 @@ export function ParAlertsTable() {
                       >
                         <ShoppingCart className="w-4 h-4 mr-2" />
                         Create PO
-                      </Button>
+                      </button>
                     </td>
                   </tr>
                 ))}
