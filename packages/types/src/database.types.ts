@@ -25,11 +25,6 @@ export interface Database {
     last_login_at: string | null;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   roles: {
     id: RoleId;
@@ -56,11 +51,6 @@ export interface Database {
     name: string;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   restaurants: {
     id: RestaurantId;
@@ -69,11 +59,6 @@ export interface Database {
     timezone: string;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   items: {
     id: ItemId;
@@ -104,11 +89,6 @@ export interface Database {
     is_active: Generated<boolean>;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   uom_conversions: {
     id: string;
@@ -118,11 +98,6 @@ export interface Database {
     multiplier_factor: number;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   categories: {
     id: CategoryId;
@@ -132,11 +107,6 @@ export interface Database {
     description: string | null;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   vendors: {
     id: VendorId;
@@ -147,11 +117,6 @@ export interface Database {
     is_active: Generated<boolean>;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   purchase_orders: {
     id: PurchaseOrderId;
@@ -165,11 +130,6 @@ export interface Database {
     discount_amount: number;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   po_line_items: {
     id: PoLineItemId;
@@ -191,11 +151,6 @@ export interface Database {
     landed_unit_cost: number;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   recipes: {
     id: RecipeId;
@@ -207,11 +162,6 @@ export interface Database {
     yield_percent: Generated<number>;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   recipe_ingredients: {
     id: RecipeIngredientId;
@@ -247,11 +197,6 @@ export interface Database {
     status: TransferStatus;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   inventory_count_batches: {
     id: CountBatchId;
@@ -261,11 +206,6 @@ export interface Database {
     version: Generated<number>;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   inventory_count_rows: {
     id: CountRowId;
@@ -298,11 +238,6 @@ export interface Database {
     error_message: string | null;
     created_at: Generated<string>;
     updated_at: Generated<string>;
-    allergens: Generated<string[]>;
-    calories_per_uom: Generated<number>;
-    protein_grams: Generated<number>;
-    fat_grams: Generated<number>;
-    carbs_grams: Generated<number>;
   };
   sales_import_rows: {
     id: SalesImportRowId;

@@ -1,10 +1,11 @@
 import { z } from 'zod';
 
 export const createTransferSchema = z.object({
-  originRestaurantId: z.string().uuid(),
   destinationRestaurantId: z.string().uuid(),
-  itemId: z.string().uuid(),
-  qty: z.number().positive(),
+  items: z.array(z.object({
+    itemId: z.string().uuid(),
+    qty: z.number().positive(),
+  })).min(1),
 });
 
 export const submitCountRowSchema = z.object({

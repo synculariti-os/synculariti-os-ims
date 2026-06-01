@@ -1,3 +1,6 @@
+import { InventoryTransferService } from './inventory-transfer.service';
+import { INVENTORY_TRANSFER_SERVICE_TOKEN } from './interfaces/i-inventory-transfer.service';
+import { InventoryTransferController } from './inventory-transfer.controller';
 import { Module } from '@nestjs/common';
 import { LedgerService } from './ledger.service';
 import { InventoryCountService } from './inventory-count.service';
@@ -25,8 +28,12 @@ import { ItemModule } from '../item/item.module';
 
 @Module({
   imports: [RecipeModule, ItemModule],
-  controllers: [InventoryController, InventoryCountController, WasteController, PrepController],
+  controllers: [InventoryController, InventoryCountController, WasteController, PrepController, InventoryTransferController],
   providers: [
+    {
+      provide: INVENTORY_TRANSFER_SERVICE_TOKEN,
+      useClass: InventoryTransferService,
+    },
     {
       provide: LEDGER_SERVICE_TOKEN,
       useClass: LedgerService,
@@ -64,6 +71,6 @@ import { ItemModule } from '../item/item.module';
       useClass: StockQueryService,
     },
   ],
-  exports: [LEDGER_SERVICE_TOKEN, INVENTORY_COUNT_SERVICE_TOKEN, WASTE_SERVICE_TOKEN, PREP_SERVICE_TOKEN, STOCK_QUERY_SERVICE_TOKEN, LEDGER_REPOSITORY_TOKEN, COUNT_REPOSITORY_TOKEN, WASTE_REPOSITORY_TOKEN, PREP_REPOSITORY_TOKEN],
+  exports: [INVENTORY_TRANSFER_SERVICE_TOKEN, LEDGER_SERVICE_TOKEN, INVENTORY_COUNT_SERVICE_TOKEN, WASTE_SERVICE_TOKEN, PREP_SERVICE_TOKEN, STOCK_QUERY_SERVICE_TOKEN, LEDGER_REPOSITORY_TOKEN, COUNT_REPOSITORY_TOKEN, WASTE_REPOSITORY_TOKEN, PREP_REPOSITORY_TOKEN],
 })
 export class InventoryModule {}
