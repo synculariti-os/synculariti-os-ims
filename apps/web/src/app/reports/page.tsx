@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { BarChart3, BellRing, PieChart, ArrowRight } from 'lucide-react';
+import { BarChart3, BellRing, PieChart, ArrowRight, Calculator } from 'lucide-react';
 
 export default function ReportsDashboard() {
   return (
@@ -52,6 +52,23 @@ export default function ReportsDashboard() {
               </p>
               <div className="flex items-center text-amber-600 dark:text-amber-400 font-medium group-hover:gap-2 transition-all">
                 View Alerts
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </div>
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* COGS Card */}
+            <Link href="/reports/cogs" className="group flex flex-col bg-white dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400 mb-6 group-hover:scale-110 transition-transform">
+                <Calculator className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">Menu Item Costing (COGS)</h3>
+              <p className="text-zinc-600 dark:text-zinc-400 flex-grow mb-8">
+                Analyze theoretical costs for menu items based on actual landed costs of ingredients. Track profitability and target cost percentages.
+              </p>
+              <div className="flex items-center text-emerald-600 dark:text-emerald-400 font-medium group-hover:gap-2 transition-all">
+                View Costing Report
                 <ArrowRight className="w-4 h-4 ml-1" />
               </div>
             </Link>

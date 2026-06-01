@@ -32,6 +32,10 @@ export class RecipeService implements IRecipeService {
     return this.recipeRepo.findAllRecipes(restaurantId);
   }
 
+  async listMenuRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
+    return this.recipeRepo.findMenuRecipes(restaurantId);
+  }
+
   async listMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]> {
     return this.recipeRepo.findAllMappings(restaurantId);
   }

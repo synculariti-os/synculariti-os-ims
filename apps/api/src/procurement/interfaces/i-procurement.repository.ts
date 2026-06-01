@@ -24,4 +24,5 @@ export interface IProcurementRepository {
   findLineItemsByPOId(poId: PurchaseOrderId): Promise<PoLineItem[]>;
   updateLineItemReceived(trx: unknown, lineItemId: string, qty: number): Promise<void>;
   createInventoryBatch(trx: unknown, input: CreateInventoryBatchInput): Promise<InventoryBatch>;
+  getAverageUnitCosts(restaurantId: string): Promise<Record<string, number>>;
 }

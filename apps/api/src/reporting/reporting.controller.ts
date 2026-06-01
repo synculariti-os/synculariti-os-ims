@@ -9,6 +9,7 @@ import { JwtPayload } from '@ims/types';
 export class ReportingController {
   constructor(
     @Inject('IReportingService') private readonly reportingService: IReportingService,
+    @Inject('IReportingCogsService') private readonly cogsService: import('./interfaces/i-reporting-cogs.service').IReportingCogsService,
   ) {}
 
   @Get('variance')
@@ -43,5 +44,11 @@ export class ReportingController {
   @RequirePermission(PERMISSION_CODES.REPORTING_READ)
   async getParAlerts(@CurrentUser() user: JwtPayload) {
     return this.reportingService.getParAlerts(user.restaurantId);
+  }
+
+  @Get('cogs')
+  @RequirePermission(PERMISSION_CODES.REPORTING_READ)
+  async getMenuCostingReport(@CurrentUser() user: JwtPayload) {
+    return this.cogsService.getMenuCostingReport(user.restaurantId);
   }
 }

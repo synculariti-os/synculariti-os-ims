@@ -50,6 +50,7 @@ const mockRecipeRepo: IRecipeRepository = {
   update:                     vi.fn(),
   upsertMapping:              vi.fn(),
   findAllRecipes:             vi.fn(),
+  findMenuRecipes:            vi.fn(),
   findAllMappings:            vi.fn(),
   deleteRecipe:               vi.fn(),
   deleteMapping:              vi.fn(),

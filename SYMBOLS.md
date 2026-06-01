@@ -104,7 +104,9 @@
 | `SalesImportBatch` | `interface` | `sales_import_batches` | Import session: `businessDate`, `status: ImportStatus`, `errorMessage?` |
 | `ImportStatus` | `type` | — | `'PENDING' \| 'PROCESSING' \| 'COMPLETED' \| 'FAILED'` |
 | `SalesImportRow` | `interface` | `sales_import_rows` | Parsed row: `rawItemName`, `quantitySold`, `isMapped` |
-| `DailyInventorySnapshot` | `interface` | `daily_inventory_snapshots` | EOD state: `businessDate`, `eodQty`, `fifoTotalValue` |
+| `DailyInventorySnapshot` | `interface` | `daily_inventory_snapshots` | EOD tracking: `restaurantId`, `itemId`, `recordedAt`, `stockLevel` |
+| `CostReportIngredient` | `interface` | N/A | Sub-type for COGS report: `itemId`, `itemName`, `qty`, `uom`, `unitCost`, `totalCost` |
+| `MenuItemCostReport` | `interface` | N/A | Theoretical COGS report: `recipeId`, `recipeName`, `totalCost`, `ingredients: CostReportIngredient[]` |
 | `VarianceAnalyticRow` | `interface` | `mat_view_variance_analytics` | `{ restaurantId, itemId, reportingMonth, actualQty, theoreticalQty, unexplainedVarianceQty }` |
 
 ---

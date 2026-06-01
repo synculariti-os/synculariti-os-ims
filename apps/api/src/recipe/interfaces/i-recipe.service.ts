@@ -14,6 +14,7 @@ export type CreateRecipeCommand = {
 
 export interface IRecipeService {
   listRecipes(restaurantId: RestaurantId): Promise<Recipe[]>;
+  listMenuRecipes(restaurantId: RestaurantId): Promise<Recipe[]>;
   listMappings(restaurantId: RestaurantId): Promise<MenuItemMapping[]>;
   expandBOM(recipeId: RecipeId, soldQty: number): Promise<BomExpansion>;
   resolveRecipeByPosString(restaurantId: RestaurantId, rawString: string): Promise<Recipe | null>;

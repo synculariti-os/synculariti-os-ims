@@ -167,4 +167,31 @@ export class ProcurementRepository implements IProcurementRepository {
       updatedAt: row.updated_at,
     };
   }
+
+  async getAverageUnitCosts(restaurantId: string): Promise<Record<string, number>> {
+    // Weighted average cost based on remaining quantity
+    const rows = await this.db
+      .selectFrom('inventory_batches')
+      .select(['item_id', 'remaining_qty', 'landed_unit_cost'])
+      .where('restaurant_id', '=', restaurantId as RestaurantId)
+      .where('remaining_qty', '>', 0)
+      .execute();
+
+    // Grouping by item_id in TS
+    const totals: Record<string, { totalValue: number; totalQty: number }> = {};
+    for (const row of rows) {
+      if (!totals[row.item_id]) {
+        totals[row.item_id] = { totalValue: 0, totalQty: 0 };
+      }
+      totals[row.item_id].totalValue += (row.remaining_qty * row.landed_unit_cost);
+      totals[row.item_id].totalQty += row.remaining_qty;
+    }
+
+    const averages: Record<string, number> = {};
+    for (const [itemId, data] of Object.entries(totals)) {
+      averages[itemId] = data.totalValue / data.totalQty;
+    }
+
+    return averages;
+  }
 }

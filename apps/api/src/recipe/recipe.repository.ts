@@ -32,6 +32,16 @@ export class RecipeRepository implements IRecipeRepository {
     });
   }
 
+  async findMenuRecipes(restaurantId: RestaurantId): Promise<Recipe[]> {
+    const rows = await this.db
+      .selectFrom('recipes')
+      .selectAll('recipes')
+      .where('recipes.produces_item_id', 'is', null)
+      .execute();
+
+    return rows.map((r: Record<string, unknown>) => this.mapRecipeRow(r));
+  }
+
   async findAllMappings(restaurantId: RestaurantId): Promise<MenuItemMapping[]> {
     const rows = await this.db
       .selectFrom('menu_item_mappings')

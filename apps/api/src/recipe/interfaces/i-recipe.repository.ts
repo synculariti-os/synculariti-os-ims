@@ -9,6 +9,7 @@ import type { CreateRecipeCommand } from './i-recipe.service';
 
 export interface IRecipeRepository {
   findAllRecipes(restaurantId: RestaurantId): Promise<Recipe[]>;
+  findMenuRecipes(restaurantId: RestaurantId): Promise<Recipe[]>;
   findAllMappings(restaurantId: RestaurantId): Promise<import('@ims/types').MenuItemMapping[]>;
   findById(recipeId: RecipeId): Promise<Recipe | null>;
   findByProducesItemId(itemId: string): Promise<Recipe | null>;

@@ -23,3 +23,19 @@ export interface SnapshotRow {
   eodQty: number;
   fifoTotalValue: number;
 }
+
+export interface CostReportIngredient {
+  itemId: ItemId;
+  itemName: string;
+  qty: number;
+  uom: string;
+  unitCost: number;
+  totalCost: number;
+}
+
+export interface MenuItemCostReport {
+  recipeId: string;
+  recipeName: string;
+  totalCost: number;
+  ingredients: CostReportIngredient[];
+}

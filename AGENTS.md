@@ -200,6 +200,10 @@ interface IItemWriteService extends IItemReadService {
 
 ### Contracts Exposed
 ```typescript
+interface IProcurementReadService {
+  getAverageUnitCosts(restaurantId: string): Promise<Record<string, number>>;
+}
+
 interface IProcurementService {
   createDraftPO(dto: CreatePoDto): Promise<PurchaseOrder>;
   submitPO(poId: string): Promise<PurchaseOrder>;
@@ -249,6 +253,7 @@ COMMIT
 ### Contracts Exposed
 ```typescript
 interface IRecipeService {
+  listMenuRecipes(restaurantId: string): Promise<Recipe[]>;
   expandBOM(recipeId: string, soldQty: number): Promise<BomExpansionLine[]>;
   resolveRecipeByPosString(restaurantId: string, rawString: string): Promise<Recipe | null>;
   getIngredients(recipeId: string): Promise<RecipeIngredient[]>;
@@ -383,11 +388,13 @@ interface IPrepService {
 - `GET /reports/variance` → query `mat_view_variance_analytics`
 - `GET /reports/snapshots` → query `daily_inventory_snapshots`
 - `GET /reports/par-alerts` → items below par level
+- `GET /reports/cogs` → theoretical menu item costing based on aggregate actual ingredient prices
 
 ### Outputs
 - `daily_inventory_snapshots` rows (INSERT only via scheduled job)
 - Variance analytics data for the frontend dashboard
 - Par-level alert list
+- Menu item theoretical COGS breakdown
 
 ### Owned Tables
 | Table | Access |
@@ -432,7 +439,7 @@ Procurement ───────────────► ItemMaster, Invento
 Recipe ────────────────────► ItemMaster
 Inventory ─────────────────► ItemMaster, Tenant
 Sales ─────────────────────► Recipe, Inventory (LedgerService)
-Reporting ─────────────────► ItemMaster (read), Inventory (read)
+Reporting ─────────────────► ItemMaster (read), Inventory (read), Recipe (read), Procurement (read)
 Audit ─────────────────────► (receives from all via interceptor, no outbound deps)
 ```
 
