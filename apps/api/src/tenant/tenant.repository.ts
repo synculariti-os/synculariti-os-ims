@@ -59,13 +59,13 @@ export class TenantRepository implements ITenantRepository {
       .execute();
 
     return restaurants.map(r => ({
-      id: r.id,
-      franchiseGroupId: r.franchise_group_id,
+      id: r.id as RestaurantId,
+      franchiseGroupId: r.franchise_group_id as FranchiseGroupId,
       name: r.name,
       timezone: r.timezone,
       createdAt: r.created_at,
       updatedAt: r.updated_at,
-    })) as unknown as Restaurant[];
+    }));
   }
 
   async createFranchiseGroup(name: string): Promise<FranchiseGroup> {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { XlsxSalesParser } from './xlsx-sales.parser';
 import { PdfSalesParser } from './pdf-sales.parser';
 import * as path from 'path';

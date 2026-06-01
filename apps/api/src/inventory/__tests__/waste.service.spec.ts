@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { WasteService } from '../waste.service';

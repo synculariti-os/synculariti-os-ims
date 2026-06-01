@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-31. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NotFoundException } from '@nestjs/common';

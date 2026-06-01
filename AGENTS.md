@@ -203,6 +203,7 @@ interface IItemWriteService extends IItemReadService {
 ```typescript
 interface IProcurementReadService {
   getAverageUnitCosts(restaurantId: string): Promise<Record<string, number>>;
+  getVendorPriceHistory(restaurantId: string, itemId: string): Promise<any[]>;
 }
 
 interface IProcurementService {
