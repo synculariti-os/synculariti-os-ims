@@ -24,6 +24,7 @@ describe('PrepController', () => {
   beforeEach(async () => {
     const mockService: Mocked<IPrepService> = {
       logPrepProduction: vi.fn(),
+      planPrepProduction: vi.fn(),
       listPrepLogs: vi.fn(),
     };
 

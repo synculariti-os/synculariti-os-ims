@@ -6,6 +6,10 @@ import { IPrepService } from './interfaces/i-prep.service';
 import { IPrepRepository } from './interfaces/i-prep.repository';
 import { ILedgerService, LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 import { IRecipeService, RECIPE_SERVICE_TOKEN } from '../recipe/interfaces/i-recipe.service';
+import { IStockQueryService, STOCK_QUERY_SERVICE_TOKEN } from './interfaces/i-stock-query.service';
+import { IItemReadService, ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
+import { PrepPlanResponse, PrepPlanLine } from '@ims/types';
+import { PlanPrepDto } from '@ims/validators';
 
 export const PREP_REPOSITORY_TOKEN = Symbol('IPrepRepository');
 
@@ -16,6 +20,8 @@ export class PrepService implements IPrepService {
     @Inject(PREP_REPOSITORY_TOKEN) private readonly prepRepo: IPrepRepository,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
     @Inject(RECIPE_SERVICE_TOKEN) private readonly recipeService: IRecipeService,
+    @Inject(STOCK_QUERY_SERVICE_TOKEN) private readonly stockQueryService: IStockQueryService,
+    @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemReadService: IItemReadService,
   ) {}
 
   async logPrepProduction(restaurantId: RestaurantId, dto: CreatePrepLogDto): Promise<PrepProductionLog> {
@@ -56,6 +62,50 @@ export class PrepService implements IPrepService {
       
       return log;
     });
+  }
+
+  async planPrepProduction(restaurantId: RestaurantId, dto: PlanPrepDto): Promise<PrepPlanResponse> {
+    // 1. Get the recipe
+    const recipe = await this.recipeService.getRecipeByProducesItemId(dto.itemId);
+    if (!recipe) {
+      throw new NotFoundException(`No recipe found that produces item ${dto.itemId}`);
+    }
+
+    // 2. Expand BOM
+    const consumedIngredients = await this.recipeService.expandBOM(recipe.id, dto.targetYield);
+
+    // 3. Get current stock levels in bulk
+    const stocks = await this.stockQueryService.getCurrentStockBulk(restaurantId);
+
+    let isPossible = true;
+    const ingredients: PrepPlanLine[] = [];
+
+    // 4. Resolve details for each ingredient
+    for (const ing of consumedIngredients) {
+      const item = await this.itemReadService.findById(ing.itemId, restaurantId);
+      const stockLvl = stocks.find(s => s.itemId === ing.itemId)?.qty || 0;
+      const shortageQty = Math.max(0, ing.consumedQty - stockLvl);
+
+      if (shortageQty > 0) {
+        isPossible = false;
+      }
+
+      ingredients.push({
+        itemId: item.id,
+        itemName: item.name,
+        inventoryUom: item.inventoryUom,
+        requiredQty: ing.consumedQty,
+        currentStock: stockLvl,
+        shortageQty
+      });
+    }
+
+    return {
+      prepItemId: dto.itemId as any,
+      targetYield: dto.targetYield,
+      ingredients,
+      isPossible
+    };
   }
 
   async listPrepLogs(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<PrepProductionLog[]> {

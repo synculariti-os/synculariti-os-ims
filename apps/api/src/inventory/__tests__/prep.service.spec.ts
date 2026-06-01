@@ -3,6 +3,8 @@ import { PrepService } from '../prep.service';
 import type { IPrepRepository } from '../interfaces/i-prep.repository';
 import type { ILedgerService } from '../interfaces/i-ledger.service';
 import type { IRecipeService } from '../../recipe/interfaces/i-recipe.service';
+import type { IStockQueryService } from '../interfaces/i-stock-query.service';
+import type { IItemReadService } from '../../item/interfaces/i-item.service';
 import type { RestaurantId, PrepLogId, Recipe } from '@ims/types';
 import { LEDGER_REASON_CODES } from '@ims/types';
 import { NotFoundException } from '@nestjs/common';
@@ -12,6 +14,8 @@ describe('PrepService', () => {
   let prepRepo: Mocked<IPrepRepository>;
   let ledger: Mocked<ILedgerService>;
   let recipeService: Mocked<IRecipeService>;
+  let stockQueryService: Mocked<IStockQueryService>;
+  let itemReadService: Mocked<IItemReadService>;
   let mockDb: any;
 
   const mockRestaurantId = 'rest-1' as RestaurantId;
@@ -42,7 +46,19 @@ describe('PrepService', () => {
       expandBOM: vi.fn(),
     } as any;
 
-    service = new PrepService(mockDb, prepRepo, ledger, recipeService);
+    stockQueryService = {
+      getCurrentStock: vi.fn(),
+      getCurrentStockBulk: vi.fn(),
+    };
+
+    itemReadService = {
+      findById: vi.fn(),
+      convertUom: vi.fn(),
+      listParLevels: vi.fn(),
+      listCategories: vi.fn(),
+    } as any;
+
+    service = new PrepService(mockDb, prepRepo, ledger, recipeService, stockQueryService, itemReadService);
   });
 
   describe('logPrepProduction', () => {
@@ -98,4 +114,63 @@ describe('PrepService', () => {
       });
     });
   });
+
+  describe('planPrepProduction', () => {
+    it('should calculate shortages correctly', async () => {
+      const dto = { itemId: 'prep-1', targetYield: 10 };
+      const mockRecipe = { id: 'recipe-1' } as Recipe;
+      const mockBom = [
+        { itemId: 'ing-1', consumedQty: 20 },
+        { itemId: 'ing-2', consumedQty: 5 }
+      ] as any;
+
+      recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
+      recipeService.expandBOM.mockResolvedValue(mockBom);
+      stockQueryService.getCurrentStockBulk.mockResolvedValue([
+        { itemId: 'ing-1', quantity: 10 } as any // only 10 in stock, need 20
+        // ing-2 is missing from stock, so 0
+      ]);
+
+      itemReadService.findById.mockImplementation(async (id) => {
+        if (id === 'ing-1') return { id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as any;
+        return { id: 'ing-2', name: 'Sugar', inventoryUom: 'kg' } as any;
+      });
+
+      const res = await service.planPrepProduction(mockRestaurantId, dto);
+      expect(res.isPossible).toBe(false);
+      expect(res.ingredients).toHaveLength(2);
+
+      const flour = res.ingredients.find(i => i.itemId === 'ing-1');
+      expect(flour?.shortageQty).toBe(10); // 20 - 10
+      expect(flour?.currentStock).toBe(10);
+
+      const sugar = res.ingredients.find(i => i.itemId === 'ing-2');
+      expect(sugar?.shortageQty).toBe(5); // 5 - 0
+      expect(sugar?.currentStock).toBe(0);
+    });
+
+    it('should be possible if no shortages', async () => {
+      const dto = { itemId: 'prep-1', targetYield: 10 };
+      const mockRecipe = { id: 'recipe-1' } as Recipe;
+      const mockBom = [
+        { itemId: 'ing-1', consumedQty: 20 }
+      ] as any;
+
+      recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
+      recipeService.expandBOM.mockResolvedValue(mockBom);
+      stockQueryService.getCurrentStockBulk.mockResolvedValue([
+        { itemId: 'ing-1', quantity: 50 } as any // plenty
+      ]);
+
+      itemReadService.findById.mockResolvedValue({ id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as any);
+
+      const res = await service.planPrepProduction(mockRestaurantId, dto);
+      expect(res.isPossible).toBe(true);
+      
+      const flour = res.ingredients[0];
+      expect(flour.shortageQty).toBe(0);
+      expect(flour.currentStock).toBe(50);
+    });
+  });
 });
+

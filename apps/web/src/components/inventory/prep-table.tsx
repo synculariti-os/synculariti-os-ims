@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { PrepProductionLog, ItemWithOverride } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
-import { ChefHat, Plus, X } from 'lucide-react';
+import { ChefHat, Plus, X, Calculator } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import Link from 'next/link';
 
 export function PrepTable() {
   const [logs, setLogs] = useState<PrepProductionLog[]>([]);
@@ -61,7 +62,14 @@ export function PrepTable() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
+        <Link 
+          href="/inventory/prep/plan"
+          className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800/50 text-zinc-900 dark:text-white rounded-xl text-sm font-medium transition-colors shadow-sm"
+        >
+          <Calculator className="w-4 h-4 text-emerald-500" />
+          Plan Production
+        </Link>
         <button 
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm"

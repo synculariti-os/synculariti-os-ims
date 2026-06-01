@@ -8,3 +8,19 @@ export interface InventoryCountBatch { id: CountBatchId; restaurantId: Restauran
 export interface InventoryCountRow { id: CountRowId; batchId: CountBatchId; itemId: ItemId; expectedQty: number; actualQty: number | null; varianceQty: number | null; }
 export interface WasteLog { id: WasteLogId; restaurantId: RestaurantId; itemId: ItemId; quantity: number; reason: string | null; recordedAt: string; }
 export interface PrepProductionLog { id: PrepLogId; restaurantId: RestaurantId; prepItemId: ItemId; yieldQtyProduced: number; producedAt: string; }
+
+export interface PrepPlanLine {
+  itemId: ItemId;
+  itemName: string;
+  inventoryUom: string;
+  requiredQty: number;
+  currentStock: number;
+  shortageQty: number;
+}
+
+export interface PrepPlanResponse {
+  prepItemId: ItemId;
+  targetYield: number;
+  ingredients: PrepPlanLine[];
+  isPossible: boolean;
+}

@@ -283,6 +283,7 @@ interface IRecipeService {
 - `POST /inventory/counts/:batchId/close` — reconcile and write adjustment
 - `POST /inventory/waste` — waste log entry
 - `POST /inventory/prep` — prep production log entry
+- `GET /inventory/prep/plan` — plan prep production to calculate ingredient requirements and check for shortages
 - `GET /inventory/stock` — returns current aggregated stock levels
 - `GET /inventory/ledger` — returns paginated ledger entries
 
@@ -327,6 +328,7 @@ interface IWasteService {
 
 interface IPrepService {
   logPrepProduction(restaurantId: RestaurantId, dto: CreatePrepLogDto): Promise<PrepProductionLog>;
+  planPrepProduction(restaurantId: RestaurantId, dto: PlanPrepDto): Promise<PrepPlanResponse>;
   listPrepLogs(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<PrepProductionLog[]>;
 }
 ```

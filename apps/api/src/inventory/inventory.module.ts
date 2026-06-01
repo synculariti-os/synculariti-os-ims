@@ -21,8 +21,10 @@ import { PrepController } from './prep.controller';
 import { StockQueryService } from './stock-query.service';
 import { RecipeModule } from '../recipe/recipe.module';
 
+import { ItemModule } from '../item/item.module';
+
 @Module({
-  imports: [RecipeModule],
+  imports: [RecipeModule, ItemModule],
   controllers: [InventoryController, InventoryCountController, WasteController, PrepController],
   providers: [
     {

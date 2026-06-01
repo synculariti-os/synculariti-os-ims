@@ -3,6 +3,7 @@ import { MenuItemCostReport } from '@ims/types';
 
 export const cogsApi = {
   getMenuCostingReport: async (): Promise<MenuItemCostReport[]> => {
-    return apiClient<MenuItemCostReport[]>('/reports/cogs');
+    const res = await apiClient<{ data: MenuItemCostReport[] }>('/reports/cogs');
+    return res.data;
   },
 };
