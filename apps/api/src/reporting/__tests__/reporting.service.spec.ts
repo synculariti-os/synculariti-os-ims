@@ -28,7 +28,7 @@ describe('ReportingService', () => {
       // Wait, the plan says: IItemService doesn't have listBelowPar, or maybe it does? Let's just mock a standard method to get items and par levels.
       // Actually, AGENTS.md says Item Master Agent exposes:
       // listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: ... }>;
-    } as any;
+    } as unknown;
 
     mockDb = {
       getExecutor: vi.fn().mockReturnValue({ executeQuery: vi.fn().mockResolvedValue({ rows: [] }) }),
@@ -65,16 +65,16 @@ describe('ReportingService', () => {
       const restId = 'r1' as RestaurantId;
       
       const mockItems: ItemWithOverride[] = [
-        { id: 'item1', name: 'Flour', inventoryUom: 'g', type: 'RAW', sku: 'SKU1', is_active: true, invToRecipeRatio: 1, purchasingUom: 'kg', override: { parLevel: 1000 } } as any,
-        { id: 'item2', name: 'Sugar', inventoryUom: 'g', type: 'RAW', sku: 'SKU2', is_active: true, invToRecipeRatio: 1, purchasingUom: 'kg', override: { parLevel: 500 } } as any,
+        { id: 'item1', name: 'Flour', inventoryUom: 'g', type: 'RAW', sku: 'SKU1', is_active: true, invToRecipeRatio: 1, purchasingUom: 'kg', override: { parLevel: 1000 } } as unknown,
+        { id: 'item2', name: 'Sugar', inventoryUom: 'g', type: 'RAW', sku: 'SKU2', is_active: true, invToRecipeRatio: 1, purchasingUom: 'kg', override: { parLevel: 500 } } as unknown,
       ];
 
       // Assuming ItemService exposes listParLevels (or similar) to get all items with overrides
       mockItemService.listParLevels = vi.fn().mockResolvedValue({ data: mockItems, meta: { total: 2 } });
       
       const mockStock: StockLevel[] = [
-        { itemId: 'item1' as any, qty: 800 }, // Below par (1000)
-        { itemId: 'item2' as any, qty: 600 }, // Above par (500)
+        { itemId: 'item1' as unknown, qty: 800 }, // Below par (1000)
+        { itemId: 'item2' as unknown, qty: 600 }, // Above par (500)
       ];
       
       mockStockQueryService.getCurrentStockBulk.mockResolvedValue(mockStock);
@@ -109,7 +109,7 @@ describe('ReportingService', () => {
       // Since it's a cron, it processes everything.
       mockDb.execute.mockResolvedValueOnce([{ id: 'r1' }]); // restaurants
       mockItemService.listParLevels = vi.fn().mockResolvedValue({ data: [{ id: 'i1', isActive: true }], meta: { total: 1 } });
-      mockStockQueryService.getCurrentStockBulk.mockResolvedValue([{ itemId: 'i1' as any, qty: 100 }]);
+      mockStockQueryService.getCurrentStockBulk.mockResolvedValue([{ itemId: 'i1' as unknown, qty: 100 }]);
 
       await service.runEodSnapshots();
 

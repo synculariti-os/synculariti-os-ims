@@ -274,8 +274,8 @@ export interface Database {
     action: string;
     entity_type: string;
     entity_id: string;
-    old_value: Json | null;
-    new_value: Json | null;
+    request_payload: Json | null;
+    response_payload: Json | null;
     success: boolean;
     error_message: string | null;
     source_ip: string | null;

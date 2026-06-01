@@ -128,7 +128,7 @@ export class ItemService implements IItemWriteService {
     await this.itemRepo.deleteCategory(categoryId);
   }
 
-  async generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string> {
-    return this.itemRepo.generateSku(categoryId, restaurantId);
+  async generateSku(categoryId: string): Promise<string> {
+    return this.itemRepo.generateSku(categoryId);
   }
 }

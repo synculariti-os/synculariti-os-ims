@@ -6,8 +6,8 @@ export interface AuditEntryDto {
   action: string;
   entityType: string;
   entityId: string;
-  oldValue: Json | null;
-  newValue: Json | null;
+  requestPayload: Json | null;
+  responsePayload: Json | null;
   success: boolean;
   errorMessage?: string;
   sourceIp?: string;

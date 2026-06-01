@@ -11,4 +11,4 @@ export interface ItemWithOverride extends Item {
 export interface ItemParStatus { item: Item; effectiveParLevel: number; currentStock: number; isBelowPar: boolean; deficit: number; }
 export interface StockLevel { itemId: ItemId; qty: number; itemName?: string; baseUom?: string; }
 export interface UomConversion { id: string; itemId: ItemId; fromUom: string; toUom: string; multiplierFactor: number; createdAt: string; updatedAt: string; }
-export interface Category { id: string; franchiseGroupId: FranchiseGroupId | null; restaurantId: RestaurantId | null; name: string; description: string | null; createdAt: string; updatedAt: string; }
+export interface Category { id: CategoryId; franchiseGroupId: FranchiseGroupId | null; restaurantId: RestaurantId | null; name: string; description: string | null; createdAt: string; updatedAt: string; }

@@ -24,12 +24,12 @@ describe('ReportingController', () => {
       getVarianceReport: vi.fn(),
       getSnapshots: vi.fn(),
       getParAlerts: vi.fn(),
-    } as any;
+    } as unknown;
 
     mockCogsService = {
       getMenuCostingReport: vi.fn(),
       getVendorPriceHistory: vi.fn(),
-    } as any;
+    } as unknown;
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReportingController],
@@ -51,9 +51,9 @@ describe('ReportingController', () => {
   describe('getVendorPriceHistory', () => {
     it('calls cogsService.getVendorPriceHistory with correct params', async () => {
       const mockResult = [{ date: '2023-01-01', landedUnitCost: 10, vendorId: 'v1', vendorName: 'Vendor 1', poId: 'po1' }];
-      (mockCogsService.getVendorPriceHistory as any).mockResolvedValue(mockResult);
+      (mockCogsService.getVendorPriceHistory as unknown).mockResolvedValue(mockResult);
 
-      const result = await controller.getVendorPriceHistory(mockUser as any, { itemId: 'item-1' });
+      const result = await controller.getVendorPriceHistory(mockUser as unknown, { itemId: 'item-1' });
 
       expect(result).toEqual(mockResult);
       expect(mockCogsService.getVendorPriceHistory).toHaveBeenCalledWith('rest-1', 'item-1');

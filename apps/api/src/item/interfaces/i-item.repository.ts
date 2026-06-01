@@ -21,7 +21,7 @@ export interface IItemRepository {
   deleteCategory(categoryId: string): Promise<void>;
   upsertUomConversion(data: CreateUomConversionDto): Promise<UomConversion>;
   upsertItemOverride(itemId: ItemId, restaurantId: RestaurantId, data: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;
-  generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string>;
+  generateSku(categoryId: string): Promise<string>;
 }
 
 export const ITEM_REPOSITORY_TOKEN = Symbol('IItemRepository');

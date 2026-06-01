@@ -206,7 +206,7 @@ interface IProcurementReadService {
 }
 
 interface IProcurementService {
-  createDraftPO(dto: CreatePoDto): Promise<PurchaseOrder>;
+  createDraftPO(restaurantId: string, dto: CreatePoDto): Promise<PurchaseOrder>;
   submitPO(poId: string): Promise<PurchaseOrder>;
   receivePO(poId: string, dto: ReceivePoDto): Promise<void>; // ACID transaction inside
   cancelPO(poId: string): Promise<void>;

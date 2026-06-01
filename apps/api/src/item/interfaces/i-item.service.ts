@@ -37,7 +37,7 @@ export interface IItemWriteService extends IItemReadService {
   deleteCategory(categoryId: string): Promise<void>;
   upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion>;
   updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;
-  generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string>;
+  generateSku(categoryId: string): Promise<string>;
 }
 
 export const ITEM_READ_SERVICE_TOKEN = Symbol('IItemReadService');

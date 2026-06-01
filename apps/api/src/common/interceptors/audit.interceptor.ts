@@ -11,7 +11,7 @@ import { AUDIT_SERVICE_TOKEN, IAuditService } from '../../audit/interfaces/i-aud
 import { getAuditBeforeState } from '../utils/audit.utils';
 import type { Json } from '@ims/types';
 
-function resolveOldValue(request: any): Json {
+function resolveRequestPayload(request: any): Json {
   const beforeState = getAuditBeforeState(request);
   if (beforeState !== undefined) return beforeState as Json;
   return (request.body as Json) || null;
@@ -44,8 +44,8 @@ export class AuditInterceptor implements NestInterceptor {
             action: `${method} ${request.route?.path || request.url}`,
             entityType: request.route?.path?.split('/')[1] ?? 'unknown',
             entityId: request.params?.id ?? 'unknown',
-            oldValue: resolveOldValue(request),
-            newValue: response || null,
+            requestPayload: resolveRequestPayload(request),
+            responsePayload: response || null,
             success: true,
             sourceIp: request.ip,
             userAgent: request.headers?.['user-agent'],
@@ -60,8 +60,8 @@ export class AuditInterceptor implements NestInterceptor {
             action: `${method} ${request.route?.path || request.url}`,
             entityType: request.route?.path?.split('/')[1] ?? 'unknown',
             entityId: request.params?.id ?? 'unknown',
-            oldValue: resolveOldValue(request),
-            newValue: null,
+            requestPayload: resolveRequestPayload(request),
+            responsePayload: null,
             success: false,
             errorMessage: error.message,
             sourceIp: request.ip,

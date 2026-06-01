@@ -23,7 +23,22 @@ export const createItemSchema = z.object({
   carbsGrams: z.number().min(0).default(0),
 });
 
-export const updateItemSchema = createItemSchema.partial();
+export const updateItemSchema = z.object({
+  categoryId: z.string().uuid(),
+  name: z.string().min(1),
+  sku: z.string().min(1),
+  type: z.enum(['RAW', 'PREP']),
+  purchasingUom: z.string().min(1),
+  inventoryUom: z.string().min(1),
+  recipeUom: z.string().min(1).nullable(),
+  invToRecipeRatio: z.number().positive(),
+  isActive: z.boolean(),
+  allergens: z.array(z.string()),
+  caloriesPerUom: z.number().min(0),
+  proteinGrams: z.number().min(0),
+  fatGrams: z.number().min(0),
+  carbsGrams: z.number().min(0),
+}).partial();
 
 export const createUomConversionSchema = z.object({
   itemId: z.string().uuid(),

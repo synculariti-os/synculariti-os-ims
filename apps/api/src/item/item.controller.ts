@@ -64,7 +64,7 @@ export class ItemController {
   ): Promise<{ sku: string }> {
     const mockRestaurantId = 'b0000000-0000-0000-0000-000000000001' as import('@ims/types').RestaurantId;
     const restaurantId = user?.restaurantId ?? mockRestaurantId;
-    const sku = await this.itemService.generateSku(categoryId, restaurantId);
+    const sku = await this.itemService.generateSku(categoryId);
     return { sku };
   }
 

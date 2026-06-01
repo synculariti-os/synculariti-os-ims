@@ -456,7 +456,7 @@ export class ItemRepository implements IItemRepository {
       .execute();
   }
 
-  async generateSku(categoryId: string, restaurantId: RestaurantId | null): Promise<string> {
+  async generateSku(categoryId: string): Promise<string> {
     // Get category name to derive prefix
     const category = await this.db
       .selectFrom('categories')

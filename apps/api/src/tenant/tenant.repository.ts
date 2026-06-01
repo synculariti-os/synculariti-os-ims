@@ -10,14 +10,14 @@ export class TenantRepository implements ITenantRepository {
     @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
   ) {}
 
-  async findById(restaurantId: RestaurantId): Promise<Restaurant> {
+  async findById(restaurantId: RestaurantId): Promise<Restaurant | undefined> {
     const restaurant = await this.db
       .selectFrom('restaurants')
       .selectAll()
       .where('id', '=', restaurantId)
       .executeTakeFirst();
     
-    if (!restaurant) return undefined as unknown as Restaurant;
+    if (!restaurant) return undefined;
     
     return {
       id: restaurant.id,
@@ -26,17 +26,17 @@ export class TenantRepository implements ITenantRepository {
       timezone: restaurant.timezone,
       createdAt: restaurant.created_at,
       updatedAt: restaurant.updated_at,
-    } as unknown as Restaurant;
+    } as Restaurant;
   }
 
-  async findFranchiseGroupById(franchiseGroupId: FranchiseGroupId): Promise<FranchiseGroup> {
+  async findFranchiseGroupById(franchiseGroupId: FranchiseGroupId): Promise<FranchiseGroup | undefined> {
     const group = await this.db
       .selectFrom('franchise_groups')
       .selectAll()
       .where('id', '=', franchiseGroupId)
       .executeTakeFirst();
 
-    if (!group) return undefined as unknown as FranchiseGroup;
+    if (!group) return undefined;
 
     return {
       id: group.id,
@@ -47,7 +47,7 @@ export class TenantRepository implements ITenantRepository {
       active: (group as any).active,
       createdAt: group.created_at,
       updatedAt: group.updated_at,
-    } as unknown as FranchiseGroup;
+    } as FranchiseGroup;
   }
 
   async findRestaurantsByUserId(userId: UserId): Promise<Restaurant[]> {
@@ -74,7 +74,7 @@ export class TenantRepository implements ITenantRepository {
       .values({ name })
       .returningAll()
       .executeTakeFirstOrThrow();
-    return this.findFranchiseGroupById(result.id as FranchiseGroupId);
+    return (await this.findFranchiseGroupById(result.id as FranchiseGroupId))!;
   }
 
   async updateFranchiseGroup(id: string, name?: string): Promise<FranchiseGroup> {
@@ -83,7 +83,7 @@ export class TenantRepository implements ITenantRepository {
       query.set({ name });
     }
     const result = await query.executeTakeFirstOrThrow();
-    return this.findFranchiseGroupById(result.id as FranchiseGroupId);
+    return (await this.findFranchiseGroupById(result.id as FranchiseGroupId))!;
   }
 
   async createRestaurant(name: string, franchiseGroupId: string, timezone: string): Promise<Restaurant> {
@@ -92,7 +92,7 @@ export class TenantRepository implements ITenantRepository {
       .values({ name, franchise_group_id: franchiseGroupId as FranchiseGroupId, timezone })
       .returningAll()
       .executeTakeFirstOrThrow();
-    return this.findById(result.id as RestaurantId);
+    return (await this.findById(result.id as RestaurantId))!;
   }
 
   async updateRestaurant(id: string, name?: string, timezone?: string): Promise<Restaurant> {
@@ -104,7 +104,7 @@ export class TenantRepository implements ITenantRepository {
         query = query.set(updates);
     }
     const result = await query.executeTakeFirstOrThrow();
-    return this.findById(result.id as RestaurantId);
+    return (await this.findById(result.id as RestaurantId))!;
   }
 
   async deleteFranchiseGroup(id: string): Promise<void> {
