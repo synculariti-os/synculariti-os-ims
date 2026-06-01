@@ -64,6 +64,16 @@ export class RecipeController {
     return { data: ingredients };
   }
 
+  @Get(':id/nutrition')
+  @RequirePermission(PERMISSION_CODES.RECIPE_READ)
+  async getNutrition(
+    @CurrentUser() user: JwtPayload,
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<{ data: import('@ims/types').RecipeNutritionReport }> {
+    const nutrition = await this.recipeService.getNutrition(id as RecipeId, user.restaurantId);
+    return { data: nutrition };
+  }
+
   @Post()
   @RequirePermission(PERMISSION_CODES.RECIPE_WRITE)
   async createRecipe(

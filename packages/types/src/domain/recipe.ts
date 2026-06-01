@@ -16,3 +16,11 @@ export interface RecipeIngredient {
 export interface MenuItemMapping { id: MenuItemMappingId; restaurantId: RestaurantId; rawExcelString: string; recipeId: RecipeId; targetRecipeName?: string; createdAt: string; }
 export interface BomExpansionLine { itemId: ItemId; consumedQty: number; }
 export type BomExpansion = BomExpansionLine[];
+
+export interface RecipeNutritionReport {
+  calories: number;
+  proteinGrams: number;
+  fatGrams: number;
+  carbsGrams: number;
+  allergens: string[];
+}

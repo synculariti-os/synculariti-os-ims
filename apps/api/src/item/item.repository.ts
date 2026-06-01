@@ -33,6 +33,11 @@ export class ItemRepository implements IItemRepository {
         'items.is_active as itemIsActive',
         'items.created_at as itemCreatedAt',
         'items.updated_at as itemUpdatedAt',
+        'items.allergens as itemAllergens',
+        'items.calories_per_uom as itemCaloriesPerUom',
+        'items.protein_grams as itemProteinGrams',
+        'items.fat_grams as itemFatGrams',
+        'items.carbs_grams as itemCarbsGrams',
         'item_restaurant_overrides.id as overrideId',
         'item_restaurant_overrides.par_level as overrideParLevel',
         'item_restaurant_overrides.is_active as overrideIsActive',
@@ -76,6 +81,11 @@ export class ItemRepository implements IItemRepository {
         : {}),
       effectiveParLevel: hasOverride ? Number(item.overrideParLevel) : 0,
       effectiveIsActive: hasOverride ? Boolean(item.overrideIsActive) : Boolean(item.itemIsActive),
+      allergens: Array.isArray(item.itemAllergens) ? item.itemAllergens : [],
+      caloriesPerUom: Number(item.itemCaloriesPerUom || 0),
+      proteinGrams: Number(item.itemProteinGrams || 0),
+      fatGrams: Number(item.itemFatGrams || 0),
+      carbsGrams: Number(item.itemCarbsGrams || 0),
     };
 
     return result;
@@ -137,6 +147,11 @@ export class ItemRepository implements IItemRepository {
         'items.is_active as itemIsActive',
         'items.created_at as itemCreatedAt',
         'items.updated_at as itemUpdatedAt',
+        'items.allergens as itemAllergens',
+        'items.calories_per_uom as itemCaloriesPerUom',
+        'items.protein_grams as itemProteinGrams',
+        'items.fat_grams as itemFatGrams',
+        'items.carbs_grams as itemCarbsGrams',
         'item_restaurant_overrides.id as overrideId',
         'item_restaurant_overrides.par_level as overrideParLevel',
         'item_restaurant_overrides.is_active as overrideIsActive',
@@ -178,6 +193,11 @@ export class ItemRepository implements IItemRepository {
         : {}),
         effectiveParLevel: hasOverride ? Number(item.overrideParLevel) : 0,
         effectiveIsActive: hasOverride ? Boolean(item.overrideIsActive) : Boolean(item.itemIsActive),
+      allergens: Array.isArray(item.itemAllergens) ? item.itemAllergens : [],
+      caloriesPerUom: Number(item.itemCaloriesPerUom || 0),
+      proteinGrams: Number(item.itemProteinGrams || 0),
+      fatGrams: Number(item.itemFatGrams || 0),
+      carbsGrams: Number(item.itemCarbsGrams || 0),
       };
     });
 
@@ -228,6 +248,11 @@ export class ItemRepository implements IItemRepository {
         recipe_uom: data.recipeUom ?? null,
         inv_to_recipe_ratio: data.invToRecipeRatio,
         is_active: data.isActive,
+        allergens: data.allergens ?? [],
+        calories_per_uom: data.caloriesPerUom ?? 0,
+        protein_grams: data.proteinGrams ?? 0,
+        fat_grams: data.fatGrams ?? 0,
+        carbs_grams: data.carbsGrams ?? 0,
       })
       .returningAll()
       .execute();
@@ -247,6 +272,11 @@ export class ItemRepository implements IItemRepository {
     if (data.recipeUom !== undefined) updateData.recipe_uom = data.recipeUom;
     if (data.invToRecipeRatio !== undefined) updateData.inv_to_recipe_ratio = data.invToRecipeRatio;
     if (data.isActive !== undefined) updateData.is_active = data.isActive;
+    if (data.allergens !== undefined) updateData.allergens = data.allergens;
+    if (data.caloriesPerUom !== undefined) updateData.calories_per_uom = data.caloriesPerUom;
+    if (data.proteinGrams !== undefined) updateData.protein_grams = data.proteinGrams;
+    if (data.fatGrams !== undefined) updateData.fat_grams = data.fatGrams;
+    if (data.carbsGrams !== undefined) updateData.carbs_grams = data.carbsGrams;
     updateData.updated_at = new Date().toISOString();
 
     const [item] = await this.db
@@ -375,6 +405,11 @@ export class ItemRepository implements IItemRepository {
       isActive: Boolean(row.is_active),
       createdAt: row.created_at as string,
       updatedAt: row.updated_at as string,
+      allergens: Array.isArray(row.allergens) ? row.allergens : [],
+      caloriesPerUom: Number(row.calories_per_uom || 0),
+      proteinGrams: Number(row.protein_grams || 0),
+      fatGrams: Number(row.fat_grams || 0),
+      carbsGrams: Number(row.carbs_grams || 0),
     };
   }
 

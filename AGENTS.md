@@ -142,6 +142,7 @@ interface ITenantService {
 | `categories` | CRUD |
 | `uom_conversions` | CRUD |
 | `item_restaurant_overrides` | CRUD |
+| *New Phase 16* | `items` now stores `allergens` and macros (calories, protein, fat, carbs) |
 
 ### UI Views
 - `/items` — Main catalog list and Create Item dialog.
@@ -238,6 +239,7 @@ COMMIT
 ### Outputs
 - `expandBOM(recipeId, soldQty)` → list of `{ item_id, consumed_qty }` (consumed by Sales Agent). Includes circular reference guards (`visited` Set) and scales outputs by the `yield_percent`.
 - `getRecipeForItem(itemId)` → recipe with ingredients (consumed by Reporting)
+- `getNutrition(recipeId, restaurantId)` → rolls up macros and allergens from all constituent raw ingredients (consumed by Frontend Recipe Table)
 
 ### Owned Tables
 | Table | Access |

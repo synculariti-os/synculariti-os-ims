@@ -1,6 +1,6 @@
 import type { FranchiseGroupId, RestaurantId, ItemId, CategoryId } from '../branded';
 export type ItemType = 'RAW' | 'PREP';
-export interface Item { id: ItemId; franchiseGroupId: FranchiseGroupId | null; restaurantId: RestaurantId | null; categoryId: CategoryId; name: string; sku: string; type: ItemType; purchasingUom: string; inventoryUom: string; recipeUom: string | null; invToRecipeRatio: number; isActive: boolean; createdAt: string; updatedAt: string; }
+export interface Item { id: ItemId; franchiseGroupId: FranchiseGroupId | null; restaurantId: RestaurantId | null; categoryId: CategoryId; name: string; sku: string; type: ItemType; purchasingUom: string; inventoryUom: string; recipeUom: string | null; invToRecipeRatio: number; isActive: boolean; createdAt: string; updatedAt: string; allergens: string[]; caloriesPerUom: number; proteinGrams: number; fatGrams: number; carbsGrams: number; }
 export interface ItemRestaurantOverride { id: string; itemId: ItemId; restaurantId: RestaurantId; parLevel: number; isActive: boolean; createdAt: string; updatedAt: string; }
 export interface ItemWithOverride extends Item {
   override?: ItemRestaurantOverride;

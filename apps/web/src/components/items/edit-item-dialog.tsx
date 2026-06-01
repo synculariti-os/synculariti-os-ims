@@ -85,7 +85,10 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
     try {
       await apiClient(`/items/${item.id}`, {
         method: 'PUT',
-        body: data,
+        body: {
+          ...data,
+          allergens: typeof data.allergens === 'string' ? (data.allergens as string).split(',').map(a => a.trim()).filter(Boolean) : data.allergens,
+        },
       });
       onSuccess();
       onOpenChange(false);

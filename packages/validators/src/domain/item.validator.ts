@@ -16,6 +16,11 @@ export const createItemSchema = z.object({
   recipeUom: z.string().min(1).nullable().default(null),
   invToRecipeRatio: z.number().positive().default(1.0),
   isActive: z.boolean().default(true),
+  allergens: z.array(z.string()).default([]),
+  caloriesPerUom: z.number().min(0).default(0),
+  proteinGrams: z.number().min(0).default(0),
+  fatGrams: z.number().min(0).default(0),
+  carbsGrams: z.number().min(0).default(0),
 });
 
 export const updateItemSchema = createItemSchema.partial();

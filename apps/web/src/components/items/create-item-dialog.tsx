@@ -46,6 +46,11 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
       invToRecipeRatio: 1,
       isActive: true,
       categoryId: '',
+      allergens: [],
+      caloriesPerUom: 0,
+      proteinGrams: 0,
+      fatGrams: 0,
+      carbsGrams: 0,
     },
   });
 
@@ -91,6 +96,11 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
           invToRecipeRatio: data.invToRecipeRatio,
           isActive: data.isActive,
           categoryId: data.categoryId,
+          allergens: typeof data.allergens === 'string' ? (data.allergens as string).split(',').map(a => a.trim()).filter(Boolean) : data.allergens,
+          caloriesPerUom: data.caloriesPerUom,
+          proteinGrams: data.proteinGrams,
+          fatGrams: data.fatGrams,
+          carbsGrams: data.carbsGrams,
         },
       });
 
