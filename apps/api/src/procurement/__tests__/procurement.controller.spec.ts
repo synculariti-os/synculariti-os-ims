@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
@@ -15,10 +14,10 @@ describe('ProcurementController', () => {
   let service: Mocked<IProcurementService>;
 
   const mockUser: JwtPayload = {
-    sub: 'user-1' as any,
+    sub: 'user-1' as never,
     email: 'test@test.com',
-    restaurantId: 'rest-1' as any,
-    franchiseGroupId: 'franchise-1' as any,
+    restaurantId: 'rest-1' as never,
+    franchiseGroupId: 'franchise-1' as never,
     permissions: [],
   };
 
@@ -52,8 +51,8 @@ describe('ProcurementController', () => {
 
   describe('createPO', () => {
     it('should call service.createDraftPO with dto', async () => {
-      const mockDto = { vendorId: 'vendor-1', lineItems: [] } as any;
-      const mockResult = { id: 'po-1' } as any;
+      const mockDto = { vendorId: 'vendor-1', lineItems: [] } as never;
+      const mockResult = { id: 'po-1' } as never;
       service.createDraftPO.mockResolvedValue(mockResult);
 
       const result = await controller.createDraftPO(mockUser, mockDto);
@@ -66,7 +65,7 @@ describe('ProcurementController', () => {
   describe('submitPO', () => {
     it('should call service.submitPO', async () => {
       const poId = 'po-1' as PurchaseOrderId;
-      const mockResult = { id: poId, status: 'SUBMITTED' } as any;
+      const mockResult = { id: poId, status: 'SUBMITTED' } as never;
       service.submitPO.mockResolvedValue(mockResult);
 
       const result = await controller.submitPO(poId, mockUser);
@@ -78,7 +77,7 @@ describe('ProcurementController', () => {
 
   describe('listPOs', () => {
     it('should call service.listPOs', async () => {
-      const mockResult = { data: [{ id: 'po-1' }], meta: { total: 1, page: 1, limit: 50, totalPages: 1 } } as any;
+      const mockResult = { data: [{ id: 'po-1' }], meta: { total: 1, page: 1, limit: 50, totalPages: 1 } } as never;
       service.listPOs.mockResolvedValue(mockResult);
 
       const result = await controller.listPOs(mockUser);
@@ -91,7 +90,7 @@ describe('ProcurementController', () => {
   describe('receivePO', () => {
     it('should call service.receivePO', async () => {
       const poId = 'po-1' as PurchaseOrderId;
-      const dto = { lineItems: [{ itemId: 'item-1', quantityReceived: 10 }] } as any;
+      const dto = { lineItems: [{ itemId: 'item-1', quantityReceived: 10 }] } as never;
       
       await controller.receivePO(poId, dto, mockUser);
       

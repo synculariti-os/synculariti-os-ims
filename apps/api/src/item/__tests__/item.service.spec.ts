@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
@@ -19,7 +18,7 @@ describe('ItemService', () => {
     id: mockItemId,
     franchiseGroupId: null,
     restaurantId: mockRestaurantId,
-    categoryId: 'cat-1' as any,
+    categoryId: 'cat-1' as never,
     name: 'Tomato',
     sku: 'TOM-01',
     type: 'RAW',
@@ -129,7 +128,7 @@ describe('ItemService', () => {
 
   describe('listCategories', () => {
     it('should return a list of categories', async () => {
-      const mockCategory = { id: 'cat-1', name: 'Veg' } as any;
+      const mockCategory = { id: 'cat-1', name: 'Veg' } as never;
       repo.listCategories.mockResolvedValue([mockCategory]);
       const result = await service.listCategories(mockRestaurantId, 'franchise-1');
       expect(result).toEqual([mockCategory]);

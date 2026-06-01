@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-24. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { LedgerService } from '../ledger.service';
@@ -7,7 +6,7 @@ import type { ILedgerRepository } from '../interfaces/i-ledger.repository';
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-const RESTAURANT_ID = 'rest-uuid-001' as any;
+const RESTAURANT_ID = 'rest-uuid-001' as never;
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -28,7 +27,7 @@ describe('LedgerService Queries', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new LedgerService(mockLedgerRepository, mockItemReadService as any);
+    service = new LedgerService(mockLedgerRepository, mockItemReadService as never);
   });
 
   describe('getLedgerEntries()', () => {

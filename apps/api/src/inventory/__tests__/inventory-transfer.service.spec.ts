@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryTransferService } from '../inventory-transfer.service';
@@ -19,7 +18,7 @@ describe('InventoryTransferService', () => {
       getCurrentStockBulk: vi.fn(),
       getCurrentStock: vi.fn(),
       getLedgerEntries: vi.fn(),
-    } as any;
+    } as never;
     
     mockQueryBuilder = {
       selectAll: vi.fn().mockReturnThis(),
@@ -74,7 +73,7 @@ describe('InventoryTransferService', () => {
         status: 'PENDING',
       }]);
 
-      const res = await service.createTransfers('rest-1' as any, 'franchise-1' as any, mockDto as any);
+      const res = await service.createTransfers('rest-1' as never, 'franchise-1' as never, mockDto as never);
       expect(res).toHaveLength(1);
       expect(res[0].status).toBe('PENDING');
     });
@@ -100,7 +99,7 @@ describe('InventoryTransferService', () => {
           status: 'IN_TRANSIT',
         });
 
-      await service.dispatchTransfer('rest-1' as any, 'trans-1' as any);
+      await service.dispatchTransfer('rest-1' as never, 'trans-1' as never);
       
       expect(ledgerService.record).toHaveBeenCalledWith(
         expect.anything(),
@@ -119,7 +118,7 @@ describe('InventoryTransferService', () => {
         status: 'IN_TRANSIT',
       });
       
-      await expect(service.dispatchTransfer('rest-1' as any, 'trans-1' as any)).rejects.toThrow();
+      await expect(service.dispatchTransfer('rest-1' as never, 'trans-1' as never)).rejects.toThrow();
     });
   });
 
@@ -147,7 +146,7 @@ describe('InventoryTransferService', () => {
 
       const runSpy = vi.spyOn(tenantContext, 'run').mockImplementation((_, cb: any) => cb());
 
-      await service.receiveTransfer('dest-123' as any, 'trans-1' as any);
+      await service.receiveTransfer('dest-123' as never, 'trans-1' as never);
 
       expect(runSpy).toHaveBeenCalledWith(
         expect.objectContaining({ restaurantId: 'dest-123', franchiseId: 'franchise-1' }),

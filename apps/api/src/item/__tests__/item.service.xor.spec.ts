@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-29. NEVER MODIFY after first GREEN. */
 import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
@@ -59,7 +58,7 @@ describe('ItemService — owner XOR guard', () => {
 
   describe('createItem — owner resolution', () => {
     it('should call repo with restaurantId when restaurant context is provided', async () => {
-      const created = { id: mockItemId, name: 'Test Item' } as any;
+      const created = { id: mockItemId, name: 'Test Item' } as never;
       repo.createItem.mockResolvedValue(created);
 
       await service.createItem(baseDto, mockRestaurantId, null);
@@ -73,7 +72,7 @@ describe('ItemService — owner XOR guard', () => {
     });
 
     it('should call repo with franchiseGroupId when only franchise context is provided', async () => {
-      const created = { id: mockItemId, name: 'Test Item' } as any;
+      const created = { id: mockItemId, name: 'Test Item' } as never;
       repo.createItem.mockResolvedValue(created);
 
       await service.createItem(baseDto, null, mockFranchiseGroupId);
@@ -92,7 +91,7 @@ describe('ItemService — owner XOR guard', () => {
     });
 
     it('should prefer restaurantId over franchiseGroupId when both are provided (enforces XOR)', async () => {
-      const created = { id: mockItemId, name: 'Test Item' } as any;
+      const created = { id: mockItemId, name: 'Test Item' } as never;
       repo.createItem.mockResolvedValue(created);
 
       // Even if both are passed, service should enforce XOR by preferring restaurant

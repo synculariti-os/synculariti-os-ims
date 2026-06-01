@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-23. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UnauthorizedException, ForbiddenException } from '@nestjs/common';
@@ -19,7 +18,7 @@ const MOCK_SUPABASE_USER = {
 };
 
 const MOCK_PUBLIC_USER: SafeUser = {
-  id: 'user-uuid-123' as any,
+  id: 'user-uuid-123' as never,
   email: 'chef@restaurant.com',
   fullName: 'Chef Marco',
   phoneNumber: null,
@@ -35,8 +34,8 @@ const MOCK_PERMISSIONS: PermissionCode[] = [
   PERMISSION_CODES.PROCUREMENT_READ,
 ];
 
-const RESTAURANT_ID = 'restaurant-uuid-abc' as any;
-const FRANCHISE_GROUP_ID = 'franchise-uuid-xyz' as any;
+const RESTAURANT_ID = 'restaurant-uuid-abc' as never;
+const FRANCHISE_GROUP_ID = 'franchise-uuid-xyz' as never;
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -63,7 +62,7 @@ const mockTenantService = {
   getRestaurant: vi.fn(),
   getFranchiseGroup: vi.fn(),
   listRestaurantsForUser: vi.fn(),
-} as any;
+} as never;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -92,7 +91,7 @@ describe('AuthService', () => {
       vi.mocked(mockUserRepository.findById).mockResolvedValueOnce(MOCK_PUBLIC_USER);
       vi.mocked(mockTenantService.getRestaurant).mockResolvedValueOnce({
         franchiseGroupId: FRANCHISE_GROUP_ID,
-      } as any);
+      } as never);
       vi.mocked(mockPermissionRepository.resolvePermissions).mockResolvedValueOnce(
         MOCK_PERMISSIONS,
       );
@@ -100,7 +99,7 @@ describe('AuthService', () => {
       const result = await service.verifyAndEnrich('valid-token', RESTAURANT_ID);
 
       expect(result).toMatchObject<JwtPayload>({
-        sub: MOCK_SUPABASE_USER.id as any,
+        sub: MOCK_SUPABASE_USER.id as never,
         email: MOCK_SUPABASE_USER.email,
         restaurantId: RESTAURANT_ID,
         franchiseGroupId: FRANCHISE_GROUP_ID,
@@ -153,7 +152,7 @@ describe('AuthService', () => {
       vi.mocked(mockUserRepository.findById).mockResolvedValueOnce(MOCK_PUBLIC_USER);
       vi.mocked(mockTenantService.getRestaurant).mockResolvedValueOnce({
         franchiseGroupId: FRANCHISE_GROUP_ID,
-      } as any);
+      } as never);
       // No role assigned → empty permissions
       vi.mocked(mockPermissionRepository.resolvePermissions).mockResolvedValueOnce([]);
 
@@ -197,7 +196,7 @@ describe('AuthService', () => {
         MOCK_PERMISSIONS,
       );
 
-      const result = await service.resolvePermissions('user-uuid-123' as any, RESTAURANT_ID);
+      const result = await service.resolvePermissions('user-uuid-123' as never, RESTAURANT_ID);
 
       expect(result).toEqual(MOCK_PERMISSIONS);
       expect(mockPermissionRepository.resolvePermissions).toHaveBeenCalledWith(
@@ -213,17 +212,17 @@ describe('AuthService', () => {
     it('returns a SafeUser (never exposes passwordHash)', async () => {
       vi.mocked(mockUserRepository.findById).mockResolvedValueOnce(MOCK_PUBLIC_USER);
 
-      const result = await service.getProfile('user-uuid-123' as any);
+      const result = await service.getProfile('user-uuid-123' as never);
 
       expect(result).toEqual(MOCK_PUBLIC_USER);
       // Explicitly assert no passwordHash leakage
-      expect((result as any).passwordHash).toBeUndefined();
+      expect((result as never).passwordHash).toBeUndefined();
     });
 
     it('throws when user is not found', async () => {
       vi.mocked(mockUserRepository.findById).mockResolvedValueOnce(null);
 
-      await expect(service.getProfile('non-existent' as any)).rejects.toThrow();
+      await expect(service.getProfile('non-existent' as never)).rejects.toThrow();
     });
   });
 
@@ -234,7 +233,7 @@ describe('AuthService', () => {
       const updated: SafeUser = { ...MOCK_PUBLIC_USER, fullName: 'Chef Marco Rossi' };
       vi.mocked(mockUserRepository.updateProfile).mockResolvedValueOnce(updated);
 
-      const result = await service.updateProfile('user-uuid-123' as any, {
+      const result = await service.updateProfile('user-uuid-123' as never, {
         fullName: 'Chef Marco Rossi',
       });
 

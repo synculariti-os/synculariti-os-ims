@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
@@ -57,7 +56,7 @@ describe('TenantService', () => {
     });
 
     it('should throw NotFoundException when restaurant not found', async () => {
-      repo.findById.mockResolvedValue(undefined as any);
+      repo.findById.mockResolvedValue(undefined as never);
       await expect(service.getRestaurant('invalid' as RestaurantId)).rejects.toThrow(NotFoundException);
     });
   });
@@ -71,7 +70,7 @@ describe('TenantService', () => {
     });
 
     it('should throw NotFoundException when franchise group not found', async () => {
-      repo.findFranchiseGroupById.mockResolvedValue(undefined as any);
+      repo.findFranchiseGroupById.mockResolvedValue(undefined as never);
       await expect(service.getFranchiseGroup('invalid' as FranchiseGroupId)).rejects.toThrow(NotFoundException);
     });
   });

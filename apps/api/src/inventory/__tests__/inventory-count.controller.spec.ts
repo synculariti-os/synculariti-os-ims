@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
@@ -15,10 +14,10 @@ describe('InventoryCountController', () => {
   let service: Mocked<IInventoryCountService>;
 
   const mockUser: JwtPayload = {
-    sub: 'user-1' as any,
+    sub: 'user-1' as never,
     email: 'test@test.com',
-    restaurantId: 'rest-1' as any,
-    franchiseGroupId: 'franchise-1' as any,
+    restaurantId: 'rest-1' as never,
+    franchiseGroupId: 'franchise-1' as never,
     permissions: [],
   };
 
@@ -55,7 +54,7 @@ describe('InventoryCountController', () => {
 
   describe('startBatch', () => {
     it('should call service.startBatch', async () => {
-      const mockResult = { id: 'batch-1' } as any;
+      const mockResult = { id: 'batch-1' } as never;
       service.startBatch.mockResolvedValue(mockResult);
 
       const result = await controller.startBatch(mockUser);
@@ -69,8 +68,8 @@ describe('InventoryCountController', () => {
     it('should call service.submitActualCount', async () => {
       const batchId = 'batch-1' as CountBatchId;
       const rowId = 'row-1' as CountRowId;
-      const dto = { actualQty: 5 } as any;
-      const mockResult = { id: rowId, actualQty: 5 } as any;
+      const dto = { actualQty: 5 } as never;
+      const mockResult = { id: rowId, actualQty: 5 } as never;
       service.submitActualCount.mockResolvedValue(mockResult);
 
       const result = await controller.submitActualCount(batchId, rowId, dto);
@@ -83,7 +82,7 @@ describe('InventoryCountController', () => {
   describe('closeBatch', () => {
     it('should call service.closeBatch', async () => {
       const batchId = 'batch-1' as CountBatchId;
-      const dto = { version: 1 } as any;
+      const dto = { version: 1 } as never;
       service.closeBatch.mockResolvedValue(undefined);
 
       const result = await controller.closeBatch(batchId, dto);
@@ -95,7 +94,7 @@ describe('InventoryCountController', () => {
 
   describe('listBatches', () => {
     it('should call service.listBatches', async () => {
-      const mockResult = [{ id: 'batch-1' }] as any;
+      const mockResult = [{ id: 'batch-1' }] as never;
       service.listBatches.mockResolvedValue(mockResult);
 
       const result = await controller.listBatches(mockUser, 10, 5);
@@ -107,7 +106,7 @@ describe('InventoryCountController', () => {
 
   describe('getBatchById', () => {
     it('should call service.getBatchById', async () => {
-      const mockResult = { batch: { id: 'batch-1' }, rows: [] } as any;
+      const mockResult = { batch: { id: 'batch-1' }, rows: [] } as never;
       service.getBatchById.mockResolvedValue(mockResult);
 
       const result = await controller.getBatchById('batch-1');

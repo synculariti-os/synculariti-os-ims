@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-24. NEVER MODIFY after first GREEN. */
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -41,9 +40,9 @@ describe('InventoryController', () => {
       const mockUser = { restaurantId: 'rest-123' };
       const mockResult = [{ itemId: 'item-1', qty: 10 }];
       
-      vi.mocked(mockLedgerService.getCurrentStockBulk!).mockResolvedValueOnce(mockResult as any);
+      vi.mocked(mockLedgerService.getCurrentStockBulk!).mockResolvedValueOnce(mockResult as never);
 
-      const result = await controller.getStock(mockUser as any);
+      const result = await controller.getStock(mockUser as never);
       
       expect(result).toEqual({ data: mockResult });
       expect(mockLedgerService.getCurrentStockBulk).toHaveBeenCalledWith('rest-123');
@@ -57,7 +56,7 @@ describe('InventoryController', () => {
       
       vi.mocked(mockLedgerService.getLedgerEntries!).mockResolvedValueOnce(mockResult);
 
-      const result = await controller.getLedger(mockUser as any, 20, 10);
+      const result = await controller.getLedger(mockUser as never, 20, 10);
       
       expect(result).toEqual({ data: mockResult });
       expect(mockLedgerService.getLedgerEntries).toHaveBeenCalledWith('rest-123', 20, 10);

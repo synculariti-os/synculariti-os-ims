@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { WasteService } from '../waste.service';
@@ -42,7 +41,7 @@ describe('WasteService', () => {
   describe('logWaste', () => {
     it('should create a waste log and record ledger deduction', async () => {
       const dto = { itemId: 'item-1', quantity: 5, reason: 'dropped' };
-      const mockLog = { id: 'waste-1' as WasteLogId, ...dto, restaurantId: mockRestaurantId, recordedAt: '' } as any;
+      const mockLog = { id: 'waste-1' as WasteLogId, ...dto, restaurantId: mockRestaurantId, recordedAt: '' } as never;
       
       wasteRepo.createWasteLog.mockResolvedValue(mockLog);
 
@@ -62,7 +61,7 @@ describe('WasteService', () => {
 
   describe('listWasteLogs', () => {
     it('should call repository to list logs', async () => {
-      const mockResult = [{ id: 'waste-1' }] as any[];
+      const mockResult = [{ id: 'waste-1' }] as never[];
       wasteRepo.listWasteLogs.mockResolvedValue(mockResult);
 
       const result = await service.listWasteLogs(mockRestaurantId, 10, 5);

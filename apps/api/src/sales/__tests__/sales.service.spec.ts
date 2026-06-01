@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
@@ -17,7 +16,7 @@ describe('SalesService', () => {
     repoMock = {
       createBatch: vi.fn(),
       updateBatchStatus: vi.fn(),
-    } as any;
+    } as never;
 
     queueMock = {
       add: vi.fn(),
@@ -49,7 +48,7 @@ describe('SalesService', () => {
     
     supabaseMock.storage.upload.mockResolvedValue({ data: { path: 'sales.xlsx' }, error: null });
     supabaseMock.storage.getPublicUrl.mockReturnValue({ data: { publicUrl: 'https://fake-url.com/sales.xlsx' } });
-    repoMock.createBatch.mockResolvedValue({ id: 'batch-123', status: 'PENDING' } as any);
+    repoMock.createBatch.mockResolvedValue({ id: 'batch-123', status: 'PENDING' } as never);
 
     const result = await service.uploadSalesFile(file, dto, 'restaurant-1', 'franchise-1', 'user-1');
 

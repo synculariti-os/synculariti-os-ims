@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
@@ -16,10 +15,10 @@ describe('PrepController', () => {
   let service: Mocked<IPrepService>;
 
   const mockUser: JwtPayload = {
-    sub: 'user-1' as any,
+    sub: 'user-1' as never,
     email: 'test@test.com',
-    restaurantId: 'rest-1' as any,
-    franchiseGroupId: 'franchise-1' as any,
+    restaurantId: 'rest-1' as never,
+    franchiseGroupId: 'franchise-1' as never,
     permissions: [],
   };
 
@@ -55,7 +54,7 @@ describe('PrepController', () => {
   describe('logPrepProduction', () => {
     it('should call service.logPrepProduction', async () => {
       const dto: CreatePrepLogDto = { prepItemId: 'item-1', yieldQtyProduced: 10 };
-      const mockResult = { id: 'prep-1' } as any;
+      const mockResult = { id: 'prep-1' } as never;
       service.logPrepProduction.mockResolvedValue(mockResult);
 
       const result = await controller.logPrepProduction(mockUser, dto);
@@ -67,7 +66,7 @@ describe('PrepController', () => {
 
   describe('listPrepLogs', () => {
     it('should call service.listPrepLogs', async () => {
-      const mockResult = [{ id: 'prep-1' }] as any;
+      const mockResult = [{ id: 'prep-1' }] as never;
       service.listPrepLogs.mockResolvedValue(mockResult);
 
       const result = await controller.listPrepLogs(mockUser, 10, 5);

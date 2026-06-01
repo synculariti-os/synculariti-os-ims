@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-23. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -10,8 +9,8 @@ import { LEDGER_REASON_CODES } from '@ims/types';
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-const RESTAURANT_ID = 'rest-uuid-001' as any;
-const ITEM_ID = 'item-uuid-001' as any;
+const RESTAURANT_ID = 'rest-uuid-001' as never;
+const ITEM_ID = 'item-uuid-001' as never;
 
 const PO_RECEIPT_ENTRY: LedgerEntryDto = {
   restaurantId: RESTAURANT_ID,
@@ -32,7 +31,7 @@ const SALES_DEPLETION_ENTRY: LedgerEntryDto = {
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
-const mockTrx = {} as any; // Kysely Transaction mock
+const mockTrx = {} as never; // Kysely Transaction mock
 
 const mockLedgerRepository: ILedgerRepository = {
   insertEntry: vi.fn(),
@@ -50,7 +49,7 @@ describe('LedgerService', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new LedgerService(mockLedgerRepository, mockItemReadService as any);
+    service = new LedgerService(mockLedgerRepository, mockItemReadService as never);
   });
 
   // ── record ───────────────────────────────────────────────────────────────
@@ -94,7 +93,7 @@ describe('LedgerService', () => {
 
     it('throws if reasonCode is invalid', async () => {
       await expect(
-        service.record(mockTrx, { ...PO_RECEIPT_ENTRY, reasonCode: 'INVALID_CODE' as any }),
+        service.record(mockTrx, { ...PO_RECEIPT_ENTRY, reasonCode: 'INVALID_CODE' as never }),
       ).rejects.toThrow();
     });
   });
@@ -126,7 +125,7 @@ describe('LedgerService', () => {
     it('returns stock levels for all items at a restaurant', async () => {
       const mockLevels = [
         { itemId: ITEM_ID, qty: 95 },
-        { itemId: 'item-uuid-002' as any, qty: 12 },
+        { itemId: 'item-uuid-002' as never, qty: 12 },
       ];
       vi.mocked(mockLedgerRepository.sumChangeAmountBulk).mockResolvedValueOnce(mockLevels);
 

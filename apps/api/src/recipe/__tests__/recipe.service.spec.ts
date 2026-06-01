@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-23. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
@@ -10,24 +9,24 @@ import type { BomExpansion } from '@ims/types';
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-const RECIPE_ID = 'recipe-uuid-001' as any;
-const PRODUCED_ITEM_ID = 'item-uuid-burger-patty' as any;
-const FLOUR_ID = 'item-uuid-flour' as any;
-const WATER_ID = 'item-uuid-water' as any;
+const RECIPE_ID = 'recipe-uuid-001' as never;
+const PRODUCED_ITEM_ID = 'item-uuid-burger-patty' as never;
+const FLOUR_ID = 'item-uuid-flour' as never;
+const WATER_ID = 'item-uuid-water' as never;
 
 const MOCK_RECIPE = {
   id: RECIPE_ID,
   producesItemId: PRODUCED_ITEM_ID,
   yieldQuantity: 10, // 10 units per batch
-  franchiseGroupId: 'fg-uuid-001' as any,
+  franchiseGroupId: 'fg-uuid-001' as never,
   restaurantId: null,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
 
 const MOCK_INGREDIENTS = [
-  { id: 'ing-1' as any, recipeId: RECIPE_ID, ingredientItemId: FLOUR_ID, quantityRequired: 500, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'ing-2' as any, recipeId: RECIPE_ID, ingredientItemId: WATER_ID, quantityRequired: 200, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-1' as never, recipeId: RECIPE_ID, ingredientItemId: FLOUR_ID, quantityRequired: 500, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-2' as never, recipeId: RECIPE_ID, ingredientItemId: WATER_ID, quantityRequired: 200, createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -67,9 +66,9 @@ const mockItemService: IItemWriteService = {
 
 const mockDb = {
   transaction: vi.fn().mockReturnValue({
-    execute: vi.fn(async (cb) => cb({} as any)),
+    execute: vi.fn(async (cb) => cb({} as never)),
   }),
-} as any;
+} as never;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -86,8 +85,8 @@ describe('RecipeService', () => {
 
   describe('expandBOM()', () => {
     it('returns a proportional BOM expansion for soldQty = 1 batch (yieldQty = 10)', async () => {
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
-      vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce(MOCK_INGREDIENTS as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as never);
+      vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce(MOCK_INGREDIENTS as never);
 
       // Selling 10 units = 1 full batch
       const result: BomExpansion = await service.expandBOM(RECIPE_ID, 10);
@@ -98,8 +97,8 @@ describe('RecipeService', () => {
     });
 
     it('scales ingredient quantities proportionally for partial batches', async () => {
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
-      vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce(MOCK_INGREDIENTS as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as never);
+      vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce(MOCK_INGREDIENTS as never);
 
       // Selling 5 units = 0.5 batch
       const result: BomExpansion = await service.expandBOM(RECIPE_ID, 5);
@@ -109,7 +108,7 @@ describe('RecipeService', () => {
     });
 
     it('returns an empty array when the recipe has no ingredients', async () => {
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as never);
       vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce([]);
 
       const result = await service.expandBOM(RECIPE_ID, 10);
@@ -133,10 +132,10 @@ describe('RecipeService', () => {
 
   describe('resolveRecipeByPosString()', () => {
     it('returns a matching recipe for a known POS string', async () => {
-      vi.mocked(mockRecipeRepo.resolveByPosString).mockResolvedValueOnce(MOCK_RECIPE as any);
+      vi.mocked(mockRecipeRepo.resolveByPosString).mockResolvedValueOnce(MOCK_RECIPE as never);
 
       const result = await service.resolveRecipeByPosString(
-        'restaurant-uuid' as any,
+        'restaurant-uuid' as never,
         'Burger Patty 150g',
       );
 
@@ -147,7 +146,7 @@ describe('RecipeService', () => {
       vi.mocked(mockRecipeRepo.resolveByPosString).mockResolvedValueOnce(null);
 
       const result = await service.resolveRecipeByPosString(
-        'restaurant-uuid' as any,
+        'restaurant-uuid' as never,
         'Unknown Product XYZ',
       );
 
@@ -159,7 +158,7 @@ describe('RecipeService', () => {
 
   describe('getIngredients()', () => {
     it('returns all ingredients for a recipe', async () => {
-      vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce(MOCK_INGREDIENTS as any);
+      vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValueOnce(MOCK_INGREDIENTS as never);
 
       const result = await service.getIngredients(RECIPE_ID);
 
@@ -175,13 +174,13 @@ describe('RecipeService', () => {
         producesItemId: PRODUCED_ITEM_ID,
         yieldQuantity: 10,
         yieldPercent: 100,
-        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 } as any],
-      } as any;
+        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 } as never],
+      } as never;
       
-      vi.mocked(mockItemService.findById).mockResolvedValueOnce({} as any);
-      vi.mocked(mockRecipeRepo.create).mockResolvedValueOnce(MOCK_RECIPE as any);
+      vi.mocked(mockItemService.findById).mockResolvedValueOnce({} as never);
+      vi.mocked(mockRecipeRepo.create).mockResolvedValueOnce(MOCK_RECIPE as never);
 
-      const result = await service.createRecipe(dto, 'restaurant-uuid' as any, null);
+      const result = await service.createRecipe(dto, 'restaurant-uuid' as never, null);
 
       expect(mockItemService.findById).toHaveBeenCalledWith(PRODUCED_ITEM_ID, 'restaurant-uuid');
       expect(mockRecipeRepo.create).toHaveBeenCalledWith({
@@ -199,12 +198,12 @@ describe('RecipeService', () => {
         producesItemId: PRODUCED_ITEM_ID,
         yieldQuantity: 10,
         yieldPercent: 100,
-        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 } as any],
-      } as any;
+        ingredients: [{ ingredientItemId: FLOUR_ID, quantityRequired: 500 } as never],
+      } as never;
       
-      vi.mocked(mockItemService.findById).mockResolvedValueOnce(null as any);
+      vi.mocked(mockItemService.findById).mockResolvedValueOnce(null as never);
 
-      await expect(service.createRecipe(dto, 'restaurant-uuid' as any, null)).rejects.toThrow(/Item not found/i);
+      await expect(service.createRecipe(dto, 'restaurant-uuid' as never, null)).rejects.toThrow(/Item not found/i);
       expect(mockRecipeRepo.create).not.toHaveBeenCalled();
     });
   });
@@ -217,8 +216,8 @@ describe('RecipeService', () => {
         yieldQuantity: 20,
       };
       
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
-      vi.mocked(mockRecipeRepo.update).mockResolvedValueOnce({ ...MOCK_RECIPE, yieldQuantity: 20 } as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as never);
+      vi.mocked(mockRecipeRepo.update).mockResolvedValueOnce({ ...MOCK_RECIPE, yieldQuantity: 20 } as never);
 
       const result = await service.updateRecipe(RECIPE_ID, dto);
 
@@ -227,7 +226,7 @@ describe('RecipeService', () => {
     });
 
     it('throws NotFoundException if recipe does not exist', async () => {
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(null as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(null as never);
 
       await expect(service.updateRecipe(RECIPE_ID, {})).rejects.toThrow(/Recipe.*not found/i);
     });
@@ -242,9 +241,9 @@ describe('RecipeService', () => {
         recipeId: RECIPE_ID,
       };
 
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(MOCK_RECIPE as never);
 
-      await service.createMenuItemMapping('restaurant-uuid' as any, dto);
+      await service.createMenuItemMapping('restaurant-uuid' as never, dto);
 
       expect(mockRecipeRepo.upsertMapping).toHaveBeenCalledWith('restaurant-uuid', dto.rawExcelString, RECIPE_ID);
     });
@@ -255,9 +254,9 @@ describe('RecipeService', () => {
         recipeId: RECIPE_ID,
       };
 
-      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(null as any);
+      vi.mocked(mockRecipeRepo.findById).mockResolvedValueOnce(null as never);
 
-      await expect(service.createMenuItemMapping('restaurant-uuid' as any, dto)).rejects.toThrow(/Recipe.*not found/i);
+      await expect(service.createMenuItemMapping('restaurant-uuid' as never, dto)).rejects.toThrow(/Recipe.*not found/i);
     });
   });
 });

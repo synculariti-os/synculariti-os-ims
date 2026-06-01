@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { Job } from 'bullmq';
@@ -23,33 +22,33 @@ describe('SalesImportProcessor', () => {
       createBatch: vi.fn(),
       updateBatchStatus: vi.fn(),
       insertImportRows: vi.fn(),
-    } as any;
+    } as never;
 
     const mockParser: Mocked<ISalesFileParser> = {
       parse: vi.fn().mockResolvedValue([
         { rawItemName: 'BLUE HEAVEN COMBO', quantitySold: 9 },
         { rawItemName: 'CHEESY SMASH', quantitySold: 19 },
       ]),
-    } as any;
+    } as never;
 
     const parserFactory: Mocked<ISalesFileParserFactory> = {
       getParser: vi.fn().mockReturnValue(mockParser),
-    } as any;
+    } as never;
 
     recipeService = {
       expandBOM: vi.fn(),
       resolveRecipesByPosStrings: vi.fn(),
       getIngredients: vi.fn(),
       resolveRecipeByPosString: vi.fn(),
-    } as any;
+    } as never;
 
     ledgerService = {
       record: vi.fn(),
-    } as any;
+    } as never;
 
     storageService = {
       downloadFile: vi.fn(),
-    } as any;
+    } as never;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -59,7 +58,7 @@ describe('SalesImportProcessor', () => {
         { provide: LEDGER_SERVICE_TOKEN, useValue: ledgerService },
         { provide: STORAGE_SERVICE_TOKEN, useValue: storageService },
         { provide: SALES_FILE_PARSER_FACTORY_TOKEN, useValue: parserFactory },
-        { provide: 'DB_CLIENT', useValue: { transaction: vi.fn().mockReturnValue({ execute: vi.fn((cb) => cb({} as any)) }) } }
+        { provide: 'DB_CLIENT', useValue: { transaction: vi.fn().mockReturnValue({ execute: vi.fn((cb) => cb({} as never)) }) } }
       ],
     }).compile();
 

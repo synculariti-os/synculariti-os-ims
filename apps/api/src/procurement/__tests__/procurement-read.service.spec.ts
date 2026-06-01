@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, vi, Mocked, beforeEach } from 'vitest';
@@ -17,7 +16,7 @@ describe('ProcurementReadService', () => {
     mockRepo = {
       getAverageUnitCosts: vi.fn(),
       getVendorPriceHistory: vi.fn(),
-    } as any;
+    } as never;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -34,7 +33,7 @@ describe('ProcurementReadService', () => {
 
   describe('getAverageUnitCosts', () => {
     it('returns empty object when no inventory batches exist', async () => {
-      (mockRepo.getAverageUnitCosts as any).mockResolvedValue({});
+      (mockRepo.getAverageUnitCosts as never).mockResolvedValue({});
       
       const result = await service.getAverageUnitCosts(mockRestaurantId);
       expect(result).toEqual({});
@@ -46,7 +45,7 @@ describe('ProcurementReadService', () => {
         'item-1': 5.50,
         'item-2': 12.00,
       };
-      (mockRepo.getAverageUnitCosts as any).mockResolvedValue(mockCosts);
+      (mockRepo.getAverageUnitCosts as never).mockResolvedValue(mockCosts);
       
       const result = await service.getAverageUnitCosts(mockRestaurantId);
       expect(result).toEqual(mockCosts);
@@ -55,7 +54,7 @@ describe('ProcurementReadService', () => {
 
   describe('getVendorPriceHistory', () => {
     it('returns empty array when no history exists', async () => {
-      (mockRepo.getVendorPriceHistory as any).mockResolvedValue([]);
+      (mockRepo.getVendorPriceHistory as never).mockResolvedValue([]);
       
       const result = await service.getVendorPriceHistory(mockRestaurantId, 'item-1');
       expect(result).toEqual([]);
@@ -67,7 +66,7 @@ describe('ProcurementReadService', () => {
         { date: '2023-01-01', landedUnitCost: 10, vendorId: 'v1', vendorName: 'Vendor 1', poId: 'po1' },
         { date: '2023-02-01', landedUnitCost: 11, vendorId: 'v1', vendorName: 'Vendor 1', poId: 'po2' },
       ];
-      (mockRepo.getVendorPriceHistory as any).mockResolvedValue(mockHistory);
+      (mockRepo.getVendorPriceHistory as never).mockResolvedValue(mockHistory);
       
       const result = await service.getVendorPriceHistory(mockRestaurantId, 'item-1');
       expect(result).toEqual(mockHistory);

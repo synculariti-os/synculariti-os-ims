@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-31. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { BadRequestException } from '@nestjs/common';
@@ -10,18 +9,18 @@ import type { BomExpansion } from '@ims/types';
 // ---------------------------------------------------------------------------
 // ID fixtures
 // ---------------------------------------------------------------------------
-const PIZZA_RECIPE_ID   = 'recipe-pizza-001'   as any;
-const DOUGH_RECIPE_ID   = 'recipe-dough-001'   as any;
-const SAUCE_RECIPE_ID   = 'recipe-sauce-001'   as any;
-const CYCLE_A_RECIPE_ID = 'recipe-cycle-a-001' as any;
-const CYCLE_B_RECIPE_ID = 'recipe-cycle-b-001' as any;
+const PIZZA_RECIPE_ID   = 'recipe-pizza-001'   as never;
+const DOUGH_RECIPE_ID   = 'recipe-dough-001'   as never;
+const SAUCE_RECIPE_ID   = 'recipe-sauce-001'   as never;
+const CYCLE_A_RECIPE_ID = 'recipe-cycle-a-001' as never;
+const CYCLE_B_RECIPE_ID = 'recipe-cycle-b-001' as never;
 
-const FLOUR_ID     = 'item-flour-001'     as any;
-const WATER_ID     = 'item-water-001'     as any;
-const YEAST_ID     = 'item-yeast-001'     as any;
-const SALT_ID      = 'item-salt-001'      as any;
-const PEPPERONI_ID = 'item-pepperoni-001' as any;
-const TOMATO_ID    = 'item-tomato-001'    as any;
+const FLOUR_ID     = 'item-flour-001'     as never;
+const WATER_ID     = 'item-water-001'     as never;
+const YEAST_ID     = 'item-yeast-001'     as never;
+const SALT_ID      = 'item-salt-001'      as never;
+const PEPPERONI_ID = 'item-pepperoni-001' as never;
+const TOMATO_ID    = 'item-tomato-001'    as never;
 
 // ---------------------------------------------------------------------------
 // Recipe fixtures
@@ -34,7 +33,7 @@ const PIZZA_RECIPE = {
   yieldQuantity: 1,
   yieldPercent: 1,
   franchiseGroupId: null,
-  restaurantId: 'rest-1' as any,
+  restaurantId: 'rest-1' as never,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -47,7 +46,7 @@ const DOUGH_RECIPE = {
   yieldQuantity: 6,
   yieldPercent: 1,
   franchiseGroupId: null,
-  restaurantId: 'rest-1' as any,
+  restaurantId: 'rest-1' as never,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -60,7 +59,7 @@ const SAUCE_RECIPE = {
   yieldQuantity: 25, // 25 × 80g portions
   yieldPercent: 1,
   franchiseGroupId: null,
-  restaurantId: 'rest-1' as any,
+  restaurantId: 'rest-1' as never,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
 };
@@ -71,7 +70,7 @@ const SAUCE_RECIPE = {
 /** Pizza BOM lines: 1 dough base (sub-recipe), 60g pepperoni (raw) */
 const PIZZA_INGREDIENTS = [
   {
-    id: 'ing-pizza-dough' as any,
+    id: 'ing-pizza-dough' as never,
     recipeId: PIZZA_RECIPE_ID,
     lineType: 'sub_recipe' as const,
     ingredientItemId: null,
@@ -80,7 +79,7 @@ const PIZZA_INGREDIENTS = [
     createdAt: '2026-01-01T00:00:00Z',
   },
   {
-    id: 'ing-pizza-pepperoni' as any,
+    id: 'ing-pizza-pepperoni' as never,
     recipeId: PIZZA_RECIPE_ID,
     lineType: 'ingredient' as const,
     ingredientItemId: PEPPERONI_ID,
@@ -92,16 +91,16 @@ const PIZZA_INGREDIENTS = [
 
 /** Dough BOM lines: flour 500g, water 325g, yeast 7g, salt 10g */
 const DOUGH_INGREDIENTS = [
-  { id: 'ing-dough-flour' as any, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: FLOUR_ID, subRecipeId: null, quantityRequired: 500, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'ing-dough-water' as any, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: WATER_ID, subRecipeId: null, quantityRequired: 325, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'ing-dough-yeast' as any, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: YEAST_ID, subRecipeId: null, quantityRequired: 7,   createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'ing-dough-salt'  as any, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: SALT_ID,  subRecipeId: null, quantityRequired: 10,  createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-dough-flour' as never, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: FLOUR_ID, subRecipeId: null, quantityRequired: 500, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-dough-water' as never, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: WATER_ID, subRecipeId: null, quantityRequired: 325, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-dough-yeast' as never, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: YEAST_ID, subRecipeId: null, quantityRequired: 7,   createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-dough-salt'  as never, recipeId: DOUGH_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: SALT_ID,  subRecipeId: null, quantityRequired: 10,  createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 /** Sauce BOM lines: tomatoes 1500g, salt 10g (salt appears in both dough + sauce) */
 const SAUCE_INGREDIENTS = [
-  { id: 'ing-sauce-tomato' as any, recipeId: SAUCE_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: TOMATO_ID, subRecipeId: null, quantityRequired: 1500, createdAt: '2026-01-01T00:00:00Z' },
-  { id: 'ing-sauce-salt'   as any, recipeId: SAUCE_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: SALT_ID,   subRecipeId: null, quantityRequired: 10,   createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-sauce-tomato' as never, recipeId: SAUCE_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: TOMATO_ID, subRecipeId: null, quantityRequired: 1500, createdAt: '2026-01-01T00:00:00Z' },
+  { id: 'ing-sauce-salt'   as never, recipeId: SAUCE_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: SALT_ID,   subRecipeId: null, quantityRequired: 10,   createdAt: '2026-01-01T00:00:00Z' },
 ];
 
 // ---------------------------------------------------------------------------
@@ -141,9 +140,9 @@ const mockItemService: IItemWriteService = {
 
 const mockDb = {
   transaction: vi.fn().mockReturnValue({
-    execute: vi.fn(async (cb) => cb({} as any)),
+    execute: vi.fn(async (cb) => cb({} as never)),
   }),
-} as any;
+} as never;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -161,11 +160,11 @@ describe('RecipeService — recursive BOM expansion', () => {
   it('expands a 2-level BOM: pizza → dough sub-recipe → raw flour, water, yeast, salt + direct pepperoni', async () => {
     // First call: pizza BOM
     vi.mocked(mockRecipeRepo.findById)
-      .mockResolvedValueOnce(PIZZA_RECIPE as any)  // pizza
-      .mockResolvedValueOnce(DOUGH_RECIPE as any); // dough (recursive)
+      .mockResolvedValueOnce(PIZZA_RECIPE as never)  // pizza
+      .mockResolvedValueOnce(DOUGH_RECIPE as never); // dough (recursive)
     vi.mocked(mockRecipeRepo.findIngredients)
-      .mockResolvedValueOnce(PIZZA_INGREDIENTS as any)  // pizza lines
-      .mockResolvedValueOnce(DOUGH_INGREDIENTS as any); // dough lines
+      .mockResolvedValueOnce(PIZZA_INGREDIENTS as never)  // pizza lines
+      .mockResolvedValueOnce(DOUGH_INGREDIENTS as never); // dough lines
 
     // Sell 1 pizza
     const result: BomExpansion = await service.expandBOM(PIZZA_RECIPE_ID, 1);
@@ -186,11 +185,11 @@ describe('RecipeService — recursive BOM expansion', () => {
 
   it('scales sub-recipe ingredients proportionally when selling multiple units', async () => {
     vi.mocked(mockRecipeRepo.findById)
-      .mockResolvedValueOnce(PIZZA_RECIPE as any)
-      .mockResolvedValueOnce(DOUGH_RECIPE as any);
+      .mockResolvedValueOnce(PIZZA_RECIPE as never)
+      .mockResolvedValueOnce(DOUGH_RECIPE as never);
     vi.mocked(mockRecipeRepo.findIngredients)
-      .mockResolvedValueOnce(PIZZA_INGREDIENTS as any)
-      .mockResolvedValueOnce(DOUGH_INGREDIENTS as any);
+      .mockResolvedValueOnce(PIZZA_INGREDIENTS as never)
+      .mockResolvedValueOnce(DOUGH_INGREDIENTS as never);
 
     // Sell 3 pizzas
     const result: BomExpansion = await service.expandBOM(PIZZA_RECIPE_ID, 3);
@@ -205,19 +204,19 @@ describe('RecipeService — recursive BOM expansion', () => {
   it('returns separate depletion entries for the same raw item used in multiple sub-recipes', async () => {
     // Pizza BOM: dough sub-recipe + sauce sub-recipe + pepperoni raw
     const PIZZA_WITH_SAUCE_INGREDIENTS = [
-      { id: 'ing-pizza-dough' as any, recipeId: PIZZA_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: DOUGH_RECIPE_ID,  quantityRequired: 1,  createdAt: '2026-01-01T00:00:00Z' },
-      { id: 'ing-pizza-sauce' as any, recipeId: PIZZA_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: SAUCE_RECIPE_ID,  quantityRequired: 1,  createdAt: '2026-01-01T00:00:00Z' },
-      { id: 'ing-pizza-pepp'  as any, recipeId: PIZZA_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: PEPPERONI_ID, subRecipeId: null, quantityRequired: 60, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-pizza-dough' as never, recipeId: PIZZA_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: DOUGH_RECIPE_ID,  quantityRequired: 1,  createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-pizza-sauce' as never, recipeId: PIZZA_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: SAUCE_RECIPE_ID,  quantityRequired: 1,  createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-pizza-pepp'  as never, recipeId: PIZZA_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: PEPPERONI_ID, subRecipeId: null, quantityRequired: 60, createdAt: '2026-01-01T00:00:00Z' },
     ];
 
     vi.mocked(mockRecipeRepo.findById)
-      .mockResolvedValueOnce(PIZZA_RECIPE as any)
-      .mockResolvedValueOnce(DOUGH_RECIPE as any)
-      .mockResolvedValueOnce(SAUCE_RECIPE as any);
+      .mockResolvedValueOnce(PIZZA_RECIPE as never)
+      .mockResolvedValueOnce(DOUGH_RECIPE as never)
+      .mockResolvedValueOnce(SAUCE_RECIPE as never);
     vi.mocked(mockRecipeRepo.findIngredients)
-      .mockResolvedValueOnce(PIZZA_WITH_SAUCE_INGREDIENTS as any)
-      .mockResolvedValueOnce(DOUGH_INGREDIENTS as any)   // dough: includes salt 10g
-      .mockResolvedValueOnce(SAUCE_INGREDIENTS as any);  // sauce: includes salt 10g
+      .mockResolvedValueOnce(PIZZA_WITH_SAUCE_INGREDIENTS as never)
+      .mockResolvedValueOnce(DOUGH_INGREDIENTS as never)   // dough: includes salt 10g
+      .mockResolvedValueOnce(SAUCE_INGREDIENTS as never);  // sauce: includes salt 10g
 
     const result: BomExpansion = await service.expandBOM(PIZZA_RECIPE_ID, 1);
 
@@ -232,10 +231,10 @@ describe('RecipeService — recursive BOM expansion', () => {
 
   it('throws BadRequestException when a sub-recipe creates a direct cycle (A → A)', async () => {
     const SELF_LOOP_INGREDIENTS = [
-      { id: 'ing-loop' as any, recipeId: CYCLE_A_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: CYCLE_A_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-loop' as never, recipeId: CYCLE_A_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: CYCLE_A_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
     ];
-    vi.mocked(mockRecipeRepo.findById).mockResolvedValue({ id: CYCLE_A_RECIPE_ID, yieldQuantity: 1, yieldPercent: 1 } as any);
-    vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValue(SELF_LOOP_INGREDIENTS as any);
+    vi.mocked(mockRecipeRepo.findById).mockResolvedValue({ id: CYCLE_A_RECIPE_ID, yieldQuantity: 1, yieldPercent: 1 } as never);
+    vi.mocked(mockRecipeRepo.findIngredients).mockResolvedValue(SELF_LOOP_INGREDIENTS as never);
 
     await expect(service.expandBOM(CYCLE_A_RECIPE_ID, 1))
       .rejects.toThrow(BadRequestException);
@@ -243,18 +242,18 @@ describe('RecipeService — recursive BOM expansion', () => {
 
   it('throws BadRequestException when a sub-recipe creates an indirect cycle (A → B → A)', async () => {
     const CYCLE_A_INGREDIENTS = [
-      { id: 'ing-a' as any, recipeId: CYCLE_A_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: CYCLE_B_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-a' as never, recipeId: CYCLE_A_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: CYCLE_B_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
     ];
     const CYCLE_B_INGREDIENTS = [
-      { id: 'ing-b' as any, recipeId: CYCLE_B_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: CYCLE_A_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-b' as never, recipeId: CYCLE_B_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: CYCLE_A_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
     ];
 
     vi.mocked(mockRecipeRepo.findById)
-      .mockResolvedValueOnce({ id: CYCLE_A_RECIPE_ID, yieldQuantity: 1, yieldPercent: 1 } as any)
-      .mockResolvedValueOnce({ id: CYCLE_B_RECIPE_ID, yieldQuantity: 1, yieldPercent: 1 } as any);
+      .mockResolvedValueOnce({ id: CYCLE_A_RECIPE_ID, yieldQuantity: 1, yieldPercent: 1 } as never)
+      .mockResolvedValueOnce({ id: CYCLE_B_RECIPE_ID, yieldQuantity: 1, yieldPercent: 1 } as never);
     vi.mocked(mockRecipeRepo.findIngredients)
-      .mockResolvedValueOnce(CYCLE_A_INGREDIENTS as any)
-      .mockResolvedValueOnce(CYCLE_B_INGREDIENTS as any);
+      .mockResolvedValueOnce(CYCLE_A_INGREDIENTS as never)
+      .mockResolvedValueOnce(CYCLE_B_INGREDIENTS as never);
 
     await expect(service.expandBOM(CYCLE_A_RECIPE_ID, 1))
       .rejects.toThrow(BadRequestException);
@@ -264,15 +263,15 @@ describe('RecipeService — recursive BOM expansion', () => {
 
   it('returns only the raw ingredient lines when a sub-recipe has no ingredients (empty BOM)', async () => {
     const PIZZA_WITH_EMPTY_DOUGH = [
-      { id: 'ing-dough' as any, recipeId: PIZZA_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: DOUGH_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
-      { id: 'ing-pepp'  as any, recipeId: PIZZA_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: PEPPERONI_ID, subRecipeId: null, quantityRequired: 60, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-dough' as never, recipeId: PIZZA_RECIPE_ID, lineType: 'sub_recipe' as const, ingredientItemId: null, subRecipeId: DOUGH_RECIPE_ID, quantityRequired: 1, createdAt: '2026-01-01T00:00:00Z' },
+      { id: 'ing-pepp'  as never, recipeId: PIZZA_RECIPE_ID, lineType: 'ingredient' as const, ingredientItemId: PEPPERONI_ID, subRecipeId: null, quantityRequired: 60, createdAt: '2026-01-01T00:00:00Z' },
     ];
 
     vi.mocked(mockRecipeRepo.findById)
-      .mockResolvedValueOnce(PIZZA_RECIPE as any)
-      .mockResolvedValueOnce(DOUGH_RECIPE as any);
+      .mockResolvedValueOnce(PIZZA_RECIPE as never)
+      .mockResolvedValueOnce(DOUGH_RECIPE as never);
     vi.mocked(mockRecipeRepo.findIngredients)
-      .mockResolvedValueOnce(PIZZA_WITH_EMPTY_DOUGH as any)
+      .mockResolvedValueOnce(PIZZA_WITH_EMPTY_DOUGH as never)
       .mockResolvedValueOnce([]); // empty dough BOM
 
     const result = await service.expandBOM(PIZZA_RECIPE_ID, 1);

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* @immutable-test — Written Red-first on: 2026-05-23. NEVER MODIFY after first GREEN. */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ConflictException, BadRequestException } from '@nestjs/common';
@@ -13,11 +12,11 @@ import { PURCHASE_ORDER_STATUS } from '@ims/types';
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
-const RESTAURANT_ID = 'rest-uuid-001' as any;
-const VENDOR_ID = 'vendor-uuid-001' as any;
-const PO_ID = 'po-uuid-001' as any;
-const ITEM_ID = 'item-uuid-001' as any;
-const LINE_ITEM_ID = 'line-uuid-001' as any;
+const RESTAURANT_ID = 'rest-uuid-001' as never;
+const VENDOR_ID = 'vendor-uuid-001' as never;
+const PO_ID = 'po-uuid-001' as never;
+const ITEM_ID = 'item-uuid-001' as never;
+const LINE_ITEM_ID = 'line-uuid-001' as never;
 
 const DRAFT_PO = {
   id: PO_ID,
@@ -103,7 +102,7 @@ describe('ProcurementService', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     service = new ProcurementService(
-      mockDb as any,
+      mockDb as never,
       mockProcurementRepo,
       mockLedgerService,
       mockItemService,
@@ -115,7 +114,7 @@ describe('ProcurementService', () => {
   describe('listVendors()', () => {
     it('returns a list of vendors for a restaurant', async () => {
       const mockVendors = [{ id: VENDOR_ID, name: 'Vendor 1' }];
-      vi.mocked(mockProcurementRepo.findVendors).mockResolvedValueOnce(mockVendors as any);
+      vi.mocked(mockProcurementRepo.findVendors).mockResolvedValueOnce(mockVendors as never);
 
       const result = await service.listVendors(RESTAURANT_ID);
 
@@ -128,7 +127,7 @@ describe('ProcurementService', () => {
 
   describe('createDraftPO()', () => {
     it('creates a PO with status DRAFT and returns it', async () => {
-      vi.mocked(mockProcurementRepo.createPO).mockResolvedValueOnce(DRAFT_PO as any);
+      vi.mocked(mockProcurementRepo.createPO).mockResolvedValueOnce(DRAFT_PO as never);
 
       const result = await service.createDraftPO(RESTAURANT_ID, CREATE_PO_DTO);
 
@@ -141,8 +140,8 @@ describe('ProcurementService', () => {
 
   describe('submitPO()', () => {
     it('transitions a DRAFT PO to SUBMITTED', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(DRAFT_PO as any);
-      vi.mocked(mockProcurementRepo.updatePOStatus).mockResolvedValueOnce(SUBMITTED_PO as any);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(DRAFT_PO as never);
+      vi.mocked(mockProcurementRepo.updatePOStatus).mockResolvedValueOnce(SUBMITTED_PO as never);
 
       const result = await service.submitPO(PO_ID);
 
@@ -151,7 +150,7 @@ describe('ProcurementService', () => {
     });
 
     it('throws BadRequestException when submitting a non-DRAFT PO', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(SUBMITTED_PO as any);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(SUBMITTED_PO as never);
 
       await expect(service.submitPO(PO_ID)).rejects.toThrow(BadRequestException);
     });
@@ -161,8 +160,8 @@ describe('ProcurementService', () => {
 
   describe('receivePO()', () => {
     it('ACID: writes batch + ledger entry + status update atomically', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(SUBMITTED_PO as any);
-      vi.mocked(mockProcurementRepo.findLineItemsByPOId).mockResolvedValueOnce([MOCK_LINE_ITEM as any]);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(SUBMITTED_PO as never);
+      vi.mocked(mockProcurementRepo.findLineItemsByPOId).mockResolvedValueOnce([MOCK_LINE_ITEM as never]);
 
       await service.receivePO(PO_ID, RECEIVE_PO_DTO);
 
@@ -181,21 +180,21 @@ describe('ProcurementService', () => {
     });
 
     it('throws ConflictException when receiving an already RECEIVED PO (idempotency)', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(RECEIVED_PO as any);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(RECEIVED_PO as never);
 
       await expect(service.receivePO(PO_ID, RECEIVE_PO_DTO)).rejects.toThrow(ConflictException);
     });
 
     it('throws BadRequestException when receiving a CANCELLED PO', async () => {
       const cancelledPO = { ...DRAFT_PO, status: PURCHASE_ORDER_STATUS.CANCELLED };
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(cancelledPO as any);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(cancelledPO as never);
 
       await expect(service.receivePO(PO_ID, RECEIVE_PO_DTO)).rejects.toThrow(BadRequestException);
     });
 
     it('computes landedUnitCost as rawUnitPrice + prorated freight', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(SUBMITTED_PO as any);
-      vi.mocked(mockProcurementRepo.findLineItemsByPOId).mockResolvedValueOnce([MOCK_LINE_ITEM as any]);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(SUBMITTED_PO as never);
+      vi.mocked(mockProcurementRepo.findLineItemsByPOId).mockResolvedValueOnce([MOCK_LINE_ITEM as never]);
 
       await service.receivePO(PO_ID, RECEIVE_PO_DTO);
 
@@ -213,11 +212,11 @@ describe('ProcurementService', () => {
 
   describe('cancelPO()', () => {
     it('cancels a DRAFT PO', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(DRAFT_PO as any);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(DRAFT_PO as never);
       vi.mocked(mockProcurementRepo.updatePOStatus).mockResolvedValueOnce({
         ...DRAFT_PO,
         status: 'CANCELLED',
-      } as any);
+      } as never);
 
       await service.cancelPO(PO_ID);
 
@@ -225,7 +224,7 @@ describe('ProcurementService', () => {
     });
 
     it('throws ConflictException when cancelling an already RECEIVED PO', async () => {
-      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(RECEIVED_PO as any);
+      vi.mocked(mockProcurementRepo.findPOById).mockResolvedValueOnce(RECEIVED_PO as never);
 
       await expect(service.cancelPO(PO_ID)).rejects.toThrow(ConflictException);
     });

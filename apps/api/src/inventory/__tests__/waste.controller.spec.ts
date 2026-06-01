@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
@@ -16,10 +15,10 @@ describe('WasteController', () => {
   let service: Mocked<IWasteService>;
 
   const mockUser: JwtPayload = {
-    sub: 'user-1' as any,
+    sub: 'user-1' as never,
     email: 'test@test.com',
-    restaurantId: 'rest-1' as any,
-    franchiseGroupId: 'franchise-1' as any,
+    restaurantId: 'rest-1' as never,
+    franchiseGroupId: 'franchise-1' as never,
     permissions: [],
   };
 
@@ -54,7 +53,7 @@ describe('WasteController', () => {
   describe('logWaste', () => {
     it('should call service.logWaste', async () => {
       const dto: CreateWasteLogDto = { itemId: 'item-1', quantity: 5, reason: 'dropped' };
-      const mockResult = { id: 'waste-1' } as any;
+      const mockResult = { id: 'waste-1' } as never;
       service.logWaste.mockResolvedValue(mockResult);
 
       const result = await controller.logWaste(mockUser, dto);
@@ -66,7 +65,7 @@ describe('WasteController', () => {
 
   describe('listWasteLogs', () => {
     it('should call service.listWasteLogs', async () => {
-      const mockResult = [{ id: 'waste-1' }] as any;
+      const mockResult = [{ id: 'waste-1' }] as never;
       service.listWasteLogs.mockResolvedValue(mockResult);
 
       const result = await controller.listWasteLogs(mockUser, 10, 5);

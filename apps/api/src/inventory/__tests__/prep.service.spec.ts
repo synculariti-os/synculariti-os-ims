@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { PrepService } from '../prep.service';
@@ -46,7 +45,7 @@ describe('PrepService', () => {
     recipeService = {
       getRecipeByProducesItemId: vi.fn(),
       expandBOM: vi.fn(),
-    } as any;
+    } as never;
 
     stockQueryService = {
       getCurrentStock: vi.fn(),
@@ -58,7 +57,7 @@ describe('PrepService', () => {
       convertUom: vi.fn(),
       listParLevels: vi.fn(),
       listCategories: vi.fn(),
-    } as any;
+    } as never;
 
     service = new PrepService(mockDb, prepRepo, ledger, recipeService, stockQueryService, itemReadService);
   });
@@ -78,8 +77,8 @@ describe('PrepService', () => {
       const mockBom = [
         { itemId: 'ing-1', consumedQty: 20 },
         { itemId: 'ing-2', consumedQty: 5 }
-      ] as any;
-      const mockLog = { id: 'prep-1' as PrepLogId, ...dto, restaurantId: mockRestaurantId, producedAt: '' } as any;
+      ] as never;
+      const mockLog = { id: 'prep-1' as PrepLogId, ...dto, restaurantId: mockRestaurantId, producedAt: '' } as never;
 
       recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
       recipeService.expandBOM.mockResolvedValue(mockBom);
@@ -124,18 +123,18 @@ describe('PrepService', () => {
       const mockBom = [
         { itemId: 'ing-1', consumedQty: 20 },
         { itemId: 'ing-2', consumedQty: 5 }
-      ] as any;
+      ] as never;
 
       recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
       recipeService.expandBOM.mockResolvedValue(mockBom);
       stockQueryService.getCurrentStockBulk.mockResolvedValue([
-        { itemId: 'ing-1', qty: 10 } as any // only 10 in stock, need 20
+        { itemId: 'ing-1', qty: 10 } as never // only 10 in stock, need 20
         // ing-2 is missing from stock, so 0
       ]);
 
       itemReadService.findById.mockImplementation(async (id) => {
-        if (id === 'ing-1') return { id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as any;
-        return { id: 'ing-2', name: 'Sugar', inventoryUom: 'kg' } as any;
+        if (id === 'ing-1') return { id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as never;
+        return { id: 'ing-2', name: 'Sugar', inventoryUom: 'kg' } as never;
       });
 
       const res = await service.planPrepProduction(mockRestaurantId, dto);
@@ -156,15 +155,15 @@ describe('PrepService', () => {
       const mockRecipe = { id: 'recipe-1' } as Recipe;
       const mockBom = [
         { itemId: 'ing-1', consumedQty: 20 }
-      ] as any;
+      ] as never;
 
       recipeService.getRecipeByProducesItemId.mockResolvedValue(mockRecipe);
       recipeService.expandBOM.mockResolvedValue(mockBom);
       stockQueryService.getCurrentStockBulk.mockResolvedValue([
-        { itemId: 'ing-1', qty: 50 } as any // plenty
+        { itemId: 'ing-1', qty: 50 } as never // plenty
       ]);
 
-      itemReadService.findById.mockResolvedValue({ id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as any);
+      itemReadService.findById.mockResolvedValue({ id: 'ing-1', name: 'Flour', inventoryUom: 'kg' } as never);
 
       const res = await service.planPrepProduction(mockRestaurantId, dto);
       expect(res.isPossible).toBe(true);
