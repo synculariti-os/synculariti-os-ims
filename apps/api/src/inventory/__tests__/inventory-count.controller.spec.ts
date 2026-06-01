@@ -1,3 +1,4 @@
+// @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { InventoryCountController } from '../inventory-count.controller';

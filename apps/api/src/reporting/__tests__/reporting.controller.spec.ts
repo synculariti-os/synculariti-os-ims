@@ -2,8 +2,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, vi, Mocked, beforeEach } from 'vitest';
 import { ReportingController } from '../reporting.controller';
-import { IReportingService } from '../interfaces/i-reporting.service';
-import { IReportingCogsService } from '../interfaces/i-reporting-cogs.service';
+import { IReportingService, REPORTING_SERVICE_TOKEN } from '../interfaces/i-reporting.service';
+import { IReportingCogsService, REPORTING_COGS_SERVICE_TOKEN } from '../interfaces/i-reporting-cogs.service';
 import { IProcurementReadService, PROCUREMENT_READ_SERVICE_TOKEN } from '../../procurement/interfaces/i-procurement-read.service';
 import { RestaurantId } from '@ims/types';
 
@@ -41,11 +41,11 @@ describe('ReportingController', () => {
       controllers: [ReportingController],
       providers: [
         {
-          provide: 'IReportingService',
+          provide: REPORTING_SERVICE_TOKEN,
           useValue: mockReportingService,
         },
         {
-          provide: 'IReportingCogsService',
+          provide: REPORTING_COGS_SERVICE_TOKEN,
           useValue: mockCogsService,
         },
         {

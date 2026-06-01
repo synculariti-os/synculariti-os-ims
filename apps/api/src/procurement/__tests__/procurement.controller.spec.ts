@@ -77,13 +77,13 @@ describe('ProcurementController', () => {
 
   describe('listPOs', () => {
     it('should call service.listPOs', async () => {
-      const mockResult = [{ id: 'po-1' }] as any;
+      const mockResult = { data: [{ id: 'po-1' }], meta: { total: 1, page: 1, limit: 50, totalPages: 1 } } as any;
       service.listPOs.mockResolvedValue(mockResult);
 
       const result = await controller.listPOs(mockUser);
       
-      expect(service.listPOs).toHaveBeenCalledWith(mockUser.restaurantId, 50, 0);
-      expect(result).toEqual({ data: mockResult });
+      expect(service.listPOs).toHaveBeenCalledWith(mockUser.restaurantId, 1, 50);
+      expect(result).toEqual(mockResult);
     });
   });
 

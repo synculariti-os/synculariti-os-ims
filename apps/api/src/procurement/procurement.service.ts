@@ -40,8 +40,17 @@ export class ProcurementService {
     return this.procurementRepo.createPO(restaurantId, dto);
   }
 
-  async listPOs(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<PurchaseOrder[]> {
-    return this.procurementRepo.listPOs(restaurantId, limit, offset);
+  async listPOs(restaurantId: string, page: number = 1, limit: number = 50): Promise<{ data: PurchaseOrder[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
+    const { data, total } = await this.procurementRepo.listPOs(restaurantId as RestaurantId, page, limit);
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 
   async listVendors(restaurantId: string): Promise<Vendor[]> {

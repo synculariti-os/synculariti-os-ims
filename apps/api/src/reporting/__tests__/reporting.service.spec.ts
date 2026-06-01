@@ -31,6 +31,7 @@ describe('ReportingService', () => {
     } as any;
 
     mockDb = {
+      getExecutor: vi.fn().mockReturnValue({ executeQuery: vi.fn().mockResolvedValue({ rows: [] }) }),
       selectFrom: vi.fn().mockReturnThis(),
       innerJoin: vi.fn().mockReturnThis(),
       select: vi.fn().mockReturnThis(),

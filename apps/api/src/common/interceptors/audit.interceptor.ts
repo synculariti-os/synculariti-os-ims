@@ -28,7 +28,7 @@ export class AuditInterceptor implements NestInterceptor {
 
     return next.handle().pipe(
       tap({
-        next: () => {
+        next: (response: any) => {
           const duration = Date.now() - startTime;
           void this.auditService.log({
             userId: request.user?.sub ?? null,
@@ -36,8 +36,8 @@ export class AuditInterceptor implements NestInterceptor {
             action: `${method} ${request.route?.path || request.url}`,
             entityType: request.route?.path?.split('/')[1] ?? 'unknown',
             entityId: request.params?.id ?? 'unknown',
-            oldValue: null,
-            newValue: request.body || null,
+            oldValue: request.body || null,
+            newValue: response || null,
             success: true,
             sourceIp: request.ip,
             userAgent: request.headers?.['user-agent'],
@@ -52,8 +52,8 @@ export class AuditInterceptor implements NestInterceptor {
             action: `${method} ${request.route?.path || request.url}`,
             entityType: request.route?.path?.split('/')[1] ?? 'unknown',
             entityId: request.params?.id ?? 'unknown',
-            oldValue: null,
-            newValue: request.body || null,
+            oldValue: request.body || null,
+            newValue: null,
             success: false,
             errorMessage: error.message,
             sourceIp: request.ip,

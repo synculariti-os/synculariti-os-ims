@@ -1,4 +1,4 @@
-import { Controller, Post, UseInterceptors, UploadedFile, Body, Req, Inject, ParseFilePipeBuilder, HttpStatus, Get, Query } from '@nestjs/common';
+import { Controller, Post, UseInterceptors, UploadedFile, Body, Req, Inject, ParseFilePipeBuilder, HttpStatus, Get, Query, HttpCode } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SALES_SERVICE_TOKEN, ISalesService } from './interfaces/i-sales.service';
 import { uploadSalesFileDtoSchema, UploadSalesFileDto, listBatchesQuerySchema } from '@ims/validators';
@@ -13,6 +13,7 @@ export class SalesController {
   ) {}
 
   @Post('upload')
+  @HttpCode(201)
   @RequirePermission(PERMISSION_CODES.SALES_IMPORT)
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(

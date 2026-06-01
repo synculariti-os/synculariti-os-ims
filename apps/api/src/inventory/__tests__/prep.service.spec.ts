@@ -1,3 +1,4 @@
+// @immutable-test — Written Red-first on: 2026-06-02 NEVER MODIFY after first GREEN.
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { PrepService } from '../prep.service';
 import type { IPrepRepository } from '../interfaces/i-prep.repository';

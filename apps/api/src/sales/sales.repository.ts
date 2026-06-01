@@ -21,11 +21,12 @@ export class SalesRepository implements ISalesRepository {
         restaurant_id: asRestaurantId(data.restaurantId),
         business_date: data.businessDate,
         status: 'PENDING',
+        file_url: data.fileUrl,
+        uploaded_by: data.uploadedBy,
       })
       .returningAll()
       .execute();
       
-    // Note: Normally we'd store fileUrl, but keeping it simple as schema doesn't have it yet.
     return batch;
   }
 
@@ -37,7 +38,7 @@ export class SalesRepository implements ISalesRepository {
       .execute();
   }
 
-  async insertImportRows(trx: Kysely<Database>, rows: { batchId: string, rawItemName: string, quantitySold: number, isMapped: boolean }[]): Promise<void> {
+  async insertImportRows(trx: Kysely<Database>, rows: { batchId: string, rawItemName: string, quantitySold: number, isMapped: boolean, recipeId?: string | null }[]): Promise<void> {
     if (rows.length === 0) return;
     await trx
       .insertInto('sales_import_rows')
@@ -48,6 +49,7 @@ export class SalesRepository implements ISalesRepository {
           raw_item_name: row.rawItemName,
           quantity_sold: row.quantitySold,
           is_mapped: row.isMapped,
+          recipe_id: row.recipeId || null,
         }))
       )
       .execute();

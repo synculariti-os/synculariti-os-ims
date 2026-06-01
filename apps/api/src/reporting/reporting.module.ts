@@ -8,6 +8,9 @@ import { RecipeModule } from '../recipe/recipe.module';
 import { ProcurementModule } from '../procurement/procurement.module';
 import { ReportingCogsService } from './reporting-cogs.service';
 
+import { REPORTING_SERVICE_TOKEN } from './interfaces/i-reporting.service';
+import { REPORTING_COGS_SERVICE_TOKEN } from './interfaces/i-reporting-cogs.service';
+
 @Module({
   imports: [
     ScheduleModule.forRoot(),
@@ -19,14 +22,14 @@ import { ReportingCogsService } from './reporting-cogs.service';
   controllers: [ReportingController],
   providers: [
     {
-      provide: 'IReportingService',
+      provide: REPORTING_SERVICE_TOKEN,
       useClass: ReportingService,
     },
     {
-      provide: 'IReportingCogsService',
+      provide: REPORTING_COGS_SERVICE_TOKEN,
       useClass: ReportingCogsService,
     },
   ],
-  exports: ['IReportingService', 'IReportingCogsService'],
+  exports: [REPORTING_SERVICE_TOKEN, REPORTING_COGS_SERVICE_TOKEN],
 })
 export class ReportingModule {}

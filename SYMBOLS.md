@@ -101,9 +101,9 @@
 
 | Symbol | Kind | Source Table(s) | Description |
 |---|---|---|---|
-| `SalesImportBatch` | `interface` | `sales_import_batches` | Import session: `businessDate`, `status: ImportStatus`, `errorMessage?` |
+| `SalesImportBatch` | `interface` | `sales_import_batches` | Import session: `businessDate`, `status: ImportStatus`, `fileUrl`, `uploadedBy`, `errorMessage?` |
 | `ImportStatus` | `type` | — | `'PENDING' \| 'PROCESSING' \| 'COMPLETED' \| 'FAILED'` |
-| `SalesImportRow` | `interface` | `sales_import_rows` | Parsed row: `rawItemName`, `quantitySold`, `isMapped` |
+| `SalesImportRow` | `interface` | `sales_import_rows` | Parsed row: `rawItemName`, `quantitySold`, `isMapped`, `recipeId?` |
 | `VendorPriceHistoryRow` | `interface` | (Virtual) | Historical unit cost trends for a vendor item |
 | `DailyInventorySnapshot` | `interface` | `daily_inventory_snapshots` | EOD tracking: `restaurantId`, `itemId`, `recordedAt`, `stockLevel` |
 | `CostReportIngredient` | `interface` | N/A | Sub-type for COGS report: `itemId`, `itemName`, `qty`, `uom`, `unitCost`, `totalCost` |

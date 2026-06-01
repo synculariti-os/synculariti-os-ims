@@ -19,7 +19,6 @@ export const poLineItemSchema = z.object({
 });
 
 export const createPoSchema = z.object({
-  restaurantId: z.string().uuid(),
   vendorId: z.string().uuid(),
   expectedDeliveryDate: z.string().optional().nullable(),
   freightCharge: z.number().min(0).default(0),

@@ -236,6 +236,8 @@ export interface Database {
     business_date: string;
     status: ImportStatus;
     error_message: string | null;
+    file_url: string | null;
+    uploaded_by: string | null;
     created_at: Generated<string>;
     updated_at: Generated<string>;
   };
@@ -245,6 +247,7 @@ export interface Database {
     raw_item_name: string;
     quantity_sold: number;
     is_mapped: Generated<boolean>;
+    recipe_id: string | null;
     created_at: Generated<string>;
   };
   daily_inventory_snapshots: {

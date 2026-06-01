@@ -45,10 +45,11 @@ const mockLedgerRepository: ILedgerRepository = {
 // ---------------------------------------------------------------------------
 describe('LedgerService', () => {
   let service: LedgerService;
+  const mockItemReadService = { findById: vi.fn() };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new LedgerService(mockLedgerRepository);
+    service = new LedgerService(mockLedgerRepository, mockItemReadService as any);
   });
 
   // ── record ───────────────────────────────────────────────────────────────

@@ -25,7 +25,7 @@ import { LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 export const COUNT_REPOSITORY_TOKEN = Symbol('IInventoryCountRepository');
 
 @Injectable()
-export class InventoryCountService {
+export class InventoryCountService implements IInventoryCountService {
   constructor(
     @Inject('DB_CLIENT')
     private readonly db: Kysely<Database>,

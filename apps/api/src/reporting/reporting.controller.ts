@@ -8,11 +8,15 @@ import { IProcurementReadService, PROCUREMENT_READ_SERVICE_TOKEN } from '../proc
 import { vendorPriceHistoryQuerySchema } from '@ims/validators';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 
+import { IReportingService, REPORTING_SERVICE_TOKEN } from './interfaces/i-reporting.service';
+import { REPORTING_COGS_SERVICE_TOKEN } from './interfaces/i-reporting-cogs.service';
+import type { IReportingCogsService } from './interfaces/i-reporting-cogs.service';
+
 @Controller('reports')
 export class ReportingController {
   constructor(
-    @Inject('IReportingService') private readonly reportingService: IReportingService,
-    @Inject('IReportingCogsService') private readonly cogsService: import('./interfaces/i-reporting-cogs.service').IReportingCogsService,
+    @Inject(REPORTING_SERVICE_TOKEN) private readonly reportingService: IReportingService,
+    @Inject(REPORTING_COGS_SERVICE_TOKEN) private readonly cogsService: IReportingCogsService,
     @Inject(PROCUREMENT_READ_SERVICE_TOKEN) private readonly procurementReadService: IProcurementReadService,
   ) {}
 

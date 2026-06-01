@@ -21,7 +21,7 @@ export interface CreateInventoryBatchInput {
 export interface IProcurementRepository {
   createPO(restaurantId: RestaurantId, dto: CreatePoDto): Promise<PurchaseOrder>;
   findPOById(poId: PurchaseOrderId): Promise<PurchaseOrder | null>;
-  listPOs(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<PurchaseOrder[]>;
+  listPOs(restaurantId: RestaurantId, page: number, limit: number): Promise<{ data: PurchaseOrder[], total: number }>;
   updatePOStatus(poId: PurchaseOrderId, status: string, trx?: unknown): Promise<PurchaseOrder>;
   findLineItemsByPOId(poId: PurchaseOrderId): Promise<PoLineItem[]>;
   updateLineItemReceived(trx: unknown, lineItemId: string, qty: number): Promise<void>;

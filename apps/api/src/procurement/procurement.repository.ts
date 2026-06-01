@@ -112,16 +112,28 @@ export class ProcurementRepository implements IProcurementRepository {
     return row ? this.mapPO(row) : null;
   }
 
-  async listPOs(restaurantId: RestaurantId, limit: number = 50, offset: number = 0): Promise<PurchaseOrder[]> {
-    const rows = await this.db
-      .selectFrom('purchase_orders')
-      .selectAll()
-      .where('restaurant_id', '=', restaurantId)
-      .orderBy('created_at', 'desc')
-      .limit(limit)
-      .offset(offset)
-      .execute();
-    return rows.map(r => this.mapPO(r));
+  async listPOs(restaurantId: RestaurantId, page: number, limit: number): Promise<{ data: PurchaseOrder[], total: number }> {
+    const offset = (page - 1) * limit;
+    const [rows, totalResult] = await Promise.all([
+      this.db
+        .selectFrom('purchase_orders')
+        .selectAll()
+        .where('restaurant_id', '=', restaurantId)
+        .orderBy('created_at', 'desc')
+        .limit(limit)
+        .offset(offset)
+        .execute(),
+      this.db
+        .selectFrom('purchase_orders')
+        .select(this.db.fn.count<string>('id').as('total'))
+        .where('restaurant_id', '=', restaurantId)
+        .executeTakeFirst(),
+    ]);
+    
+    return {
+      data: rows.map(r => this.mapPO(r)),
+      total: totalResult?.total ? parseInt(totalResult.total, 10) : 0,
+    };
   }
 
   async updatePOStatus(poId: PurchaseOrderId, status: string, trx?: unknown): Promise<PurchaseOrder> {
@@ -188,24 +200,21 @@ export class ProcurementRepository implements IProcurementRepository {
     // Weighted average cost based on remaining quantity
     const rows = await this.db
       .selectFrom('inventory_batches')
-      .select(['item_id', 'remaining_qty', 'landed_unit_cost'])
+      .select([
+        'item_id',
+        this.db.fn.sum<number>('remaining_qty').as('total_qty'),
+        this.db.fn.sum<number>(this.db.raw('remaining_qty * landed_unit_cost')).as('total_value')
+      ])
       .where('restaurant_id', '=', restaurantId as RestaurantId)
       .where('remaining_qty', '>', 0)
+      .groupBy('item_id')
       .execute();
 
-    // Grouping by item_id in TS
-    const totals: Record<string, { totalValue: number; totalQty: number }> = {};
-    for (const row of rows) {
-      if (!totals[row.item_id]) {
-        totals[row.item_id] = { totalValue: 0, totalQty: 0 };
-      }
-      totals[row.item_id].totalValue += (row.remaining_qty * row.landed_unit_cost);
-      totals[row.item_id].totalQty += row.remaining_qty;
-    }
-
     const averages: Record<string, number> = {};
-    for (const [itemId, data] of Object.entries(totals)) {
-      averages[itemId] = data.totalValue / data.totalQty;
+    for (const row of rows) {
+      if (Number(row.total_qty) > 0) {
+        averages[row.item_id] = Number(row.total_value) / Number(row.total_qty);
+      }
     }
 
     return averages;

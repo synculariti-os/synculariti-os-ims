@@ -33,13 +33,12 @@ export class ProcurementController {
   @RequirePermission('PROCUREMENT.READ')
   async listPOs(
     @CurrentUser() user: JwtPayload,
+    @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
   ) {
+    const pageNum = page ? Number(page) : 1;
     const limitNum = limit ? Number(limit) : 50;
-    const offsetNum = offset ? Number(offset) : 0;
-    const data = await this.procurementService.listPOs(user.restaurantId, limitNum, offsetNum);
-    return { data };
+    return this.procurementService.listPOs(user.restaurantId, pageNum, limitNum);
   }
 
   @Get('vendors')

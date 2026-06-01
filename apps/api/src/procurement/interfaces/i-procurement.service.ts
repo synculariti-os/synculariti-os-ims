@@ -8,6 +8,6 @@ export interface IProcurementService {
   submitPO(poId: PurchaseOrderId): Promise<PurchaseOrder>;
   receivePO(poId: PurchaseOrderId, dto: ReceivePoDto): Promise<void>;
   cancelPO(poId: PurchaseOrderId): Promise<void>;
-  listPOs(restaurantId: string, limit?: number, offset?: number): Promise<PurchaseOrder[]>;
+  listPOs(restaurantId: string, page?: number, limit?: number): Promise<{ data: PurchaseOrder[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
   listVendors(restaurantId: string): Promise<Vendor[]>;
 }
