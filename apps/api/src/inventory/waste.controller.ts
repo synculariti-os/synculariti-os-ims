@@ -35,8 +35,8 @@ export class WasteController {
   ): Promise<{ data: WasteLog[] }> {
     const data = await this.wasteService.listWasteLogs(
       user.restaurantId,
-      limit ? parseInt(limit as any, 10) : undefined,
-      offset ? parseInt(offset as any, 10) : undefined
+      limit ? typeof limit === "string" ? parseInt(limit, 10) : limit : undefined,
+      offset ? typeof offset === "string" ? parseInt(offset, 10) : offset : undefined
     );
     return { data };
   }

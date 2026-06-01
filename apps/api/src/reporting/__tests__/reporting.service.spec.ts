@@ -1,4 +1,6 @@
 // @immutable-test
+import { DB_CLIENT } from '../../core/core.symbols';
+// @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { ReportingService } from '../reporting.service';
 import { STOCK_QUERY_SERVICE_TOKEN } from '../../inventory/interfaces/i-stock-query.service';
@@ -53,7 +55,7 @@ describe('ReportingService', () => {
         ReportingService,
         { provide: STOCK_QUERY_SERVICE_TOKEN, useValue: mockStockQueryService },
         { provide: ITEM_READ_SERVICE_TOKEN, useValue: mockItemService },
-        { provide: 'DB_CLIENT', useValue: mockDb },
+        { provide: DB_CLIENT, useValue: mockDb },
       ],
     }).compile();
 

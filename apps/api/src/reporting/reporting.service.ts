@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Kysely, sql } from 'kysely';
@@ -13,7 +14,7 @@ export class ReportingService implements IReportingService {
   private readonly logger = new Logger(ReportingService.name);
 
   constructor(
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
     @Inject(STOCK_QUERY_SERVICE_TOKEN) private readonly stockQueryService: IStockQueryService,
     @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
   ) {}
@@ -111,12 +112,12 @@ export class ReportingService implements IReportingService {
           // In a full implementation, we'd query `inventory_batches` to calculate actual FIFO value.
           // For now, we mock value calculation as 0 since Pricing Agent logic isn't fully expanded.
           return {
-            id: crypto.randomUUID() as any, // Cast to any to bypass SnapshotId brand check if it exists
+            id: crypto.randomUUID() as import('@ims/types').SnapshotId,
             restaurant_id: restaurantId,
             item_id: item.id,
-            business_date: businessDate as any, // Bypass Date vs string stringency in kysely types
-            eod_qty: eodQty as any,
-            fifo_total_value: 0 as any, 
+            business_date: businessDate,
+            eod_qty: eodQty,
+            fifo_total_value: 0,
           };
         });
 

@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { randomUUID } from 'crypto';
@@ -14,7 +15,7 @@ import { IPrepRepository } from './interfaces/i-prep.repository';
 
 @Injectable()
 export class PrepRepository implements IPrepRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   private mapPrepLog(row: any): PrepProductionLog {
     return {

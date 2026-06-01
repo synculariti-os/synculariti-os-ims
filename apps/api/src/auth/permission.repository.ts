@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { Database, PermissionCode, UserId, RestaurantId, FranchiseGroupId, asFranchiseGroupId } from '@ims/types';
@@ -5,7 +6,7 @@ import { IPermissionRepository } from './interfaces/i-permission.repository';
 
 @Injectable()
 export class PermissionRepository implements IPermissionRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   async resolvePermissions(userId: UserId, restaurantId: RestaurantId): Promise<PermissionCode[]> {
     // According to AGENTS.md, Auth agent resolves RBAC:

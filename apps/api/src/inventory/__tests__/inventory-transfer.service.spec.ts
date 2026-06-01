@@ -1,4 +1,6 @@
 // @immutable-test
+import { DB_CLIENT } from '../../core/core.symbols';
+// @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryTransferService } from '../inventory-transfer.service';
 import { IInventoryTransferService, INVENTORY_TRANSFER_SERVICE_TOKEN } from '../interfaces/i-inventory-transfer.service';
@@ -50,7 +52,7 @@ describe('InventoryTransferService', () => {
       providers: [
         InventoryTransferService,
         { provide: LEDGER_SERVICE_TOKEN, useValue: ledgerService },
-        { provide: 'DB_CLIENT', useValue: mockDb },
+        { provide: DB_CLIENT, useValue: mockDb },
       ],
     }).compile();
 

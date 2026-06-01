@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { randomUUID } from 'crypto';
@@ -15,7 +16,7 @@ import { IWasteRepository } from './interfaces/i-waste.repository';
 
 @Injectable()
 export class WasteRepository implements IWasteRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   private mapWasteLog(row: any): WasteLog {
     return {

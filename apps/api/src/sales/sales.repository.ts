@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { ISalesRepository } from './interfaces/i-sales.repository';
 import { Kysely } from 'kysely';
@@ -6,7 +7,7 @@ import { Database, SalesImportBatchId, SalesImportRowId, asRestaurantId, asSales
 
 @Injectable()
 export class SalesRepository implements ISalesRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   async createBatch(data: {
     restaurantId: string;

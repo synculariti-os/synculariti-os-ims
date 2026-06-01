@@ -75,6 +75,9 @@ Zod schemas are defined once in `packages/validators/`. NestJS DTOs use `ZodVali
 
 **Corollary — Server Context Fields Must Not Be in Shared Schemas**: Fields that are resolved from server-side JWT context (e.g., `restaurantId`, `franchiseGroupId` derived from `@CurrentUser()`) must **not** appear in the shared `@ims/validators` schema. These are backend concerns injected at the service layer. If the DB requires them (e.g., `item_owner_xor`), enforce the constraint in the Service via a backend-only command type (e.g., `CreateItemCommand`), not in the shared Zod schema.
 
+### R-ARCH-06 — Explicit Symbol Injection for DI
+NestJS Dependency Injection for services and repositories must use `Symbol` tokens (e.g., `Symbol('IItemRepository')`), not strings. All string-based DI tokens (e.g., `'DB_CLIENT'`) are strictly forbidden. All core DI symbols must be centralized in `apps/api/src/core/core.symbols.ts`.
+
 
 ---
 
@@ -156,7 +159,7 @@ List endpoints must accept `?page=1&limit=50` and return `meta: { total, page, l
 ## 5. TypeScript Rules
 
 ### R-TS-01 — Strict Mode is Non-Negotiable
-`"strict": true` in all `tsconfig.json` files. No `any` type except when interfacing with third-party libraries that lack types, and only with an `// eslint-disable-next-line @typescript-eslint/no-explicit-any` comment explaining why.
+`"strict": true` in all `tsconfig.json` files. `as any` casts are strictly forbidden in production source code. Use branded types (`ItemId`, `SnapshotId`), `unknown`, or explicit `Record<string, unknown>` type casting where type narrowing is required. Only use `any` when interfacing with third-party libraries that lack types, and only with an `// eslint-disable-next-line @typescript-eslint/no-explicit-any` comment explaining why.
 
 ### R-TS-02 — Discriminated Unions for State Machines
 PO status, transfer status, count batch status, and sales import status are modeled as **discriminated union types**, not `string`. Example:

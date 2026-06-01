@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { randomUUID } from 'crypto';
@@ -6,18 +7,18 @@ import { ILedgerRepository } from './interfaces/i-ledger.repository';
 
 @Injectable()
 export class LedgerRepository implements ILedgerRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   async insertEntry(trx: unknown, entry: Record<string, unknown>): Promise<void> {
     const db = trx as Kysely<Database>;
     await db
       .insertInto('inventory_ledger')
       .values({
-        id: randomUUID() as any,
+        id: randomUUID() as import('@ims/types').LedgerEntryId,
         restaurant_id: entry.restaurant_id as RestaurantId,
         item_id: entry.item_id as ItemId,
         change_amount: entry.change_amount as number,
-        reason_code: entry.reason_code as any,
+        reason_code: entry.reason_code as import('@ims/types').LedgerReasonCode,
         reference_id: (entry.reference_id as string | undefined) ?? null,
       })
       .execute();

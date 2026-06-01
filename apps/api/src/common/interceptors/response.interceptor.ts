@@ -25,8 +25,8 @@ export class TransformResponseInterceptor<T>
         // If it's already wrapped, or has a specific shape, handle it.
         if (data && typeof data === 'object' && ('data' in data || 'meta' in data)) {
           // If the controller already returned `{ data, meta }`, return it as is, or strip `success`.
-          const { success, ...rest } = data as any;
-          return rest;
+          const { success, ...rest } = data as Record<string, unknown>;
+          return rest as unknown as Response<T>;
         }
         return { data };
       }),

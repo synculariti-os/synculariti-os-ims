@@ -1,4 +1,6 @@
 // @immutable-test
+import { SUPABASE_ADMIN_CLIENT } from '../../core/core.symbols';
+// @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SalesService } from '../sales.service';
@@ -35,7 +37,7 @@ describe('SalesService', () => {
         SalesService,
         { provide: SALES_REPOSITORY_TOKEN, useValue: repoMock },
         { provide: getQueueToken('sales_import'), useValue: queueMock },
-        { provide: 'SUPABASE_ADMIN_CLIENT', useValue: supabaseMock },
+        { provide: SUPABASE_ADMIN_CLIENT, useValue: supabaseMock },
       ],
     }).compile();
 

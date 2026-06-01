@@ -420,7 +420,7 @@ interface IPrepService {
 
 ### Inputs
 - Intercepted from `AuditInterceptor` (NestJS global interceptor on mutating HTTP methods)
-- Fields captured: `user_id`, `user_email`, `action`, `entity_type`, `entity_id`, `old_value`, `new_value`, `success`, `error_message`, `source_ip`, `user_agent`, `restaurant_id`, `franchise_group_id`
+- Fields captured: `user_id`, `user_email`, `action`, `entity_type`, `entity_id`, `request_payload`, `response_payload`, `success`, `error_message`, `source_ip`, `user_agent`, `restaurant_id`, `franchise_group_id`
 
 ### Outputs
 - `audit_log` rows — never modified after insert

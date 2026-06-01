@@ -1,3 +1,4 @@
+import { SUPABASE_ADMIN_CLIENT } from '../core/core.symbols';
 import {
   Injectable,
   UnauthorizedException,
@@ -14,7 +15,6 @@ import type { IPermissionRepository } from './interfaces/i-permission.repository
 import type { ITenantService } from '../tenant/interfaces/i-tenant.service';
 import { TENANT_SERVICE_TOKEN } from '../tenant/interfaces/i-tenant.service';
 
-export const SUPABASE_ADMIN_CLIENT = 'SUPABASE_ADMIN_CLIENT';
 export const USER_REPOSITORY_TOKEN = Symbol('IUserRepository');
 export const PERMISSION_REPOSITORY_TOKEN = Symbol('IPermissionRepository');
 

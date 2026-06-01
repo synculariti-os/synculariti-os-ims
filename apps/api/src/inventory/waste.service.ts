@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { Database, RestaurantId, WasteLog, LEDGER_REASON_CODES } from '@ims/types';
@@ -11,7 +12,7 @@ export const WASTE_REPOSITORY_TOKEN = Symbol('IWasteRepository');
 @Injectable()
 export class WasteService implements IWasteService {
   constructor(
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
     @Inject(WASTE_REPOSITORY_TOKEN) private readonly wasteRepo: IWasteRepository,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
   ) {}
@@ -24,7 +25,7 @@ export class WasteService implements IWasteService {
       // 2. Record the ledger entry for the deduction
       await this.ledgerService.record(trx, {
         restaurantId,
-        itemId: dto.itemId as any,
+        itemId: dto.itemId as import('@ims/types').ItemId,
         changeAmount: -dto.quantity,
         reasonCode: LEDGER_REASON_CODES.WASTE,
         referenceId: log.id,

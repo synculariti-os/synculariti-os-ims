@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import {
   Injectable,
   ConflictException,
@@ -28,7 +29,7 @@ export const COUNT_REPOSITORY_TOKEN = Symbol('IInventoryCountRepository');
 @Injectable()
 export class InventoryCountService implements IInventoryCountService {
   constructor(
-    @Inject('DB_CLIENT')
+    @Inject(DB_CLIENT)
     private readonly db: Kysely<Database>,
     @Inject(COUNT_REPOSITORY_TOKEN) private readonly countRepo: IInventoryCountRepository,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledger: ILedgerService,

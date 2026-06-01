@@ -1,4 +1,6 @@
 // @immutable-test
+import { DB_CLIENT } from '../../core/core.symbols';
+// @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { Job } from 'bullmq';
 import * as path from 'path';
@@ -58,7 +60,7 @@ describe('SalesImportProcessor', () => {
         { provide: LEDGER_SERVICE_TOKEN, useValue: ledgerService },
         { provide: STORAGE_SERVICE_TOKEN, useValue: storageService },
         { provide: SALES_FILE_PARSER_FACTORY_TOKEN, useValue: parserFactory },
-        { provide: 'DB_CLIENT', useValue: { transaction: vi.fn().mockReturnValue({ execute: vi.fn((cb) => cb({} as never)) }) } }
+        { provide: DB_CLIENT, useValue: { transaction: vi.fn().mockReturnValue({ execute: vi.fn((cb) => cb({} as never)) }) } }
       ],
     }).compile();
 

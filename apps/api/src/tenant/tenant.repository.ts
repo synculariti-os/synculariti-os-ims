@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Database } from '@ims/types';
 import { Kysely } from 'kysely';
@@ -7,7 +8,7 @@ import type { Restaurant, FranchiseGroup, RestaurantId, FranchiseGroupId, UserId
 @Injectable()
 export class TenantRepository implements ITenantRepository {
   constructor(
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
   ) {}
 
   async findById(restaurantId: RestaurantId): Promise<Restaurant | undefined> {
@@ -41,10 +42,7 @@ export class TenantRepository implements ITenantRepository {
     return {
       id: group.id,
       name: group.name,
-      legalName: (group as any).legal_name,
-      taxId: (group as any).tax_id,
-      countryCode: (group as any).country_code,
-      active: (group as any).active,
+
       createdAt: group.created_at,
       updatedAt: group.updated_at,
     } as FranchiseGroup;

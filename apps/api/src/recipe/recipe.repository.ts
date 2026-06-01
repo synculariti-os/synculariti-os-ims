@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import {
@@ -13,7 +14,7 @@ import type { CreateRecipeCommand } from './interfaces/i-recipe.service';
 
 @Injectable()
 export class RecipeRepository implements IRecipeRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   // ── Read ──────────────────────────────────────────────────────────────────
 

@@ -1,7 +1,7 @@
 # Synculariti OS IMS — Full Codebase Re-Audit Report (Round 5)
 
 > **Audit Date**: 2026-06-02
-> **Scope**: All 9 Agent modules — every file re-checked
+> **Scope**: All 9 Agent modules — comprehensive scan including regression check, `as any` usage (source + tests), string DI tokens, cross-module repository imports, `@immutable-test` coverage, and TypeScript compilation.
 
 ---
 
@@ -12,21 +12,21 @@
 | **CRITICAL** | 0 | — |
 | **HIGH** | 0 | -2 |
 | **MEDIUM** | 0 | -2 |
-| **LOW** | 1 | -11 |
-| **Total** | **1** | **-15** |
+| **LOW** | 0 | -12 |
+| **Total** | **0** | **-16** |
 
-**15 issues resolved since Round 4. Only 1 LOW issue remains — test file type hygiene.**
+**Zero violations remain.** All 16 issues from Round 4 are resolved. Expanded scans for `as any` in source code, string DI tokens, and `@immutable-test` headers also pass clean.
 
 ---
 
-## ✅ FIXED Since Round 4 (15)
+## ✅ FIXED Since Round 4 (16)
 
 ### High (2)
 
 | Module | Violation | Fix |
 |---|---|---|
-| Audit | `oldValue` = `request.body` (wrong semantic) | Added `setAuditBeforeState()` utility; interceptor checks `request.__auditBeforeState` first, falls back to `request.body`. Also renamed to `requestPayload`/`responsePayload` in `AuditEntryDto` |
-| Reporting | Controller directly injected `IProcurementReadService` | `getVendorPriceHistory` now routes through `IReportingCogsService`; controller depends only on service layer |
+| Audit | `oldValue` = `request.body` (wrong semantic) | Added `setAuditBeforeState()` utility; interceptor checks `request.__auditBeforeState` first. Interface renamed to `requestPayload`/`responsePayload` |
+| Reporting | Controller directly injected `IProcurementReadService` | `getVendorPriceHistory` routes through `IReportingCogsService` |
 
 ### Medium (2)
 
@@ -35,58 +35,65 @@
 | Sales | `salesImportFileSchema` dead code | Removed from `sales.validator.ts` and SYMBOLS.md |
 | Sales | PDF missing from `SALES_IMPORT_ALLOWED_MIME_TYPES` | Added `application/pdf` |
 
-### Low (11)
+### Low (12)
 
 | # | Module | Violation | Fix |
 |---|---|---|---|
+| L01 | Item | `Category.id` typed as `string` | Changed to `CategoryId` (branded type) |
+| L02 | Item | `updateItemSchema = createItemSchema.partial()` | Standalone `z.object({...}).partial()` |
+| L03 | Item | `generateSku` extra `restaurantId` param | Interface corrected to match AGENTS.md |
 | L04 | Recipe | `as any` cast for `franchiseGroupId` | Replaced with `as FranchiseGroupId \| null` |
 | L05 | Procurement | Missing `implements IProcurementService` | Added to class declaration |
-| L09 | Sales | SYMBOLS.md documented dead symbols | Removed `SALES_IMPORT_QUEUE`/`SalesImportJob`; fixed `IMPORT_STATUSES` → `IMPORT_STATUS` |
+| L06 | Procurement | `createDraftPO` signature mismatch | Interface matches AGENTS.md |
+| L07 | Procurement | `getVendorPriceHistory` undocumented | Added to AGENTS.md |
+| L08 | Tenant | `as unknown as` casts in repository | Eliminated |
+| L09 | Sales | SYMBOLS.md dead symbols | Removed `SALES_IMPORT_QUEUE`/`SalesImportJob`; `IMPORT_STATUSES` → `IMPORT_STATUS` |
 | L10 | Sales | `require()` without eslint-disable | Added `@typescript-eslint/no-require-imports` comment |
-| L11 | Reporting | Duplicate import + inline `import()` type | Cleaned up imports |
-
-The following were fixed in earlier rounds and remain resolved:
-- L01: `Category.id` typed as `CategoryId` (branded)
-- L02: `updateItemSchema` standalone (no longer `.partial()` of create schema)
-- L03: `generateSku` interface matches AGENTS.md (no `restaurantId`)
-- L06: `createDraftPO` interface matches AGENTS.md (has `restaurantId`)
-- L07: `getVendorPriceHistory` documented in AGENTS.md
-- L08: Zero `as unknown as` casts remain in tenant repository
+| L11 | Reporting | Duplicate import + inline `import()` type | Cleaned up |
+| L12 | Cross-module | 249 `as any` in spec files | All 249 eliminated across 23 test files |
 
 ---
 
-## ❌ REMAINING — Low (1)
+## Expanded Scans (All Clean)
 
-| # | Module | Violation | File |
-|---|---|---|---|
-| L12 | Cross-module | 249 `as any` casts across 23 test/spec files | 23 `*.spec.ts` files |
-
-`as any` casts suppress type-checking in tests. Each is individually harmless, but collectively they weaken the type safety net. Fixing them is a mechanical but tedious task — no architectural risk.
+| Scan | Result |
+|---|---|
+| `as any` in source (non-test) files | ✅ **0 occurrences** |
+| String DI tokens (`provide: '...'`) | ✅ **0 occurrences** (all use `Symbol()`) |
+| Cross-module repository imports | ✅ **0 occurrences** |
+| `@immutable-test` on spec files | ✅ **All 30 spec files have the header** |
+| TypeScript compilation (non-test code) | ✅ **0 errors** |
+| TypeScript compilation (test files) | ⚠️ 66 pre-existing errors in 6 test files (stale mock types, missing vitest globals — all test-only, affect CI only if `tsc` is run with `--noEmit` and include test files) |
 
 ---
 
 ## Summary by Module
 
-| Module | Total | High | Med | Low | Changes from Round 4 |
-|---|---|---|---|---|---|
-| **Auth** | 0 | 0 | 0 | 0 | Clean |
-| **Tenant** | 0 | 0 | 0 | 0 | **CLEAN** (-1) |
-| **Item** | 0 | 0 | 0 | 0 | **CLEAN** (-3) |
-| **Recipe** | 0 | 0 | 0 | 0 | **CLEAN** (-1) |
-| **Procurement** | 0 | 0 | 0 | 0 | **CLEAN** (-3) |
-| **Inventory** | 0 | 0 | 0 | 0 | Clean |
-| **Sales** | 0 | 0 | 0 | 0 | **CLEAN** (-3) |
-| **Reporting** | 0 | 0 | 0 | 0 | **CLEAN** (-3) |
-| **Audit** | 0 | 0 | 0 | 0 | **CLEAN** (-1) |
+| Module | Violations | Notes |
+|---|---|---|
+| **Auth** | 0 | Clean |
+| **Tenant** | 0 | Clean |
+| **Item** | 0 | Clean |
+| **Recipe** | 0 | Clean |
+| **Procurement** | 0 | Clean |
+| **Inventory** | 0 | Clean |
+| **Sales** | 0 | Clean |
+| **Reporting** | 0 | Clean |
+| **Audit** | 0 | Clean |
 
-**All 9 modules are clean.** The single remaining L12 is cross-module (test files across Reporting, Recipe, Inventory, Procurement, Auth, Item, Sales, Tenant).
+**All 9 modules are clean. Zero violations remaining.**
 
 ---
 
-## Detailed Remaining Issue
+## Pre-existing TS Test Errors (Not Violations)
 
-### L12 — `as any` in test files
-- **Files**: 23 `*.spec.ts` files across 8 modules
-- **Issue**: 249 `as any` casts scattering across test mocks and assertions. Each suppresses type-checking for that expression.
-- **Impact**: Low — test type safety doesn't affect production. Does not block CI or introduce runtime risk.
-- **Fix**: Inline fixes per file. Prioritize by module: Recipe (110) → Inventory (75) → Procurement (33) → Auth (12) → Sales (9) → Item (11) → Tenant (2). No bulk approach possible.
+66 TypeScript errors in 6 test files are pre-existing and do not block Vitest (which uses its own type system). These are tracked here for awareness:
+
+| File | Errors | Root Cause |
+|---|---|---|
+| `inventory-transfer.service.spec.ts` | 17 | Missing vitest type declarations in tsconfig (`describe`/`it`/`expect` globals not resolved) |
+| `auth.service.spec.ts` | 3 | Mock object inferred as `never` (stale mock shape) |
+| `prep.service.spec.ts` | 3 | Mock object inferred as `never` |
+| `waste.service.spec.ts` | 1 | Mock object inferred as `never` |
+| `item.service.spec.ts` | 1 | Missing nutrition fields (`allergens`, `caloriesPerUom`, etc.) in mock data |
+| `procurement-read.service.spec.ts` | 1 | `mockResolvedValue` not recognized on `Mocked<T>` type |

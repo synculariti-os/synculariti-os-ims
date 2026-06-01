@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import {
   Injectable,
   BadRequestException,
@@ -29,7 +30,7 @@ export const PROCUREMENT_REPOSITORY_TOKEN = Symbol('IProcurementRepository');
 @Injectable()
 export class ProcurementService implements IProcurementService {
   constructor(
-    @Inject('DB_CLIENT')
+    @Inject(DB_CLIENT)
     private readonly db: Kysely<Database>,
     @Inject(PROCUREMENT_REPOSITORY_TOKEN)
     private readonly procurementRepo: IProcurementRepository,

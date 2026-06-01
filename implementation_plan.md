@@ -1,16 +1,9 @@
 # Implementation Plan — Synculariti OS IMS
 
-> **Audit Date**: 2026-06-01
+> **Audit Date**: 2026-06-02
 > **References**: AGENTS.md, SYMBOLS.md, RULES.md, WORKFLOW.md, `pepperoni_pizza_ims_analysis.md`
-> **Status**: Phase 18 - PDF Sales Ingestion (Execution Complete)
+> **Status**: Phase 19 - General Refactoring & Final Polish
 
-## Phase 18 Backend - PDF Sales Ingestion (TDD):
-- [x] Define `ISalesFileParser` in `apps/api/src/sales/interfaces/i-sales-file-parser.ts`
-- [x] Write immutable tests for `PdfSalesParser` and `XlsxSalesParser`
-- [x] Implement `XlsxSalesParser` and `PdfSalesParser`
-- [x] Create `SalesParserFactory` to inject the correct implementation based on file extension
-- [x] Refactor `sales.processor.ts` to use `SalesParserFactory`
-- [x] Update `apps/web/src/app/sales/import/page.tsx` or its child components to accept `.pdf` files.
-- [x] Upload a PDF file via UI and ensure BOM expands.
-- [x] Update Documentation: Update `AGENTS.md`, `RULES.md`, and `SYMBOLS.md`
-
+## Phase 19: Test Stabilization & Future Work
+- [ ] Complete strict typings for the remaining `.spec.ts` files (replacing `as never` with proper `Mocked<...>` types).
+- [ ] Address any future work based on Round 5 audit and prepare for deployment.

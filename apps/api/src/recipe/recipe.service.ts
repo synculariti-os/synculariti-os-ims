@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import {
   Injectable,
   NotFoundException,
@@ -28,7 +29,7 @@ export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
 @Injectable()
 export class RecipeService implements IRecipeService {
   constructor(
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
     @Inject(RECIPE_REPOSITORY_TOKEN) private readonly recipeRepo: IRecipeRepository,
     @Inject(ITEM_WRITE_SERVICE_TOKEN) private readonly itemService: IItemWriteService,
   ) {}

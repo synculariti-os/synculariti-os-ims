@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import { randomUUID } from 'crypto';
@@ -23,14 +24,14 @@ import { IProcurementRepository, CreateInventoryBatchInput } from './interfaces/
 
 @Injectable()
 export class ProcurementRepository implements IProcurementRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   private mapPO(row: any): PurchaseOrder {
     return {
       id: asPurchaseOrderId(row.id),
       restaurantId: asRestaurantId(row.restaurant_id),
       vendorId: asVendorId(row.vendor_id),
-      status: row.status as any,
+      status: row.status as 'DRAFT' | 'SUBMITTED' | 'RECEIVED' | 'CANCELLED',
       orderDate: row.order_date,
       expectedDeliveryDate: row.expected_delivery_date,
       freightCharge: row.freight_charge,
@@ -140,7 +141,7 @@ export class ProcurementRepository implements IProcurementRepository {
     const db = trx ? (trx as Kysely<Database>) : this.db;
     const row = await db
       .updateTable('purchase_orders')
-      .set({ status: status as any, updated_at: new Date().toISOString() })
+      .set({ status: status as 'DRAFT' | 'SUBMITTED' | 'RECEIVED' | 'CANCELLED', updated_at: new Date().toISOString() })
       .where('id', '=', poId)
       .returningAll()
       .executeTakeFirstOrThrow();
@@ -161,7 +162,7 @@ export class ProcurementRepository implements IProcurementRepository {
     await db
       .updateTable('po_line_items')
       .set({ quantity_received: qty })
-      .where('id', '=', lineItemId as any)
+      .where('id', '=', lineItemId as import('@ims/types').PoLineItemId)
       .execute();
   }
 
@@ -172,7 +173,7 @@ export class ProcurementRepository implements IProcurementRepository {
       .values({
         id: asInventoryBatchId(randomUUID()),
         restaurant_id: input.restaurant_id,
-        item_id: input.item_id as any,
+        item_id: input.item_id as import('@ims/types').ItemId,
         po_id: input.po_id,
         received_date: new Date().toISOString(),
         initial_qty: input.initial_qty,
@@ -240,8 +241,8 @@ export class ProcurementRepository implements IProcurementRepository {
       .selectFrom('inventory_batches')
       .leftJoin('purchase_orders', 'inventory_batches.po_id', 'purchase_orders.id')
       .leftJoin('vendors', 'purchase_orders.vendor_id', 'vendors.id')
-      .where('inventory_batches.restaurant_id', '=', restaurantId as any)
-      .where('inventory_batches.item_id', '=', itemId as any)
+      .where('inventory_batches.restaurant_id', '=', restaurantId as RestaurantId)
+      .where('inventory_batches.item_id', '=', itemId as import('@ims/types').ItemId)
       .select([
         'inventory_batches.received_date',
         'inventory_batches.landed_unit_cost',

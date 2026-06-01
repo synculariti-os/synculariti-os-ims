@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { IItemRepository } from './interfaces/i-item.repository';
 import type { CreateItemCommand, CreateCategoryCommand } from './interfaces/i-item.service';
@@ -9,7 +10,7 @@ import { UpdateItemDto, CreateCategoryDto, UpdateCategoryDto, CreateUomConversio
 
 @Injectable()
 export class ItemRepository implements IItemRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   async findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride | null> {
     const item = await this.db

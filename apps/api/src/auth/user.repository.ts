@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { Database, SafeUser, UserId, asUserId } from '@ims/types';
@@ -5,7 +6,7 @@ import { IUserRepository, UpdateProfileInput } from './interfaces/i-user.reposit
 
 @Injectable()
 export class UserRepository implements IUserRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   async findById(userId: UserId): Promise<SafeUser | null> {
     const user = await this.db

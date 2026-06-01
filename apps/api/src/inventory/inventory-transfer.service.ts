@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { IInventoryTransferService } from './interfaces/i-inventory-transfer.service';
 import { InventoryTransfer, RestaurantId, FranchiseGroupId, TransferId, ItemId } from '@ims/types';
@@ -11,7 +12,7 @@ import * as crypto from 'crypto';
 @Injectable()
 export class InventoryTransferService implements IInventoryTransferService {
   constructor(
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
   ) {}
 
@@ -62,7 +63,7 @@ export class InventoryTransferService implements IInventoryTransferService {
         .executeTakeFirstOrThrow();
 
       // Deplete stock from origin
-      await this.ledgerService.record(trx as any, {
+      await this.ledgerService.record(trx as import('kysely').Transaction<import('@ims/types').Database>, {
         restaurantId: originRestaurantId,
         itemId: updated.item_id,
         changeAmount: -updated.qty,
@@ -101,7 +102,7 @@ export class InventoryTransferService implements IInventoryTransferService {
           { franchiseId: updated.franchise_group_id, restaurantId: updated.destination_restaurant_id },
           async () => {
             try {
-              await this.ledgerService.record(trx as any, {
+              await this.ledgerService.record(trx as import('kysely').Transaction<import('@ims/types').Database>, {
                 restaurantId: updated.destination_restaurant_id,
                 itemId: updated.item_id,
                 changeAmount: updated.qty,
@@ -150,7 +151,7 @@ export class InventoryTransferService implements IInventoryTransferService {
             { franchiseId: updated.franchise_group_id, restaurantId: updated.origin_restaurant_id },
             async () => {
               try {
-                await this.ledgerService.record(trx as any, {
+                await this.ledgerService.record(trx as import('kysely').Transaction<import('@ims/types').Database>, {
                   restaurantId: updated.origin_restaurant_id,
                   itemId: updated.item_id,
                   changeAmount: updated.qty,

@@ -1,0 +1,77 @@
+src/auth/__tests__/auth.service.spec.ts(92,35): error TS2339: Property 'getRestaurant' does not exist on type 'never'.
+src/auth/__tests__/auth.service.spec.ts(153,35): error TS2339: Property 'getRestaurant' does not exist on type 'never'.
+src/auth/__tests__/auth.service.spec.ts(219,32): error TS2339: Property 'passwordHash' does not exist on type 'never'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(10,1): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(16,3): error TS2304: Cannot find name 'beforeEach'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(61,3): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(62,5): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(78,7): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(79,7): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(83,3): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(84,5): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(105,7): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(106,9): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(107,9): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(117,5): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(122,13): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(126,3): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(127,5): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(152,7): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(153,9): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(154,9): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(157,7): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(158,9): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/inventory-transfer.service.spec.ts(159,9): error TS2304: Cannot find name 'expect'.
+src/inventory/__tests__/prep.service.spec.ts(97,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/inventory/__tests__/prep.service.spec.ts(106,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/inventory/__tests__/prep.service.spec.ts(114,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/inventory/__tests__/waste.service.spec.ts(57,30): error TS2339: Property 'id' does not exist on type 'never'.
+src/item/__tests__/item.service.spec.ts(17,9): error TS2739: Type '{ id: ItemId; franchiseGroupId: null; restaurantId: RestaurantId; categoryId: never; name: string; sku: string; type: "RAW"; purchasingUom: string; inventoryUom: string; ... 7 more ...; effectiveIsActive: true; }' is missing the following properties from type 'ItemWithOverride': allergens, caloriesPerUom, proteinGrams, fatGrams, carbsGrams
+src/item/__tests__/item.service.xor.spec.ts(19,9): error TS2739: Type '{ categoryId: string; name: string; sku: string; type: "RAW"; purchasingUom: string; inventoryUom: string; recipeUom: null; invToRecipeRatio: number; isActive: true; }' is missing the following properties from type '{ name: string; type: "RAW" | "PREP"; categoryId: string; sku: string; purchasingUom: string; inventoryUom: string; recipeUom: string | null; invToRecipeRatio: number; isActive: boolean; allergens: string[]; caloriesPerUom: number; proteinGrams: number; fatGrams: number; carbsGrams: number; }': allergens, caloriesPerUom, proteinGrams, fatGrams, carbsGrams
+src/procurement/__tests__/procurement-read.service.spec.ts(36,47): error TS2339: Property 'mockResolvedValue' does not exist on type 'never'.
+src/procurement/__tests__/procurement-read.service.spec.ts(48,47): error TS2339: Property 'mockResolvedValue' does not exist on type 'never'.
+src/procurement/__tests__/procurement-read.service.spec.ts(57,49): error TS2339: Property 'mockResolvedValue' does not exist on type 'never'.
+src/procurement/__tests__/procurement-read.service.spec.ts(69,49): error TS2339: Property 'mockResolvedValue' does not exist on type 'never'.
+src/procurement/__tests__/procurement.service.spec.ts(49,3): error TS2353: Object literal may only specify known properties, and 'restaurantId' does not exist in type '{ vendorId: string; freightCharge: number; taxAmount: number; discountAmount: number; lineItems: { itemId: string; quantityOrdered: number; rawUnitPrice: number; }[]; expectedDeliveryDate?: string | null | undefined; }'.
+src/procurement/__tests__/procurement.service.spec.ts(70,7): error TS2741: Property 'getVendorPriceHistory' is missing in type '{ createPO: Mock<Procedure>; findPOById: Mock<Procedure>; updatePOStatus: Mock<Procedure>; findLineItemsByPOId: Mock<Procedure>; ... 4 more ...; findVendors: Mock<...>; }' but required in type 'IProcurementRepository'.
+src/recipe/__tests__/recipe.service.spec.ts(187,9): error TS2698: Spread types may only be created from object types.
+src/recipe/__tests__/recipe.service.spec.ts(188,29): error TS2339: Property 'producesItemId' does not exist on type 'never'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(21,5): error TS2322: Type 'unknown' is not assignable to type 'Mocked<IRecipeService>'.
+  Type 'unknown' is not assignable to type '{ listRecipes: MockInstance<(restaurantId: RestaurantId) => Promise<Recipe[]>>; listMenuRecipes: MockInstance<(restaurantId: RestaurantId) => Promise<...>>; ... 11 more ...; deleteMapping: MockInstance<...>; }'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(26,5): error TS2322: Type 'unknown' is not assignable to type 'Mocked<IProcurementReadService>'.
+  Type 'unknown' is not assignable to type '{ getAverageUnitCosts: MockInstance<(restaurantId: RestaurantId) => Promise<Record<string, number>>>; getVendorPriceHistory: MockInstance<...>; }'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(30,5): error TS2322: Type 'unknown' is not assignable to type 'Mocked<IItemReadService>'.
+  Type 'unknown' is not assignable to type '{ findById: MockInstance<(itemId: ItemId, restaurantId: RestaurantId) => Promise<ItemWithOverride>>; convertUom: MockInstance<...>; listParLevels: MockInstance<...>; listCategories: MockInstance<...>; }'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(57,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(58,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(89,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(90,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(91,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(92,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(126,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(127,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(129,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting-cogs.service.spec.ts(130,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting.controller.spec.ts(23,5): error TS2322: Type 'unknown' is not assignable to type 'Mocked<IReportingService>'.
+  Type 'unknown' is not assignable to type '{ getVarianceReport: MockInstance<(restaurantId: RestaurantId, limit?: number | undefined, offset?: number | undefined) => Promise<VarianceReportRow[]>>; getParAlerts: MockInstance<...>; getSnapshots: MockInstance<...>; runEodSnapshots: MockInstance<...>; }'.
+src/reporting/__tests__/reporting.controller.spec.ts(29,5): error TS2322: Type 'unknown' is not assignable to type 'Mocked<IReportingCogsService>'.
+  Type 'unknown' is not assignable to type '{ getMenuCostingReport: MockInstance<(restaurantId: RestaurantId) => Promise<MenuItemCostReport[]>>; getVendorPriceHistory: MockInstance<...>; }'.
+src/reporting/__tests__/reporting.controller.spec.ts(54,7): error TS2571: Object is of type 'unknown'.
+src/reporting/__tests__/reporting.controller.spec.ts(56,61): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'JwtPayload'.
+src/reporting/__tests__/reporting.service.spec.ts(25,5): error TS2322: Type 'unknown' is not assignable to type 'Mocked<IItemReadService>'.
+  Type 'unknown' is not assignable to type '{ findById: MockInstance<(itemId: ItemId, restaurantId: RestaurantId) => Promise<ItemWithOverride>>; convertUom: MockInstance<...>; listParLevels: MockInstance<...>; listCategories: MockInstance<...>; }'.
+src/reporting/__tests__/reporting.service.spec.ts(69,9): error TS2322: Type 'unknown' is not assignable to type 'ItemWithOverride'.
+src/reporting/__tests__/reporting.service.spec.ts(70,9): error TS2322: Type 'unknown' is not assignable to type 'ItemWithOverride'.
+src/reporting/__tests__/reporting.service.spec.ts(77,11): error TS2322: Type 'unknown' is not assignable to type 'ItemId'.
+  Type 'unknown' is not assignable to type 'string'.
+src/reporting/__tests__/reporting.service.spec.ts(78,11): error TS2322: Type 'unknown' is not assignable to type 'ItemId'.
+  Type 'unknown' is not assignable to type 'string'.
+src/reporting/__tests__/reporting.service.spec.ts(113,70): error TS2322: Type 'unknown' is not assignable to type 'ItemId'.
+  Type 'unknown' is not assignable to type 'string'.
+src/sales/parsers/sales-parsers.spec.ts(5,1): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/sales/parsers/sales-parsers.spec.ts(6,3): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/sales/parsers/sales-parsers.spec.ts(7,5): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/sales/parsers/sales-parsers.spec.ts(8,7): error TS2304: Cannot find name 'expect'.
+src/sales/parsers/sales-parsers.spec.ts(12,3): error TS2582: Cannot find name 'describe'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/sales/parsers/sales-parsers.spec.ts(13,5): error TS2582: Cannot find name 'it'. Do you need to install type definitions for a test runner? Try `npm i --save-dev @types/jest` or `npm i --save-dev @types/mocha`.
+src/sales/parsers/sales-parsers.spec.ts(14,7): error TS2304: Cannot find name 'expect'.

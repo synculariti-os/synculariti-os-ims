@@ -16,7 +16,7 @@ describe('ProcurementReadService', () => {
     mockRepo = {
       getAverageUnitCosts: vi.fn(),
       getVendorPriceHistory: vi.fn(),
-    } as never;
+    } as unknown as import('vitest').Mocked<import('../interfaces/i-procurement.repository').IProcurementRepository>;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -33,7 +33,7 @@ describe('ProcurementReadService', () => {
 
   describe('getAverageUnitCosts', () => {
     it('returns empty object when no inventory batches exist', async () => {
-      (mockRepo.getAverageUnitCosts as never).mockResolvedValue({});
+      (mockRepo.getAverageUnitCosts as unknown as import('vitest').Mocked<import('../interfaces/i-procurement.repository').IProcurementRepository>).mockResolvedValue({});
       
       const result = await service.getAverageUnitCosts(mockRestaurantId);
       expect(result).toEqual({});
@@ -45,7 +45,7 @@ describe('ProcurementReadService', () => {
         'item-1': 5.50,
         'item-2': 12.00,
       };
-      (mockRepo.getAverageUnitCosts as never).mockResolvedValue(mockCosts);
+      (mockRepo.getAverageUnitCosts as unknown as import('vitest').Mocked<import('../interfaces/i-procurement.repository').IProcurementRepository>).mockResolvedValue(mockCosts);
       
       const result = await service.getAverageUnitCosts(mockRestaurantId);
       expect(result).toEqual(mockCosts);
@@ -54,7 +54,7 @@ describe('ProcurementReadService', () => {
 
   describe('getVendorPriceHistory', () => {
     it('returns empty array when no history exists', async () => {
-      (mockRepo.getVendorPriceHistory as never).mockResolvedValue([]);
+      (mockRepo.getVendorPriceHistory as unknown as import('vitest').Mocked<import('../interfaces/i-procurement.repository').IProcurementRepository>).mockResolvedValue([]);
       
       const result = await service.getVendorPriceHistory(mockRestaurantId, 'item-1');
       expect(result).toEqual([]);

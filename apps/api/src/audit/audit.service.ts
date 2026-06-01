@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import crypto from 'crypto';
@@ -7,7 +8,7 @@ import { IAuditService } from './interfaces/i-audit.service';
 
 @Injectable()
 export class AuditService implements IAuditService {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   async log(params: AuditEntryDto): Promise<void> {
     try {

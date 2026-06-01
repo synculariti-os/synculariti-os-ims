@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { randomUUID } from 'crypto';
@@ -17,13 +18,13 @@ import { IInventoryCountRepository, CreateCountRowInput } from './interfaces/i-i
 
 @Injectable()
 export class InventoryCountRepository implements IInventoryCountRepository {
-  constructor(@Inject('DB_CLIENT') private readonly db: Kysely<Database>) {}
+  constructor(@Inject(DB_CLIENT) private readonly db: Kysely<Database>) {}
 
   private mapBatch(row: any): InventoryCountBatch {
     return {
       id: asCountBatchId(row.id),
       restaurantId: asRestaurantId(row.restaurant_id),
-      status: row.status as any,
+      status: row.status as 'OPEN' | 'CLOSED',
       snapshotTimestamp: row.snapshot_timestamp,
       version: row.version,
       createdAt: row.created_at,
@@ -91,7 +92,7 @@ export class InventoryCountRepository implements IInventoryCountRepository {
     const res = await db
       .updateTable('inventory_count_batches')
       .set({ 
-        status: status as any, 
+        status: status as 'OPEN' | 'CLOSED', 
         version: version + 1,
         updated_at: new Date().toISOString()
       })

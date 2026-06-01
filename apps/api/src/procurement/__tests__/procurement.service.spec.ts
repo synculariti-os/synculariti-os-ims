@@ -77,6 +77,7 @@ const mockProcurementRepo: IProcurementRepository = {
   getAverageUnitCosts: vi.fn(),
   listPOs: vi.fn(),
   findVendors: vi.fn(),
+      getVendorPriceHistory: vi.fn(),
 };
 
 const mockLedgerService: ILedgerService = {

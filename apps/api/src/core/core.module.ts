@@ -1,3 +1,4 @@
+import { DB_CLIENT, SUPABASE_ADMIN_CLIENT } from '../core/core.symbols';
 import { Module, Global } from '@nestjs/common';
 import { createClient } from '@supabase/supabase-js';
 import { Kysely, PostgresDialect } from 'kysely';
@@ -11,7 +12,7 @@ import { TenantContextDriver } from '../common/kysely/tenant-context.driver';
 @Module({
   providers: [
     {
-      provide: 'SUPABASE_ADMIN_CLIENT',
+      provide: SUPABASE_ADMIN_CLIENT,
       useFactory: () => {
         // Fix for Node.js 20 lacking native WebSocket support
         if (typeof globalThis.WebSocket === 'undefined') {
@@ -25,7 +26,7 @@ import { TenantContextDriver } from '../common/kysely/tenant-context.driver';
       },
     },
     {
-      provide: 'DB_CLIENT',
+      provide: DB_CLIENT,
       useFactory: () => {
         const dialect = new PostgresDialect({
           pool: new Pool({
@@ -58,12 +59,12 @@ import { TenantContextDriver } from '../common/kysely/tenant-context.driver';
           return tempPath;
         }
       }),
-      inject: ['SUPABASE_ADMIN_CLIENT']
+      inject: [SUPABASE_ADMIN_CLIENT]
     },
   ],
   exports: [
-    'SUPABASE_ADMIN_CLIENT',
-    'DB_CLIENT',
+    SUPABASE_ADMIN_CLIENT,
+    DB_CLIENT,
     STORAGE_SERVICE_TOKEN,
   ],
 })

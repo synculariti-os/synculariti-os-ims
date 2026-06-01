@@ -1,3 +1,4 @@
+import { SUPABASE_ADMIN_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, InternalServerErrorException } from '@nestjs/common';
 import { ISalesService } from './interfaces/i-sales.service';
 import { ISalesRepository, SALES_REPOSITORY_TOKEN } from './interfaces/i-sales.repository';
@@ -11,7 +12,7 @@ export class SalesService implements ISalesService {
   constructor(
     @Inject(SALES_REPOSITORY_TOKEN) private readonly repo: ISalesRepository,
     @Inject(getQueueToken('sales_import')) private readonly salesQueue: Queue,
-    @Inject('SUPABASE_ADMIN_CLIENT') private readonly supabase: SupabaseClient,
+    @Inject(SUPABASE_ADMIN_CLIENT) private readonly supabase: SupabaseClient,
   ) {}
 
   async uploadSalesFile(file: Express.Multer.File, dto: { businessDate: string }, restaurantId: string, franchiseId: string, userId: string): Promise<{ batchId: string }> {

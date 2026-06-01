@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { Database, RestaurantId, PrepProductionLog, LEDGER_REASON_CODES } from '@ims/types';
@@ -16,7 +17,7 @@ export const PREP_REPOSITORY_TOKEN = Symbol('IPrepRepository');
 @Injectable()
 export class PrepService implements IPrepService {
   constructor(
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
     @Inject(PREP_REPOSITORY_TOKEN) private readonly prepRepo: IPrepRepository,
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
     @Inject(RECIPE_SERVICE_TOKEN) private readonly recipeService: IRecipeService,
@@ -43,7 +44,7 @@ export class PrepService implements IPrepService {
       // 4. Record yield (+ qty)
       await this.ledgerService.record(trx, {
         restaurantId,
-        itemId: dto.prepItemId as any,
+        itemId: dto.prepItemId as import('@ims/types').ItemId,
         changeAmount: dto.yieldQtyProduced,
         reasonCode: LEDGER_REASON_CODES.PREP_PRODUCTION,
         referenceId: log.id,
@@ -53,7 +54,7 @@ export class PrepService implements IPrepService {
       for (const ing of consumedIngredients) {
         await this.ledgerService.record(trx, {
           restaurantId,
-          itemId: ing.itemId as any,
+          itemId: ing.itemId as import('@ims/types').ItemId,
           changeAmount: -ing.consumedQty,
           reasonCode: LEDGER_REASON_CODES.PREP_CONSUMPTION,
           referenceId: log.id,
@@ -101,7 +102,7 @@ export class PrepService implements IPrepService {
     }
 
     return {
-      prepItemId: dto.itemId as any,
+      prepItemId: dto.itemId as import('@ims/types').ItemId,
       targetYield: dto.targetYield,
       ingredients,
       isPossible

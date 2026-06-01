@@ -26,6 +26,11 @@ describe('ItemService — owner XOR guard', () => {
     recipeUom: null,
     invToRecipeRatio: 1,
     isActive: true,
+      allergens: [],
+      caloriesPerUom: 0,
+      proteinGrams: 0,
+      fatGrams: 0,
+      carbsGrams: 0,
   };
 
   beforeEach(async () => {

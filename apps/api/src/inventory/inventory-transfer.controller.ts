@@ -20,19 +20,19 @@ export class InventoryTransferController {
   @Post(':id/dispatch')
   @RequirePermission('INVENTORY.WRITE')
   async dispatchTransfer(@CurrentUser() user: JwtPayload, @Param('id') transferId: string) {
-    return this.transferService.dispatchTransfer(user.restaurantId, transferId as any);
+    return this.transferService.dispatchTransfer(user.restaurantId, transferId as import('@ims/types').TransferId);
   }
 
   @Post(':id/receive')
   @RequirePermission('INVENTORY.WRITE')
   async receiveTransfer(@CurrentUser() user: JwtPayload, @Param('id') transferId: string) {
-    return this.transferService.receiveTransfer(user.restaurantId, transferId as any);
+    return this.transferService.receiveTransfer(user.restaurantId, transferId as import('@ims/types').TransferId);
   }
 
   @Post(':id/cancel')
   @RequirePermission('INVENTORY.WRITE')
   async cancelTransfer(@CurrentUser() user: JwtPayload, @Param('id') transferId: string) {
-    return this.transferService.cancelTransfer(user.restaurantId, transferId as any);
+    return this.transferService.cancelTransfer(user.restaurantId, transferId as import('@ims/types').TransferId);
   }
 
   @Get()

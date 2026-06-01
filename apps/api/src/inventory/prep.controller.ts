@@ -53,8 +53,8 @@ export class PrepController {
   ): Promise<{ data: PrepProductionLog[] }> {
     const data = await this.prepService.listPrepLogs(
       user.restaurantId,
-      limit ? parseInt(limit as any, 10) : undefined,
-      offset ? parseInt(offset as any, 10) : undefined
+      limit ? typeof limit === "string" ? parseInt(limit, 10) : limit : undefined,
+      offset ? typeof offset === "string" ? parseInt(offset, 10) : offset : undefined
     );
     return { data };
   }

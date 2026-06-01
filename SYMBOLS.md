@@ -217,6 +217,20 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 | `@CurrentUser()` | Decorator | Parameter decorator — extracts `JwtPayload` from the request. |
 | `@RequirePermission(code)` | Decorator | Route guard decorator — sets metadata read by `PermissionsGuard`. |
 
+### Core DI Symbols (core.symbols.ts)
+
+All Dependency Injection tokens must be `Symbol` objects exported from `core.symbols.ts`.
+
+| Symbol | Kind | Description |
+|---|---|---|
+| `DB_CLIENT` | `Symbol` | Token for injecting the Kysely database instance |
+| `SUPABASE_ADMIN_CLIENT` | `Symbol` | Token for injecting the Supabase admin client |
+| `IAuthService` | `Symbol` | DI Token |
+| `ITenantService` | `Symbol` | DI Token |
+| `IItemReadService` | `Symbol` | DI Token |
+| `IItemWriteService` | `Symbol` | DI Token |
+| `...` | `Symbol` | All other service and repository interfaces |
+
 ### Core Service Interfaces (exported from each module)
 
 | Symbol | Kind | Module | Description |

@@ -1,3 +1,4 @@
+import { DB_CLIENT } from '../core/core.symbols';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Inject, Logger } from '@nestjs/common';
 import { asRestaurantId, asRecipeId, asItemId } from '@ims/types';
@@ -22,7 +23,7 @@ export class SalesImportProcessor extends WorkerHost {
     @Inject(LEDGER_SERVICE_TOKEN) private readonly ledgerService: ILedgerService,
     @Inject(STORAGE_SERVICE_TOKEN) private readonly storageService: IStorageService,
     @Inject(SALES_FILE_PARSER_FACTORY_TOKEN) private readonly parserFactory: ISalesFileParserFactory,
-    @Inject('DB_CLIENT') private readonly db: Kysely<Database>,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
   ) {
     super();
   }
