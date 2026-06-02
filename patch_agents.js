@@ -1,19 +1,10 @@
 const fs = require('fs');
-const file = 'AGENTS.md';
-let code = fs.readFileSync(file, 'utf8');
+let content = fs.readFileSync('AGENTS.md', 'utf8');
 
-// Update ItemMaster
-code = code.replace(
-  /\| \`item_restaurant_overrides\` \| CRUD \|/,
-  `| \`item_restaurant_overrides\` | CRUD |
-| *New Phase 16* | \`items\` now stores \`allergens\` and macros (calories, protein, fat, carbs) |`
-);
-
-// Update Recipe Agent
-code = code.replace(
-  /\`getRecipeForItem\(itemId\)\` → recipe with ingredients \(consumed by Reporting\)/,
-  `\`getRecipeForItem(itemId)\` → recipe with ingredients (consumed by Reporting)
-- \`getNutrition(recipeId, restaurantId)\` → rolls up macros and allergens from all constituent raw ingredients (consumed by Frontend Recipe Table)`
-);
-
-fs.writeFileSync(file, code);
+if (!content.includes('/ — Operations Dashboard')) {
+  content = content.replace('### UI Views\n- `/reports`', '### UI Views\n- `/` — Operations Dashboard (Command Center with Par Alerts, Pending Deliveries, Open Counts, Recent Imports)\n- `/reports`');
+  fs.writeFileSync('AGENTS.md', content);
+  console.log('Patched AGENTS.md');
+} else {
+  console.log('AGENTS.md already patched');
+}

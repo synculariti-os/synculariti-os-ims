@@ -428,6 +428,7 @@ interface IPrepService {
 | `mat_view_variance_analytics` | READ |
 
 ### UI Views
+- `/` — Operations Dashboard (Command Center with Par Alerts, Pending Deliveries, Open Counts, Recent Imports)
 - `/reports` — Reports dashboard (Variance, Alerts, COGS).
 - `/reports/snapshots` — End of Day stock snapshots history.
 - `/reports/vendor-pricing` — Vendor historical pricing charts.
