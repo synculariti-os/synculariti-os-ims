@@ -128,7 +128,7 @@ export class ReportingService implements IReportingService {
           .execute();
 
         // Refresh the materialized view for variance analytics after snapshots are taken
-        await sql`REFRESH MATERIALIZED VIEW CONCURRENTLY mat_view_variance_analytics`.execute(this.db).catch(e => {
+        await sql`REFRESH MATERIALIZED VIEW CONCURRENTLY mat_view_variance_analytics`.execute(this.db).catch(_e => {
             // Concurrent refresh requires unique index, if it fails, try normal refresh
             sql`REFRESH MATERIALIZED VIEW mat_view_variance_analytics`.execute(this.db).catch(console.error);
         });

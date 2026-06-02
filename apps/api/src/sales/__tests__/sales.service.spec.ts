@@ -4,9 +4,9 @@ import { SUPABASE_ADMIN_CLIENT } from '../../core/core.symbols';
 import { Test, TestingModule } from '@nestjs/testing';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SalesService } from '../sales.service';
-import { ISalesRepository, SALES_REPOSITORY_TOKEN } from '../interfaces/i-sales.repository';
+import { SALES_REPOSITORY_TOKEN } from '../interfaces/i-sales.repository';
 import { getQueueToken } from '@nestjs/bullmq';
-import { SupabaseClient } from '@supabase/supabase-js';
+
 
 describe('SalesService', () => {
   let service: SalesService;

@@ -7,7 +7,7 @@ import { STOCK_QUERY_SERVICE_TOKEN } from '../../inventory/interfaces/i-stock-qu
 import { ITEM_READ_SERVICE_TOKEN } from '../../item/interfaces/i-item.service';
 import { IStockQueryService } from '../../inventory/interfaces/i-stock-query.service';
 import { IItemReadService } from '../../item/interfaces/i-item.service';
-import { Database, ItemWithOverride, RestaurantId, StockLevel } from '@ims/types';
+import { ItemWithOverride, RestaurantId, StockLevel } from '@ims/types';
 
 import { describe, it, expect, beforeEach, vi, Mocked } from 'vitest';
 

@@ -27,7 +27,7 @@ export class PdfSalesParser implements ISalesFileParser {
     for (const line of lines) {
       const match = line.match(lineRegex);
       if (match) {
-        let rawItemName = match[1].trim();
+        const rawItemName = match[1].trim();
         const quantitySold = Number(match[3]);
 
         if (rawItemName && !isNaN(quantitySold) && quantitySold >= 0) {

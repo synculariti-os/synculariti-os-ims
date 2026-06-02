@@ -52,7 +52,7 @@ export class ProcurementController {
   @RequirePermission('PROCUREMENT.WRITE')
   async submitPO(
     @Param('id') poId: PurchaseOrderId,
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() _user: JwtPayload,
   ) {
     return this.procurementService.submitPO(poId);
   }
@@ -62,7 +62,7 @@ export class ProcurementController {
   async receivePO(
     @Param('id') poId: PurchaseOrderId,
     @Body(new ZodValidationPipe(receivePoSchema)) dto: ReceivePoDto,
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() _user: JwtPayload,
   ) {
     return this.procurementService.receivePO(poId, dto);
   }
@@ -71,7 +71,7 @@ export class ProcurementController {
   @RequirePermission('PROCUREMENT.WRITE')
   async cancelPO(
     @Param('id') poId: PurchaseOrderId,
-    @CurrentUser() user: JwtPayload,
+    @CurrentUser() _user: JwtPayload,
   ) {
     return this.procurementService.cancelPO(poId);
   }

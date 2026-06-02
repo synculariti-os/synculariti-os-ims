@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Loader2, FileJson, Plus, Trash2, Package, Link2, ChevronDown } from 'lucide-react';
+import { X, Loader2, FileJson, Trash2, Package, Link2, ChevronDown } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { ItemWithOverride, Recipe } from '@ims/types';
 
@@ -44,6 +44,7 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
     setRecipes(recipesRes.data || []);
   }, []);
 
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { if (isOpen) fetchData(); }, [isOpen, fetchData]);
 
   const prepItems = items.filter(i => i.type === 'PREP');

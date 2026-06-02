@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, BellRing } from 'lucide-react';
+import { ArrowLeft, } from 'lucide-react';
 import { ParAlertsTable } from '@/components/reports/par-alerts-table';
 
 export default function ParAlertsPage() {

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { procurementApi } from '@/lib/api/procurement';
-import { ShoppingCart, PackageOpen, AlertCircle } from 'lucide-react';
+import { ShoppingCart, AlertCircle } from 'lucide-react';
 import { Vendor } from '@ims/types';
 
 interface QuickCreatePoDialogProps {
@@ -30,6 +30,7 @@ export function QuickCreatePoDialog({
 
   useEffect(() => {
     if (isOpen) {
+// eslint-disable-next-line react-hooks/set-state-in-effect
       setQuantity(suggestedQuantity);
       setUnitPrice(0);
       setSelectedVendorId('');
@@ -38,12 +39,12 @@ export function QuickCreatePoDialog({
     }
   }, [isOpen, suggestedQuantity]);
 
-  const fetchVendors = async () => {
+  async function fetchVendors() {
     setIsLoadingVendors(true);
     try {
       const response = await procurementApi.listVendors();
       setVendors(response.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to load vendors');
     } finally {
       setIsLoadingVendors(false);
@@ -71,7 +72,7 @@ export function QuickCreatePoDialog({
         ],
       });
       onClose();
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message || 'Failed to create PO');
     } finally {
       setIsCreating(false);

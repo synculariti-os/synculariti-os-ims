@@ -5,7 +5,7 @@ import { tenantApi } from '@/lib/api/tenant';
 import { Building2, Plus, Edit } from 'lucide-react';
 
 export default function TenantRestaurantsPage() {
-  const [restaurants, setRestaurants] = useState<any[]>([]);
+  const [restaurants, setRestaurants] = useState<unknown[]>([]);
   
   useEffect(() => {
     tenantApi.listRestaurants().then(res => setRestaurants(res.data || []));

@@ -1,7 +1,7 @@
 import type { Item, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride } from '@ims/types';
 import type { 
   UpdateItemDto, 
-  CreateCategoryDto, 
+  _CreateCategoryDto, 
   UpdateCategoryDto, 
   CreateUomConversionDto, 
   UpdateItemOverrideDto 

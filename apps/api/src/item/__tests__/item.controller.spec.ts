@@ -4,7 +4,7 @@ import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { ItemController } from '../item.controller';
 import { ITEM_WRITE_SERVICE_TOKEN } from '../interfaces/i-item.service';
 import type { IItemWriteService } from '../interfaces/i-item.service';
-import type { JwtPayload, RestaurantId, ItemId } from '@ims/types';
+import type { JwtPayload, RestaurantId, } from '@ims/types';
 
 describe('ItemController', () => {
   let controller: ItemController;

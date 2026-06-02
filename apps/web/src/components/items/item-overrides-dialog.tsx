@@ -5,7 +5,7 @@ import { itemApi } from '@/lib/api/item';
 import { Settings2, AlertCircle } from 'lucide-react';
 
 interface ItemOverridesDialogProps {
-  item: any;
+  item: unknown;
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -19,6 +19,7 @@ export function ItemOverridesDialog({ item, isOpen, onClose, onSaved }: ItemOver
 
   useEffect(() => {
     if (isOpen && item) {
+// eslint-disable-next-line react-hooks/set-state-in-effect
       setParLevel(item.overrideParLevel ?? '');
       setActive(item.overrideActive ?? true);
       setError(null);
@@ -34,7 +35,7 @@ export function ItemOverridesDialog({ item, isOpen, onClose, onSaved }: ItemOver
         active
       });
       onSaved();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to update override');
     } finally {
       setIsSaving(false);

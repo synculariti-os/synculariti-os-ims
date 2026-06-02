@@ -2,7 +2,7 @@ import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import crypto from 'crypto';
-import { Database, Json, UserId, RestaurantId, FranchiseGroupId } from '@ims/types';
+import { Database, UserId, RestaurantId, FranchiseGroupId } from '@ims/types';
 import type { AuditEntryDto } from '@ims/types';
 import { IAuditService } from './interfaces/i-audit.service';
 

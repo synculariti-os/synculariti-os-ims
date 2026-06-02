@@ -43,7 +43,7 @@ export default function LoginPage() {
       }
 
       setIsAuthenticated(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       setMessage({ type: 'error', text: error.message });
     } finally {
       setSubmitting(false);

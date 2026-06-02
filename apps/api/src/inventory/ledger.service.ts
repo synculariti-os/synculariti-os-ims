@@ -1,6 +1,6 @@
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 
-import type { RestaurantId, ItemId, StockLevel, LedgerReasonCode } from '@ims/types';
+import type { RestaurantId, ItemId, StockLevel, } from '@ims/types';
 import { LEDGER_REASON_CODES } from '@ims/types';
 import type { LedgerEntryDto } from './dto/ledger-entry.dto';
 import type { ILedgerService } from './interfaces/i-ledger.service';
@@ -54,7 +54,7 @@ export class LedgerService implements ILedgerService {
         const item = await this.itemService.findById(r.itemId, restaurantId);
         r.itemName = item.name;
         r.baseUom = item.inventoryUom;
-      } catch (e) {
+      } catch (_e) {
         r.itemName = 'Unknown Item';
         r.baseUom = 'Unknown';
       }
@@ -70,7 +70,7 @@ export class LedgerService implements ILedgerService {
           const item = await this.itemService.findById(entry.item_id, restaurantId);
           entry.item_name = item.name;
           entry.inventory_uom = item.inventoryUom;
-        } catch (e) {
+        } catch (_e) {
           entry.item_name = 'Unknown Item';
           entry.inventory_uom = 'Unknown';
         }

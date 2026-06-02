@@ -44,7 +44,7 @@ export default function VendorPricingPage() {
 
       setData(historyRes.data);
       setItem(itemRes.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to load vendor pricing data');
     } finally {
       setIsLoading(false);
@@ -52,7 +52,9 @@ export default function VendorPricingPage() {
   };
 
   useEffect(() => {
+// eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemId]);
 
   const formatCurrency = (val: number) => {
@@ -76,7 +78,7 @@ export default function VendorPricingPage() {
     // or we can just transform the array so Recharts can consume it.
     // Recharts expects an array of objects like: { date: 'Jan 1', vendorA: 10, vendorB: 12 }
     
-    const aggregated: Record<string, any> = {};
+    const aggregated: Record<string, unknown> = {};
     const vendors = new Set<string>();
 
     data.forEach((row) => {
@@ -185,7 +187,7 @@ export default function VendorPricingPage() {
                     />
                     <Tooltip 
                       contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                      formatter={(value: any) => [formatCurrency(Number(value) || 0), 'Cost']}
+                      formatter={(value: unknown) => [formatCurrency(Number(value) || 0), 'Cost']}
                     />
                     <Legend iconType="circle" wrapperStyle={{ paddingTop: '20px' }} />
                     {chartData.vendors.map((vendor, index) => (

@@ -19,7 +19,7 @@ export class SalesService implements ISalesService {
     const fileExt = file.originalname.split('.').pop();
     const fileName = `${restaurantId}/${dto.businessDate}-${uuidv4()}.${fileExt}`;
 
-    const { data: uploadData, error: uploadError } = await this.supabase.storage
+    const { data: _uploadData, error: uploadError } = await this.supabase.storage
       .from('sales_raw_uploads')
       .upload(fileName, file.buffer, {
         contentType: file.mimetype,

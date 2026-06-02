@@ -50,7 +50,7 @@ export class AuditInterceptor implements NestInterceptor {
     return next.handle().pipe(
       tap({
         next: (response: any) => {
-          const duration = Date.now() - startTime;
+          const _duration = Date.now() - startTime;
           void this.auditService.log({
             userId: request.user?.sub ?? null,
             userEmail: request.user?.email ?? null,

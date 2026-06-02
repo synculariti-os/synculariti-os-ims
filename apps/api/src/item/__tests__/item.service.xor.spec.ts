@@ -1,6 +1,6 @@
 /* @immutable-test — Written Red-first on: 2026-05-29. NEVER MODIFY after first GREEN. */
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, } from '@nestjs/common';
 import { describe, it, expect, beforeEach, vi, type Mocked } from 'vitest';
 import { ItemService } from '../item.service';
 import { ITEM_REPOSITORY_TOKEN } from '../interfaces/i-item.repository';

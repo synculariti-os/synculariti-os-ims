@@ -1,5 +1,5 @@
 import type { RestaurantId, ItemId, StockLevel } from '@ims/types';
-import type { LedgerEntryDto } from '../dto/ledger-entry.dto';
+import type  from '../dto/ledger-entry.dto';
 
 export interface ILedgerRepository {
   insertEntry(trx: unknown, entry: Record<string, unknown>): Promise<void>;

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ItemWithOverride, PrepPlanResponse, PrepPlanLine } from '@ims/types';
+import { ItemWithOverride, PrepPlanResponse, } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
 import { Calculator, ArrowLeft, CheckCircle2, AlertTriangle, AlertCircle } from 'lucide-react';
 
@@ -23,7 +23,7 @@ export default function PlanPrepPage() {
       try {
         const res = await apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000');
         setItems(res.data);
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message || 'Failed to load items');
       } finally {
         setIsLoadingItems(false);
@@ -40,7 +40,7 @@ export default function PlanPrepPage() {
     try {
       const res = await apiClient<{ data: PrepPlanResponse }>(`/inventory/prep/plan?itemId=${selectedItemId}&targetYield=${targetYield}`);
       setPlan(res.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to generate prep plan. Does this item have a recipe?');
       setPlan(null);
     } finally {
@@ -75,7 +75,7 @@ export default function PlanPrepPage() {
       });
       router.push('/inventory/prep');
       router.refresh();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to log prep batch');
     } finally {
       setIsSubmitting(false);

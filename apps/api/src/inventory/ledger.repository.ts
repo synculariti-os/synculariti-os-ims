@@ -2,7 +2,7 @@ import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { randomUUID } from 'crypto';
-import { Database, RestaurantId, ItemId, StockLevel, asItemId } from '@ims/types';
+import { Database, RestaurantId, ItemId, asItemId } from '@ims/types';
 import { ILedgerRepository } from './interfaces/i-ledger.repository';
 
 @Injectable()

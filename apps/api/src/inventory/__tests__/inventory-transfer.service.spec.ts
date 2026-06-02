@@ -3,8 +3,8 @@ import { DB_CLIENT } from '../../core/core.symbols';
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
 import { InventoryTransferService } from '../inventory-transfer.service';
-import { IInventoryTransferService, INVENTORY_TRANSFER_SERVICE_TOKEN } from '../interfaces/i-inventory-transfer.service';
-import { ILedgerService, LEDGER_SERVICE_TOKEN } from '../interfaces/i-ledger.service';
+import { IInventoryTransferService, } from '../interfaces/i-inventory-transfer.service';
+import { LEDGER_SERVICE_TOKEN } from '../interfaces/i-ledger.service';
 import { tenantContext } from '../../common/context/tenant.context';
 import { vi } from 'vitest';
 

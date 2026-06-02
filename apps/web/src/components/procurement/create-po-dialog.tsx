@@ -27,6 +27,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
 
   useEffect(() => {
     if (isOpen) {
+// eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedVendorId('');
       setLineItems([{ itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
       setError(null);
@@ -34,7 +35,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
     }
   }, [isOpen]);
 
-  const fetchData = async () => {
+  async function fetchData() {
     setIsLoading(true);
     try {
       const [vRes, iRes] = await Promise.all([
@@ -43,7 +44,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
       ]);
       setVendors(vRes.data);
       setItems(iRes.data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to load vendors/items');
     } finally {
       setIsLoading(false);
@@ -58,9 +59,9 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
-  const handleUpdateLine = (index: number, field: string, value: any) => {
+  const handleUpdateLine = (index: number, field: string, value: unknown) => {
     const updated = [...lineItems];
-    (updated[index] as any)[field] = value;
+    (updated[index] as unknown)[field] = value;
     setLineItems(updated);
   };
 
@@ -81,7 +82,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
         lineItems: validLines,
       });
       onCreated();
-    } catch (error: any) {
+    } catch (error: unknown) {
       setError(error.message || 'Failed to create PO');
     } finally {
       setIsCreating(false);

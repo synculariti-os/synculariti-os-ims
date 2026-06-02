@@ -42,7 +42,7 @@ export function ReceivePoDialog({ po, isOpen, onClose, onReceived }: ReceivePoDi
         body: { lineItems: [] },
       });
       onReceived();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to receive PO');
     } finally {
       setIsLoading(false);

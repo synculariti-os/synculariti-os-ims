@@ -28,7 +28,7 @@ export function RestaurantSelector() {
         } else if (data.length === 0) {
           setError('You do not have access to any restaurants. Please contact an administrator.');
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         setError(err.message || 'Failed to load restaurants');
       } finally {
         if (restaurants.length !== 1) {
@@ -38,9 +38,10 @@ export function RestaurantSelector() {
     }
 
     loadRestaurants();
+// eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleSelect = async (restaurant: Restaurant) => {
+  async function handleSelect(restaurant: Restaurant) {
     setSelecting(restaurant.id);
     try {
       // First, set the context in global state (Zustand)
@@ -51,7 +52,7 @@ export function RestaurantSelector() {
       
       // Redirect to main app
       router.push('/sales/import');
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err.message || 'Failed to select restaurant');
       setSelecting(null);
     }

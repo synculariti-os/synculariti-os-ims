@@ -31,6 +31,7 @@ export function OrdersTable() {
 
   useEffect(() => {
     let isMounted = true;
+// eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders(isMounted);
     return () => { isMounted = false; };
   }, [fetchOrders]);

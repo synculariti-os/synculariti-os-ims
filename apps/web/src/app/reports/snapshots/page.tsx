@@ -5,10 +5,10 @@ import { Camera, Calendar } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 
 export default function SnapshotsReportPage() {
-  const [snapshots, setSnapshots] = useState<any[]>([]);
+  const [snapshots, setSnapshots] = useState<unknown[]>([]);
 
   useEffect(() => {
-    apiClient<{ data: any[] }>('/reports/snapshots').then(res => setSnapshots(res.data || []));
+    apiClient<{ data: unknown[] }>('/reports/snapshots').then(res => setSnapshots(res.data || []));
   }, []);
 
   return (

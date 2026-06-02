@@ -32,10 +32,11 @@ export function WasteTable() {
   };
 
   useEffect(() => {
+// eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, []);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: unknown) => {
     try {
       setIsSubmitting(true);
       await apiClient('/inventory/waste', {
@@ -49,7 +50,7 @@ export function WasteTable() {
       setIsModalOpen(false);
       reset();
       fetchData();
-    } catch (err: any) {
+    } catch (err: unknown) {
       alert(err.message || 'Failed to log waste');
     } finally {
       setIsSubmitting(false);

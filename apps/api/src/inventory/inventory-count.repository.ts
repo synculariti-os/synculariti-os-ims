@@ -1,5 +1,5 @@
 import { DB_CLIENT } from '../core/core.symbols';
-import { Injectable, Inject, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import { randomUUID } from 'crypto';
 import {

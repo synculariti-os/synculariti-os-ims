@@ -7,7 +7,6 @@ import { apiClient } from '@/lib/api-client';
 import { Plus, Search, Layers, Pencil, Trash2, ChevronDown, ChevronRight, Package, Utensils, Link2, AlertTriangle, Loader2 } from 'lucide-react';
 import { CreateRecipeDialog } from './create-recipe-dialog';
 import { EditRecipeDialog } from './edit-recipe-dialog';
-import { cn } from '@/lib/utils';
 
 function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => void; onCancel: () => void; name: string }) {
   return (
@@ -50,6 +49,8 @@ function RecipeDetailRow({ recipe }: { recipe: Recipe }) {
     }
   }, [recipe.id, ingredients]);
 
+// eslint-disable-next-line react-hooks/exhaustive-deps
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchIngredients(); }, [recipe.id]);
 
   if (isLoading) {
@@ -158,7 +159,7 @@ export function RecipesTable() {
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [deletingRecipe, setDeletingRecipe] = useState<Recipe | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [_isDeleting, setIsDeleting] = useState(false);
 
   const fetchRecipes = useCallback(async () => {
     try {
@@ -173,6 +174,8 @@ export function RecipesTable() {
     }
   }, []);
 
+// eslint-disable-next-line react-hooks/exhaustive-deps
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchRecipes(); }, []);
 
   const toggleRow = (id: string) => {

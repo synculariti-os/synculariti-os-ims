@@ -1,7 +1,7 @@
 import { Controller, Post, UseInterceptors, UploadedFile, Body, Req, Inject, ParseFilePipeBuilder, HttpStatus, Get, Query, HttpCode } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SALES_SERVICE_TOKEN, ISalesService } from './interfaces/i-sales.service';
-import { uploadSalesFileDtoSchema, UploadSalesFileDto, listBatchesQuerySchema } from '@ims/validators';
+import { uploadSalesFileDtoSchema, listBatchesQuerySchema } from '@ims/validators';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { PERMISSION_CODES, JwtPayload } from '@ims/types';

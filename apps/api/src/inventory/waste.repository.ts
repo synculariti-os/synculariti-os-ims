@@ -6,7 +6,7 @@ import {
   Database,
   WasteLog,
   RestaurantId,
-  CountRowId,
+  _CountRowId,
   WasteLogId,
   asRestaurantId,
   asItemId

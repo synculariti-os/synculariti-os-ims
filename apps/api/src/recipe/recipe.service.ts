@@ -41,7 +41,7 @@ export class RecipeService implements IRecipeService {
         try {
           const item = await this.itemService.findById(recipe.producesItemId, restaurantId);
           recipe.producesItemName = item.name;
-        } catch (e) {
+        } catch (_e) {
           recipe.producesItemName = 'Unknown Item';
         }
       }
@@ -60,7 +60,7 @@ export class RecipeService implements IRecipeService {
         try {
           const item = await this.itemService.findById(mapping.producesItemId, restaurantId);
           mapping.targetRecipeName = item.name;
-        } catch (e) {
+        } catch (_e) {
           mapping.targetRecipeName = 'Unknown Item';
         }
       }
@@ -150,7 +150,7 @@ export class RecipeService implements IRecipeService {
         try {
           const item = await this.itemService.findById(ingredient.ingredientItemId, recipe.restaurantId as RestaurantId);
           ingredient.ingredientItemName = item.name;
-        } catch (e) {
+        } catch (_e) {
           ingredient.ingredientItemName = 'Unknown Item';
         }
       }

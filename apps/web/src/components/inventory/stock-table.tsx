@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Package, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Package, AlertTriangle, } from 'lucide-react';
 import { useAuthStore } from '@/store/use-auth-store';
 import { cn } from '@/lib/utils';
 

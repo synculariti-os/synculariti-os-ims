@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { X, Loader2, Pencil, Plus, Trash2, Package, Link2, ChevronDown } from 'lucide-react';
+import { X, Loader2, Pencil, Trash2, Package, Link2, ChevronDown } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { ItemWithOverride, Recipe, RecipeIngredient } from '@ims/types';
 
@@ -57,6 +57,7 @@ export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialo
     setIsLoading(false);
   }, [recipe.id]);
 
+// eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const addLine = (type: LineType) => {

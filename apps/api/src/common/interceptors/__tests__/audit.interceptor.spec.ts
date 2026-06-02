@@ -128,7 +128,8 @@ describe('AuditInterceptor', () => {
     
     try {
       await firstValueFrom(interceptor.intercept(mockExecutionContext, mockCallHandler));
-    } catch (e) {}
+    } catch (_e) { /* ignore */ }
+      // ignore error
     
     expect(auditService.log).toHaveBeenCalledWith(
       expect.objectContaining({

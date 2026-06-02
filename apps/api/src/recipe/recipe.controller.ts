@@ -6,7 +6,7 @@ import {
   Delete,
   Param,
   Body,
-  Query,
+  _Query,
   Inject,
   ParseUUIDPipe,
   HttpCode,
@@ -20,7 +20,7 @@ import {
   menuItemMappingSchema,
   MenuItemMappingDto,
 } from '@ims/validators';
-import { PERMISSION_CODES, JwtPayload, Recipe, MenuItemMapping, RecipeId, RestaurantId } from '@ims/types';
+import { PERMISSION_CODES, JwtPayload, Recipe, MenuItemMapping, RecipeId, } from '@ims/types';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';

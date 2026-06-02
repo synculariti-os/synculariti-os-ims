@@ -44,7 +44,7 @@ describe('ItemService', () => {
     updatedAt: new Date().toISOString(),
   };
 
-  const mockItemWithOverride: ItemWithOverride = {
+  const _mockItemWithOverride: ItemWithOverride = {
     ...mockItem,
     override: mockOverride,
     effectiveParLevel: 50,

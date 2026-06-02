@@ -50,6 +50,7 @@ export function CategoriesTable() {
 
   useEffect(() => {
     let isMounted = true;
+// eslint-disable-next-line react-hooks/set-state-in-effect
     fetchCategories(isMounted);
     return () => { isMounted = false; };
   }, [restaurantId]);

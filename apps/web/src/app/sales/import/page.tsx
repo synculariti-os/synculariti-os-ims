@@ -62,7 +62,7 @@ export default function SalesImportPage() {
         try {
           const errData = await response.json();
           errorMsg = errData.message || errData.error?.message || errorMsg;
-        } catch (e) {}
+        } catch (_e) {}
         throw new Error(errorMsg);
       }
 

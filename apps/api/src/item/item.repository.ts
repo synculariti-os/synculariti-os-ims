@@ -5,7 +5,7 @@ import type { CreateItemCommand, CreateCategoryCommand } from './interfaces/i-it
 import { Kysely, sql } from 'kysely';
 import { Database, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride, Item, asRestaurantId, asItemId, asCategoryId, asFranchiseGroupId } from '@ims/types';
 import { v4 as uuidv4 } from 'uuid';
-import { UpdateItemDto, CreateCategoryDto, UpdateCategoryDto, CreateUomConversionDto, UpdateItemOverrideDto } from '@ims/validators';
+import { UpdateItemDto, UpdateCategoryDto, CreateUomConversionDto, UpdateItemOverrideDto } from '@ims/validators';
 
 
 @Injectable()
