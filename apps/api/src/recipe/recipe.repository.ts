@@ -2,7 +2,7 @@ import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { Kysely } from 'kysely';
 import {
-  Database, Recipe, RecipeIngredient, RecipeId, _ItemId, RestaurantId,
+  Database, Recipe, RecipeIngredient, RecipeId, ItemId, RestaurantId,
   RecipeIngredientId, MenuItemMappingId, MenuItemMapping,
   asRecipeId, asItemId, asFranchiseGroupId, asRestaurantId,
   asRecipeIngredientId, asMenuItemMappingId,

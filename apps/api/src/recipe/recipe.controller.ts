@@ -6,7 +6,7 @@ import {
   Delete,
   Param,
   Body,
-  _Query,
+  Query,
   Inject,
   ParseUUIDPipe,
   HttpCode,
