@@ -32,10 +32,12 @@ const redisUrl = process.env.REDIS_URL ? new URL(process.env.REDIS_URL) : null;
             username: redisUrl.username || undefined,
             password: redisUrl.password || undefined,
             tls: redisUrl.protocol === 'rediss:' ? {} : undefined,
+            maxRetriesPerRequest: null,
           }
         : {
             host: process.env.REDIS_HOST || 'localhost',
             port: parseInt(process.env.REDIS_PORT || '6379'),
+            maxRetriesPerRequest: null,
           },
     }),
     AuthModule,
