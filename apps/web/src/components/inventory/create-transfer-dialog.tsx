@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { CreateTransferDto } from '@ims/validators';
 import { ItemWithOverride } from '@ims/types';
-import { X, Send } from 'lucide-react';
+import { X, Plus, Send } from 'lucide-react';
 
 export function CreateTransferDialog() {
   const [open, setOpen] = useState(false);
@@ -40,7 +40,7 @@ export function CreateTransferDialog() {
       });
       setOpen(false);
       window.location.reload();
-    } catch (error: unknown) {
+    } catch (error: any) {
       alert(`Failed to create transfer: ${error.message}`);
     } finally {
       setLoading(false);

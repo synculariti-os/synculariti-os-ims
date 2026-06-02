@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api-client';
 import { Recipe } from '@ims/types';
 import { Loader2, AlertCircle, Save, CheckCircle2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface UnmappedRow {
   id: string;
@@ -52,7 +53,7 @@ export function SmartMappingReview({ batchId, onResolved }: SmartMappingReviewPr
   }, [batchId]);
 
   const handleSaveMappings = async () => {
-    const itemsToMap = Object.entries(mappings).filter(([__, recipeId]) => recipeId);
+    const itemsToMap = Object.entries(mappings).filter(([_, recipeId]) => recipeId);
     if (itemsToMap.length === 0) return;
 
     setIsSubmitting(true);

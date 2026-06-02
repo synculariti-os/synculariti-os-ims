@@ -5,7 +5,7 @@ import { itemApi } from '@/lib/api/item';
 import { Scale, AlertCircle } from 'lucide-react';
 
 interface UomConversionDialogProps {
-  item: unknown;
+  item: any;
   isOpen: boolean;
   onClose: () => void;
   onSaved: () => void;
@@ -21,7 +21,6 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
 
   useEffect(() => {
     if (isOpen && item) {
-// eslint-disable-next-line react-hooks/set-state-in-effect
       setFromUom('');
       setToUom(item.inventoryUom || '');
       setFactor('');
@@ -45,7 +44,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
         conversionFactor: Number(factor)
       });
       onSaved();
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err.message || 'Failed to update conversion');
     } finally {
       setIsSaving(false);

@@ -27,7 +27,7 @@ export default function CogsReportPage() {
       setError(null);
       const reports = await cogsApi.getMenuCostingReport();
       setData(reports);
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err.message || 'Failed to load COGS report');
     } finally {
       setIsLoading(false);
@@ -35,7 +35,6 @@ export default function CogsReportPage() {
   };
 
   useEffect(() => {
-// eslint-disable-next-line react-hooks/set-state-in-effect
     loadData();
   }, []);
 

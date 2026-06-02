@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useForm, } from 'react-hook-form';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createItemSchema } from '@ims/validators';
 import { z } from 'zod';
-import { X, Loader2, PackagePlus, Wand2 } from 'lucide-react';
+import { X, Loader2, PackagePlus, Plus, Trash2, Wand2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import { Category, ItemWithOverride } from '@ims/types';
 
@@ -22,7 +22,7 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [_items, setItems] = useState<ItemWithOverride[]>([]);
+  const [items, setItems] = useState<ItemWithOverride[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [isGeneratingSku, setIsGeneratingSku] = useState(false);
 
@@ -31,11 +31,11 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
     handleSubmit,
     reset,
     watch,
-    _control,
+    control,
     setValue,
     formState: { errors },
   } = useForm<CreateItemForm>({
-    resolver: zodResolver(createItemSchema) as unknown,
+    resolver: zodResolver(createItemSchema) as any,
     defaultValues: {
       name: '',
       type: 'RAW' as const,

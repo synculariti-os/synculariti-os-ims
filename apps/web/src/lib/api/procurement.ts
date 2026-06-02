@@ -18,7 +18,7 @@ export const procurementApi = {
   createVendor: async (dto: CreateVendorDto) => {
     return apiClient<Vendor>('/procurement/orders/vendors', { method: 'POST', body: dto });
   },
-  updateVendor: async (id: string, dto: unknown) => {
+  updateVendor: async (id: string, dto: any) => {
     return apiClient<Vendor>(`/procurement/orders/vendors/${id}`, { method: 'PUT', body: dto });
   }
 };

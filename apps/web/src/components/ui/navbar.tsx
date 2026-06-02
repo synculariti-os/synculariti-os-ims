@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Package, Boxes, LayoutDashboard, ChefHat, Receipt, LineChart } from 'lucide-react';
+import { Package, Layers, UploadCloud, Boxes, BarChart3, LayoutDashboard, ChefHat, Receipt, LineChart } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();

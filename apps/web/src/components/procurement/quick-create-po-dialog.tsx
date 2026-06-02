@@ -33,8 +33,8 @@ async function fetchVendors() {
     try {
       const response = await procurementApi.listVendors();
       setVendors(response.data);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to load vendors');
+    } catch (err: any) {
+      setError((err as Error).message || 'Failed to load vendors');
     } finally {
       setIsLoadingVendors(false);
     }
@@ -74,8 +74,8 @@ async function fetchVendors() {
         ],
       });
       onClose();
-    } catch (error: unknown) {
-      setError(error.message || 'Failed to create PO');
+    } catch (error: any) {
+      setError((error as Error).message || 'Failed to create PO');
     } finally {
       setIsCreating(false);
     }

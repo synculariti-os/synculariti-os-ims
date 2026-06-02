@@ -33,11 +33,10 @@ export function PrepTable() {
   };
 
   useEffect(() => {
-// eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, []);
 
-  const onSubmit = async (data: unknown) => {
+  const onSubmit = async (data: any) => {
     try {
       setIsSubmitting(true);
       await apiClient('/inventory/prep', {
@@ -50,7 +49,7 @@ export function PrepTable() {
       setIsModalOpen(false);
       reset();
       fetchData();
-    } catch (err: unknown) {
+    } catch (err: any) {
       alert(err.message || 'Failed to log prep batch');
     } finally {
       setIsSubmitting(false);

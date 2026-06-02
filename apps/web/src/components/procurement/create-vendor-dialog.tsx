@@ -24,7 +24,6 @@ export function CreateVendorDialog({ isOpen, vendor, onClose, onSaved }: CreateV
 
   useEffect(() => {
     if (isOpen) {
-// eslint-disable-next-line react-hooks/set-state-in-effect
       setName(vendor?.name || '');
       setContactEmail(vendor?.contactEmail || '');
       setIsActive(vendor ? vendor.isActive : true);
@@ -47,12 +46,12 @@ export function CreateVendorDialog({ isOpen, vendor, onClose, onSaved }: CreateV
       };
       
       if (vendor) {
-        await procurementApi.updateVendor(vendor.id, dto as unknown);
+        await procurementApi.updateVendor(vendor.id, dto as any);
       } else {
-        await procurementApi.createVendor(dto as unknown);
+        await procurementApi.createVendor(dto as any);
       }
       onSaved();
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err.message || 'Failed to save vendor');
     } finally {
       setIsSaving(false);

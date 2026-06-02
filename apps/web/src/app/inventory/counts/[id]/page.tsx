@@ -54,7 +54,7 @@ export default function ActiveCountSessionPage() {
           itemsMap[item.id] = item;
         });
         setItems(itemsMap);
-      } catch (err: unknown) {
+      } catch (err: any) {
         setError(err.message || 'Failed to load count session');
       } finally {
         setIsLoading(false);
@@ -80,7 +80,7 @@ export default function ActiveCountSessionPage() {
       
       // Update local row state to reflect saved value
       setRows(prev => prev.map(r => r.id === rowId ? { ...r, actualQty: numValue } : r));
-    } catch (err: unknown) {
+    } catch (err: any) {
       alert(err.message || 'Failed to save count');
     } finally {
       setIsSaving(false);
@@ -105,7 +105,7 @@ export default function ActiveCountSessionPage() {
         body: { version: batch.version }
       });
       router.push('/inventory/counts');
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err.message || 'Failed to close batch');
     } finally {
       setIsClosing(false);

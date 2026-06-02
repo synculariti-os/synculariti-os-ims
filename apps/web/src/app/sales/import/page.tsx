@@ -34,7 +34,14 @@ export default function SalesImportPage() {
       formData.append('businessDate', businessDate);
       
       // Call NestJS API using fetch directly to ensure headers are correctly set for FormData
-      const { data: { session } } = await supabase.auth.getSession();
+      let { data: { session } } = await supabase.auth.getSession();
+      
+      // Retry once after 500ms for transient token refreshes
+      if (!session || !session.access_token) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const retry = await supabase.auth.getSession();
+        session = retry.data.session;
+      }
       
       if (!session || !session.access_token) {
         router.push('/login');

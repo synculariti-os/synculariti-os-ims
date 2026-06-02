@@ -25,7 +25,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-async function fetchData() {
+  const fetchData = async () => {
     setIsLoading(true);
     try {
       const [vRes, iRes] = await Promise.all([
@@ -34,7 +34,7 @@ async function fetchData() {
       ]);
       setVendors(vRes.data);
       setItems(iRes.data);
-    } catch (err: unknown) {
+    } catch (err: any) {
       setError(err.message || 'Failed to load vendors/items');
     } finally {
       setIsLoading(false);
@@ -43,15 +43,12 @@ async function fetchData() {
 
   useEffect(() => {
     if (isOpen) {
-// eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedVendorId('');
       setLineItems([{ itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
       setError(null);
       fetchData();
     }
   }, [isOpen]);
-
-  
 
   const handleAddLine = () => {
     setLineItems([...lineItems, { itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
@@ -61,9 +58,9 @@ async function fetchData() {
     setLineItems(lineItems.filter((_, i) => i !== index));
   };
 
-  const handleUpdateLine = (index: number, field: string, value: unknown) => {
+  const handleUpdateLine = (index: number, field: string, value: any) => {
     const updated = [...lineItems];
-    (updated[index] as unknown)[field] = value;
+    (updated[index] as any)[field] = value;
     setLineItems(updated);
   };
 
@@ -84,7 +81,7 @@ async function fetchData() {
         lineItems: validLines,
       });
       onCreated();
-    } catch (error: unknown) {
+    } catch (error: any) {
       setError(error.message || 'Failed to create PO');
     } finally {
       setIsCreating(false);

@@ -5,7 +5,7 @@ import { authApi } from '@/lib/api/auth';
 import { User, Shield, Save, CheckCircle } from 'lucide-react';
 
 export default function ProfilePage() {
-  const [profile, setProfile] = useState<unknown>(null);
+  const [profile, setProfile] = useState<any>(null);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [isSaving, setIsSaving] = useState(false);

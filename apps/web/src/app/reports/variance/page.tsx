@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { ArrowLeft, } from 'lucide-react';
+import { ArrowLeft, BarChart3 } from 'lucide-react';
 import { VarianceTable } from '@/components/reports/variance-table';
 
 export default function VariancePage() {

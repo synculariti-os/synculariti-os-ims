@@ -16,6 +16,23 @@ export function RestaurantSelector() {
   const [error, setError] = useState<string | null>(null);
   const [selecting, setSelecting] = useState<string | null>(null);
 
+  const handleSelect = async (restaurant: Restaurant) => {
+    setSelecting(restaurant.id);
+    try {
+      // First, set the context in global state (Zustand)
+      setContext(restaurant.id, restaurant.franchiseGroupId);
+      
+      // Optionally validate selection with backend
+      await apiClient('/auth/select-restaurant', { method: 'POST' });
+      
+      // Redirect to main app
+      router.push('/sales/import');
+    } catch (err: any) {
+      setError(err.message || 'Failed to select restaurant');
+      setSelecting(null);
+    }
+  };
+
   useEffect(() => {
     async function loadRestaurants() {
       try {
@@ -28,7 +45,7 @@ export function RestaurantSelector() {
         } else if (data.length === 0) {
           setError('You do not have access to any restaurants. Please contact an administrator.');
         }
-      } catch (err: unknown) {
+      } catch (err: any) {
         setError(err.message || 'Failed to load restaurants');
       } finally {
         if (restaurants.length !== 1) {
@@ -38,25 +55,7 @@ export function RestaurantSelector() {
     }
 
     loadRestaurants();
-// eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  async function handleSelect(restaurant: Restaurant) {
-    setSelecting(restaurant.id);
-    try {
-      // First, set the context in global state (Zustand)
-      setContext(restaurant.id, restaurant.franchiseGroupId);
-      
-      // Optionally validate selection with backend
-      await apiClient('/auth/select-restaurant', { method: 'POST' });
-      
-      // Redirect to main app
-      router.push('/sales/import');
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to select restaurant');
-      setSelecting(null);
-    }
-  };
 
   if (loading) {
     return (
