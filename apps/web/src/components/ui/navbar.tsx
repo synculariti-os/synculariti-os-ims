@@ -3,18 +3,18 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Package, Layers, UploadCloud, Boxes, Truck, BarChart3 } from 'lucide-react';
+import { Package, Layers, UploadCloud, Boxes, BarChart3, LayoutDashboard, ChefHat, Receipt, LineChart } from 'lucide-react';
 
 export function Navbar() {
   const pathname = usePathname();
 
   const navItems = [
+    { name: 'Dashboard', href: '/', icon: LayoutDashboard },
     { name: 'Item Master', href: '/items', icon: Package },
-    { name: 'Recipes & BOM', href: '/recipes', icon: Layers },
-    { name: 'Procurement', href: '/procurement/orders', icon: Truck },
+    { name: 'Recipes & BOM', href: '/recipes', icon: ChefHat },
     { name: 'Inventory', href: '/inventory', icon: Boxes },
-    { name: 'Sales Import', href: '/sales/import', icon: UploadCloud },
-    { name: 'Reports', href: '/reports', icon: BarChart3 },
+    { name: 'Sales Import', href: '/sales/import', icon: Receipt },
+    { name: 'Reports', href: '/reports', icon: LineChart },
   ];
 
   return (

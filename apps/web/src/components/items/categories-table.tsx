@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Category } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Tag, Plus, Search, Pencil, Trash2, AlertTriangle } from 'lucide-react';
 import { CreateCategoryDialog } from './create-category-dialog';
 import { EditCategoryDialog } from './edit-category-dialog';
@@ -33,7 +34,10 @@ export function CategoriesTable() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
 
+  const restaurantId = useAuthStore(state => state.restaurantId);
+
   const fetchCategories = async () => {
+    if (!restaurantId) return;
     try {
       setIsLoading(true);
       const response = await apiClient<{ data: Category[] }>('/items/categories');
@@ -46,8 +50,8 @@ export function CategoriesTable() {
   };
 
   useEffect(() => {
-    fetchCategories();
-  }, []);
+    if (restaurantId) fetchCategories();
+  }, [restaurantId]);
 
   const filteredCategories = categories.filter((cat) =>
     cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

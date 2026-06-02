@@ -14,17 +14,6 @@ export default function SalesImportPage() {
   const { restaurantId } = useAuthStore();
   const router = useRouter();
 
-  React.useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.push('/login');
-      } else if (!restaurantId) {
-        // Logged in but no context selected, go back to login to select restaurant
-        router.push('/login');
-      }
-    });
-  }, [router, restaurantId]);
-
   const handleFileUpload = async (file: File) => {
     setIsUploading(true);
     setErrorMessage(null);

@@ -2,13 +2,12 @@
 
 import React, { useState } from 'react';
 import { StockTable } from '@/components/inventory/stock-table';
-import { LedgerTable } from '@/components/inventory/ledger-table';
-import { PackageSearch, Boxes, History, ClipboardList, Trash2, ChefHat, ArrowRightLeft } from 'lucide-react';
+import { PackageSearch, Boxes, ClipboardList, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function InventoryDashboard() {
-  const [activeTab, setActiveTab] = useState<'stock' | 'ledger'>('stock');
+  const [activeTab, setActiveTab] = useState<'stock'>('stock');
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] bg-[url('/grid.svg')] dark:bg-[url('/grid-dark.svg')] bg-center selection:bg-indigo-500/30">
@@ -25,7 +24,7 @@ export default function InventoryDashboard() {
                 Real-time Stock Levels
               </h1>
               <p className="text-lg text-zinc-600 dark:text-zinc-400 max-w-2xl">
-                Monitor your current inventory, view historical stock movements, and track deductions powered by automated BOM expansion.
+                Monitor your current inventory and track deductions powered by automated BOM expansion.
               </p>
             </div>
             
@@ -37,14 +36,6 @@ export default function InventoryDashboard() {
               <Link href="/inventory/waste" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
                 <Trash2 className="w-4 h-4 text-red-500" />
                 Waste
-              </Link>
-              <Link href="/inventory/prep" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
-                <ChefHat className="w-4 h-4 text-blue-500" />
-                Prep Batch
-              </Link>
-              <Link href="/inventory/transfers" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
-                <ArrowRightLeft className="w-4 h-4 text-indigo-500" />
-                Transfers
               </Link>
             </div>
           </header>
@@ -66,24 +57,9 @@ export default function InventoryDashboard() {
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-indigo-600 dark:bg-indigo-400 rounded-t-full" />
               )}
             </button>
-            <button
-              onClick={() => setActiveTab('ledger')}
-              className={cn(
-                "flex items-center gap-2 px-4 py-3 text-sm font-medium transition-all relative",
-                activeTab === 'ledger' 
-                  ? "text-amber-600 dark:text-amber-400" 
-                  : "text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
-              )}
-            >
-              <History className="w-4 h-4" />
-              Transaction Ledger
-              {activeTab === 'ledger' && (
-                <span className="absolute bottom-0 left-0 w-full h-0.5 bg-amber-600 dark:bg-amber-400 rounded-t-full" />
-              )}
-            </button>
           </div>
 
-          {activeTab === 'stock' ? <StockTable /> : <LedgerTable />}
+          {activeTab === 'stock' && <StockTable />}
 
         </div>
       </main>

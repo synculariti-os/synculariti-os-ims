@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ItemWithOverride } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Package, Plus, Search, Tag, Scale, Pencil, Trash2, AlertTriangle, TrendingUp } from 'lucide-react';
 import { CreateItemDialog } from './create-item-dialog';
 import { EditItemDialog } from './edit-item-dialog';
@@ -34,12 +35,16 @@ export function ItemsTable() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemWithOverride | null>(null);
-  const [deletingItem, setDeletingItem] = useState<ItemWithOverride | null>(null);
   const [overrideItem, setOverrideItem] = useState<ItemWithOverride | null>(null);
   const [uomItem, setUomItem] = useState<ItemWithOverride | null>(null);
+  const [deletingItem, setDeletingItem] = useState<ItemWithOverride | null>(null);
+  
+  const restaurantId = useAuthStore(state => state.restaurantId);
 
   useEffect(() => {
     let isMounted = true;
+    if (!restaurantId) return;
+
     const fetchItems = async () => {
       try {
         setIsLoading(true);
@@ -53,12 +58,11 @@ export function ItemsTable() {
     };
 
     fetchItems();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+    return () => { isMounted = false; };
+  }, [restaurantId]);
 
   const refreshItems = () => {
+    if (!restaurantId) return;
     apiClient<{ data: ItemWithOverride[] }>('/items')
       .then(data => setItems(data.data || []))
       .catch(err => console.error(err));
