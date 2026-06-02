@@ -22,7 +22,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
   useEffect(() => {
     if (isOpen && item) {
       setFromUom('');
-      setToUom(item.baseUom);
+      setToUom(item.inventoryUom || '');
       setFactor('');
       setError(null);
     }
@@ -62,7 +62,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
           </div>
           <div>
             <h2 className="text-xl font-bold">UOM Conversion</h2>
-            <p className="text-sm text-zinc-500">Base Unit: {item.baseUom}</p>
+            <p className="text-sm text-zinc-500">Base Unit: {item.inventoryUom}</p>
           </div>
         </div>
 
@@ -80,7 +80,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
             </div>
             <div>
               <label className="block text-sm font-medium mb-1.5">To UOM</label>
-              <input type="text" value={toUom} disabled className="w-full px-4 py-2 border rounded-xl bg-zinc-50" />
+              <input type="text" value={toUom} onChange={e => setToUom(e.target.value)} placeholder="e.g. EA" className="w-full px-4 py-2 border rounded-xl uppercase" />
             </div>
           </div>
           <div>
@@ -91,7 +91,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
         </div>
 
         <div className="mt-8 flex justify-end gap-3">
-          <button onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm hover:bg-zinc-100 rounded-xl">Cancel</button>
+          <button onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl">Cancel</button>
           <button onClick={handleSave} disabled={isSaving} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Save</button>
         </div>
       </div>
