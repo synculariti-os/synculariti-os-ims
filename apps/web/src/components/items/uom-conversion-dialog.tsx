@@ -25,7 +25,8 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
     if (!item) return;
     setIsLoadingConversions(true);
     try {
-      const data = await itemApi.getUomConversions(item.id);
+      const response = await itemApi.getUomConversions(item.id);
+      const data = (response as any)?.data || response;
       setConversions(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Failed to fetch conversions', err);
