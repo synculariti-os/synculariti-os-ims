@@ -25,17 +25,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (isOpen) {
-// eslint-disable-next-line react-hooks/set-state-in-effect
-      setSelectedVendorId('');
-      setLineItems([{ itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
-      setError(null);
-      fetchData();
-    }
-  }, [isOpen]);
-
-  async function fetchData() {
+async function fetchData() {
     setIsLoading(true);
     try {
       const [vRes, iRes] = await Promise.all([
@@ -50,6 +40,18 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isOpen) {
+// eslint-disable-next-line react-hooks/set-state-in-effect
+      setSelectedVendorId('');
+      setLineItems([{ itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
+      setError(null);
+      fetchData();
+    }
+  }, [isOpen]);
+
+  
 
   const handleAddLine = () => {
     setLineItems([...lineItems, { itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);

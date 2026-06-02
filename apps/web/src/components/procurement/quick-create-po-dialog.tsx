@@ -28,6 +28,18 @@ export function QuickCreatePoDialog({
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+async function fetchVendors() {
+    setIsLoadingVendors(true);
+    try {
+      const response = await procurementApi.listVendors();
+      setVendors(response.data);
+    } catch (err: unknown) {
+      setError(err.message || 'Failed to load vendors');
+    } finally {
+      setIsLoadingVendors(false);
+    }
+  };
+
   useEffect(() => {
     if (isOpen) {
 // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -39,17 +51,7 @@ export function QuickCreatePoDialog({
     }
   }, [isOpen, suggestedQuantity]);
 
-  async function fetchVendors() {
-    setIsLoadingVendors(true);
-    try {
-      const response = await procurementApi.listVendors();
-      setVendors(response.data);
-    } catch (err: unknown) {
-      setError(err.message || 'Failed to load vendors');
-    } finally {
-      setIsLoadingVendors(false);
-    }
-  };
+  
 
   const handleCreatePo = async () => {
     try {
