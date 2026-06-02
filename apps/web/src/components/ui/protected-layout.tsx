@@ -5,6 +5,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useAuthStore } from '@/store/use-auth-store';
 import { Loader2 } from 'lucide-react';
+import { RestaurantSelector } from '@/components/auth/restaurant-selector';
 
 export function ProtectedLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -61,20 +62,15 @@ export function ProtectedLayout({ children }: { children: React.ReactNode }) {
   }
 
   // Prompt to select restaurant if authenticated but no context
-  if (isAuthenticated && !isPublicRoute && !restaurantId && pathname !== '/') {
+  if (isAuthenticated && !isPublicRoute && !restaurantId) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a] p-6 text-center">
-        <div className="bg-white dark:bg-zinc-900 p-8 rounded-2xl shadow-xl border border-zinc-200 dark:border-zinc-800 max-w-md w-full">
-          <h2 className="text-2xl font-bold text-zinc-900 dark:text-white mb-2">No Restaurant Selected</h2>
-          <p className="text-zinc-600 dark:text-zinc-400 mb-6">
-            You need to select a restaurant context to access this page.
-          </p>
-          <button 
-            onClick={() => router.push('/')}
-            className="w-full px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl transition-colors"
-          >
-            Go to Dashboard
-          </button>
+      <div className="min-h-screen flex items-center justify-center bg-[#fafafa] dark:bg-[#0a0a0a] p-6 relative overflow-hidden">
+        {/* Background decoration matching login page */}
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-500/20 dark:bg-blue-500/10 blur-3xl rounded-full mix-blend-multiply dark:mix-blend-lighten pointer-events-none" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[30rem] h-[30rem] bg-indigo-500/20 dark:bg-indigo-500/10 blur-3xl rounded-full mix-blend-multiply dark:mix-blend-lighten pointer-events-none" />
+        
+        <div className="relative z-10 max-w-md w-full bg-white/70 dark:bg-zinc-900/70 backdrop-blur-xl p-8 rounded-3xl shadow-2xl border border-white/20 dark:border-zinc-800/50">
+          <RestaurantSelector />
         </div>
       </div>
     );
