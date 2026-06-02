@@ -1,7 +1,10 @@
 import { supabase } from './supabase';
 import { useAuthStore } from '../store/use-auth-store';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Fallback to the known Render production URL if deployed to Vercel/production, otherwise localhost
+const isLocal = typeof window !== 'undefined' ? window.location.hostname === 'localhost' : process.env.NODE_ENV !== 'production';
+const defaultApiUrl = isLocal ? 'http://localhost:3001' : 'https://ims-api-prod.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || defaultApiUrl;
 
 type FetchOptions = Omit<RequestInit, 'body'> & {
   params?: Record<string, string | number | boolean | undefined>;
@@ -9,7 +12,13 @@ type FetchOptions = Omit<RequestInit, 'body'> & {
 };
 
 export async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
-  const { data: { session } } = await supabase.auth.getSession();
+  let { data: { session } } = await supabase.auth.getSession();
+  
+  if (!session || !session.access_token) {
+    await new Promise(resolve => setTimeout(resolve, 500));
+    const retry = await supabase.auth.getSession();
+    session = retry.data.session;
+  }
   const { restaurantId } = useAuthStore.getState();
   
   const headers = new Headers(options.headers);
