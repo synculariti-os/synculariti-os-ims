@@ -39,14 +39,14 @@ export function PendingDeliveriesWidget() {
       ) : (
         <div className="space-y-4 flex-1">
           {orders.slice(0, 5).map((order) => (
-            <div key={order.id} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-white">PO #{order.id.slice(0, 8)}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div key={order.id} className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">PO #{order.id.slice(0, 8)}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                   Expected: {order.expectedDeliveryDate ? new Date(order.expectedDeliveryDate).toLocaleDateString() : 'TBD'}
                 </p>
               </div>
-              <span className="inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 uppercase tracking-wider">
+              <span className="shrink-0 inline-flex items-center px-2 py-1 rounded-md text-[10px] font-medium bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400 uppercase tracking-wider">
                 In Transit
               </span>
             </div>

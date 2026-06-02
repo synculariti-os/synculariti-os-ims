@@ -35,14 +35,14 @@ export function ParAlertsWidget() {
       ) : (
         <div className="space-y-4 flex-1">
           {alerts.slice(0, 5).map((alert) => (
-            <div key={alert.item.id} className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-zinc-900 dark:text-white truncate max-w-[150px]" title={alert.item.name}>{alert.item.name}</p>
-                <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <div key={alert.item.id} className="flex items-center justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-zinc-900 dark:text-white truncate" title={alert.item.name}>{alert.item.name}</p>
+                <p className="text-xs text-zinc-500 dark:text-zinc-400 truncate">
                   Par: {alert.item.effectiveParLevel || 0} • Stock: {alert.currentStock}
                 </p>
               </div>
-              <div className="text-sm font-semibold text-red-600 dark:text-red-400 whitespace-nowrap">
+              <div className="text-sm font-semibold text-red-600 dark:text-red-400 shrink-0">
                 Short by {Math.abs(alert.varianceFromPar)}
               </div>
             </div>
