@@ -30,7 +30,7 @@ export function LedgerTable() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || !restaurantId) return;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/inventory/ledger?limit=100`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/inventory/ledger?limit=100`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'x-restaurant-id': restaurantId,

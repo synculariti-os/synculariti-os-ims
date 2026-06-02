@@ -43,7 +43,6 @@ export function ItemsTable() {
 
   useEffect(() => {
     let isMounted = true;
-    if (!restaurantId) return;
 
     const fetchItems = async () => {
       try {

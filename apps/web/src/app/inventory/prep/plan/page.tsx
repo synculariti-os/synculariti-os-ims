@@ -32,7 +32,7 @@ export default function PlanPrepPage() {
     fetchItems();
   }, []);
 
-  const handlePlan = async () => {
+  const handlePlan = React.useCallback(async () => {
     if (!selectedItemId || targetYield <= 0) return;
     
     setIsPlanning(true);
@@ -46,7 +46,7 @@ export default function PlanPrepPage() {
     } finally {
       setIsPlanning(false);
     }
-  };
+  }, [selectedItemId, targetYield]);
 
   // Debounce the planning call
   useEffect(() => {
@@ -58,10 +58,11 @@ export default function PlanPrepPage() {
       }
     }, 500);
     return () => clearTimeout(timeout);
-  }, [selectedItemId, targetYield]);
+  }, [selectedItemId, targetYield, handlePlan]);
 
   const handleCommit = async () => {
     if (!plan || !plan.isPossible) return;
+    if (plan.prepItemId !== selectedItemId || plan.targetYield !== targetYield) return; // Prevent race
     
     setIsSubmitting(true);
     try {

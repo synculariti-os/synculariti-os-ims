@@ -3,7 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { PurchaseOrder } from '@ims/types';
 import { procurementApi } from '@/lib/api/procurement';
-import { Truck, Search, CheckCircle, PackageOpen, XCircle, FileText, ChevronRight, Send, X } from 'lucide-react';
+import { apiClient } from '@/lib/api-client';
+import { Truck, Search, CheckCircle, PackageOpen, XCircle, FileText, ChevronRight, Send, X, Plus } from 'lucide-react';
 import { ReceivePoDialog } from './receive-po-dialog';
 import { CreatePoDialog } from './create-po-dialog';
 
@@ -16,31 +17,23 @@ export function OrdersTable() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const fetchOrders = async () => {
+  const fetchOrders = React.useCallback(async (isMounted: boolean = true) => {
     try {
       setIsLoading(true);
-      const res = await procurementApi.listVendors(); // Wait, no we need to list orders!
-      // I'll fix this fetch inside.
-      const oRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/procurement/orders`, {
-        headers: {
-          'Authorization': `Bearer ${(await import('@/lib/supabase').then(m => m.supabase.auth.getSession())).data.session?.access_token}`,
-          'x-restaurant-id': (await import('@/store/use-auth-store').then(m => m.useAuthStore.getState().restaurantId)) || '',
-        }
-      });
-      if(oRes.ok) {
-        const json = await oRes.json();
-        setOrders(json.data || []);
-      }
+      const oRes = await apiClient<{ data: PurchaseOrder[] }>('/procurement/orders');
+      if (isMounted) setOrders(oRes.data || []);
     } catch (err) {
       console.error(err);
     } finally {
-      setIsLoading(false);
+      if (isMounted) setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    let isMounted = true;
+    fetchOrders(isMounted);
+    return () => { isMounted = false; };
+  }, [fetchOrders]);
 
   const handleSubmit = async (id: string) => {
     try {
@@ -229,8 +222,4 @@ export function OrdersTable() {
       />
     </div>
   );
-}
-
-function Plus(props: any) {
-  return <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
 }

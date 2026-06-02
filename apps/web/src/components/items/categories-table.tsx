@@ -36,21 +36,22 @@ export function CategoriesTable() {
 
   const restaurantId = useAuthStore(state => state.restaurantId);
 
-  const fetchCategories = async () => {
-    if (!restaurantId) return;
+  const fetchCategories = async (isMounted: boolean = true) => {
     try {
       setIsLoading(true);
       const response = await apiClient<{ data: Category[] }>('/items/categories');
-      setCategories(response.data || []);
+      if (isMounted) setCategories(response.data || []);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
     } finally {
-      setIsLoading(false);
+      if (isMounted) setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    if (restaurantId) fetchCategories();
+    let isMounted = true;
+    fetchCategories(isMounted);
+    return () => { isMounted = false; };
   }, [restaurantId]);
 
   const filteredCategories = categories.filter((cat) =>

@@ -13,12 +13,12 @@ export const procurementApi = {
     return apiClient<void>(`/procurement/orders/${id}/cancel`, { method: 'PATCH' });
   },
   listVendors: async () => {
-    return apiClient<{ data: Vendor[] }>('/procurement/vendors');
+    return apiClient<{ data: Vendor[] }>('/procurement/orders/vendors');
   },
   createVendor: async (dto: CreateVendorDto) => {
-    return apiClient<Vendor>('/procurement/vendors', { method: 'POST', body: dto });
+    return apiClient<Vendor>('/procurement/orders/vendors', { method: 'POST', body: dto });
   },
   updateVendor: async (id: string, dto: any) => {
-    return apiClient<Vendor>(`/procurement/vendors/${id}`, { method: 'PUT', body: dto });
+    return apiClient<Vendor>(`/procurement/orders/vendors/${id}`, { method: 'PUT', body: dto });
   }
 };

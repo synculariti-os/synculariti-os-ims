@@ -38,28 +38,41 @@ export async function apiClient<T>(endpoint: string, options: FetchOptions = {})
     }
   }
 
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s timeout
+
   const fetchOptions = {
     ...options,
     headers,
+    signal: controller.signal,
   } as RequestInit;
 
-  const response = await fetch(url, fetchOptions);
+  try {
+    const response = await fetch(url, fetchOptions);
+    clearTimeout(timeoutId);
 
-  if (!response.ok) {
-    let errorMsg = response.statusText;
-    try {
-      const errorData = await response.json();
-      errorMsg = errorData.message || errorData.error || errorMsg;
-    } catch {
-      // Ignore JSON parse errors
+    if (!response.ok) {
+      let errorMsg = response.statusText;
+      try {
+        const errorData = await response.json();
+        errorMsg = errorData.message || errorData.error || errorMsg;
+      } catch {
+        // Ignore JSON parse errors
+      }
+      throw new Error(errorMsg);
     }
-    throw new Error(errorMsg);
-  }
 
-  // Handle 204 No Content
-  if (response.status === 204) {
-    return {} as T;
-  }
+    // Handle 204 No Content
+    if (response.status === 204) {
+      return {} as T;
+    }
 
-  return response.json();
+    return response.json();
+  } catch (error: unknown) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Request timed out. Please try again.');
+    }
+    throw error;
+  }
 }

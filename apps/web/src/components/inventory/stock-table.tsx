@@ -26,7 +26,7 @@ export function StockTable() {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session || !restaurantId) return;
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/inventory/stock`, {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/inventory/stock`, {
           headers: {
             'Authorization': `Bearer ${session.access_token}`,
             'x-restaurant-id': restaurantId,
