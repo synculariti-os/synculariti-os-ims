@@ -40,7 +40,7 @@ export class ItemService implements IItemWriteService {
     return qty * conversion.multiplierFactor;
   }
 
-  async getUomConversions(itemId: string): Promise<UomConversion[]> {
+  async getUomConversions(itemId: ItemId): Promise<UomConversion[]> {
     return this.itemRepo.getUomConversions(itemId);
   }
 

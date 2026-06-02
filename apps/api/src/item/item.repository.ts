@@ -114,7 +114,7 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
-  async getUomConversions(itemId: string): Promise<UomConversion[]> {
+  async getUomConversions(itemId: ItemId): Promise<UomConversion[]> {
     const conversions = await this.db
       .selectFrom('uom_conversions')
       .selectAll()
