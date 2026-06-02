@@ -19,4 +19,14 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: ims-redis
+          property: connectionString
 
+  - type: redis
+    name: ims-redis
+    ipAllowList: []
+    plan: free
+    maxmemoryPolicy: noeviction
