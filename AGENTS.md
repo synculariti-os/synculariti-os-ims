@@ -293,7 +293,7 @@ interface IRecipeService {
 - Internal calls from Procurement, Sales, Recipe agents (ledger writes)
 - `POST /inventory/transfers` — cross-restaurant stock movement
 - `POST /inventory/counts/start` — open count batch
-- `PUT /inventory/counts/:batchId/rows/:rowId` — submit actual count
+- `PATCH /inventory/counts/:batchId/rows/:rowId` — submit actual count
 - `POST /inventory/counts/:batchId/close` — reconcile and write adjustment
 - `POST /inventory/waste` — waste log entry
 - `POST /inventory/prep` — prep production log entry

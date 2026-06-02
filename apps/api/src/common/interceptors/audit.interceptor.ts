@@ -17,6 +17,19 @@ function resolveRequestPayload(request: any): Json {
   return (request.body as Json) || null;
 }
 
+function extractEntityType(path: string | undefined): string {
+  if (!path) return 'unknown';
+  const segments = path.split('/').filter(s => s && !s.startsWith(':'));
+  return segments.join('_') || 'unknown';
+}
+
+function extractEntityId(request: any, response?: any): string {
+  if (request.params?.id) return request.params.id;
+  if (response?.id) return response.id;
+  if (response?.data?.id) return response.data.id;
+  return 'unknown';
+}
+
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
   constructor(
@@ -42,8 +55,8 @@ export class AuditInterceptor implements NestInterceptor {
             userId: request.user?.sub ?? null,
             userEmail: request.user?.email ?? null,
             action: `${method} ${request.route?.path || request.url}`,
-            entityType: request.route?.path?.split('/')[1] ?? 'unknown',
-            entityId: request.params?.id ?? 'unknown',
+            entityType: extractEntityType(request.route?.path),
+            entityId: extractEntityId(request, response),
             requestPayload: resolveRequestPayload(request),
             responsePayload: response || null,
             success: true,
@@ -58,8 +71,8 @@ export class AuditInterceptor implements NestInterceptor {
             userId: request.user?.sub ?? null,
             userEmail: request.user?.email ?? null,
             action: `${method} ${request.route?.path || request.url}`,
-            entityType: request.route?.path?.split('/')[1] ?? 'unknown',
-            entityId: request.params?.id ?? 'unknown',
+            entityType: extractEntityType(request.route?.path),
+            entityId: extractEntityId(request),
             requestPayload: resolveRequestPayload(request),
             responsePayload: null,
             success: false,

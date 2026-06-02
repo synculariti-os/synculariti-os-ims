@@ -1,10 +1,12 @@
-import { Controller, Post, Patch, Get, Query, Body, Param, Inject, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Patch, Get, Query, Body, Param, Inject, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import type { Request } from 'express';
 import { SupabaseAuthGuard } from '../common/guards/supabase-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { TenantContextInterceptor } from '../common/interceptors/tenant-context.interceptor';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { setAuditBeforeState } from '../common/utils/audit.utils';
 
 import { INVENTORY_COUNT_SERVICE_TOKEN } from './interfaces/i-inventory-count.service';
 import type { IInventoryCountService } from './interfaces/i-inventory-count.service';
@@ -53,10 +55,17 @@ export class InventoryCountController {
   @Patch(':batchId/rows/:rowId')
   @RequirePermission('INVENTORY.WRITE')
   async submitActualCount(
+    @Req() req: Request,
     @Param('batchId') batchId: string,
     @Param('rowId') rowId: string,
     @Body(new ZodValidationPipe(submitCountRowSchema)) dto: SubmitCountRowDto,
   ) {
+    const existing = await this.countService.getBatchById(batchId as CountBatchId);
+    const row = existing?.rows?.find((r: any) => r.id === rowId);
+    if (row) {
+      setAuditBeforeState(req, { actualQty: row.actualQty });
+    }
+
     return this.countService.submitActualCount(
       batchId as CountBatchId,
       rowId as CountRowId,

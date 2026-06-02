@@ -70,9 +70,10 @@ describe('InventoryCountController', () => {
       const rowId = 'row-1' as CountRowId;
       const dto = { actualQty: 5 } as never;
       const mockResult = { id: rowId, actualQty: 5 } as never;
+      const mockReq = {} as any;
       service.submitActualCount.mockResolvedValue(mockResult);
 
-      const result = await controller.submitActualCount(batchId, rowId, dto);
+      const result = await controller.submitActualCount(mockReq, batchId, rowId, dto);
       
       expect(service.submitActualCount).toHaveBeenCalledWith(batchId, rowId, dto);
       expect(result).toEqual(mockResult);
