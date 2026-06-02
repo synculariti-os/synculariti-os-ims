@@ -74,6 +74,12 @@ export class ItemController {
     return this.itemService.upsertUomConversion(dto);
   }
 
+  @Get(':id/uom-conversions')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
+  async getUomConversions(@Param('id') itemId: string) {
+    return this.itemService.getUomConversions(itemId);
+  }
+
   // ── Collection routes ────────────────────────────────────────────────────────
 
   @Get()

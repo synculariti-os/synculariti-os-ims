@@ -40,6 +40,10 @@ export class ItemService implements IItemWriteService {
     return qty * conversion.multiplierFactor;
   }
 
+  async getUomConversions(itemId: string): Promise<UomConversion[]> {
+    return this.itemRepo.getUomConversions(itemId);
+  }
+
   async listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
     return this.itemRepo.listParLevels(restaurantId, page, limit);
   }

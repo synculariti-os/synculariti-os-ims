@@ -114,6 +114,24 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
+  async getUomConversions(itemId: string): Promise<UomConversion[]> {
+    const conversions = await this.db
+      .selectFrom('uom_conversions')
+      .selectAll()
+      .where('item_id', '=', itemId)
+      .execute();
+
+    return conversions.map((conversion) => ({
+      id: conversion.id,
+      itemId: asItemId(conversion.item_id as string),
+      fromUom: conversion.from_uom,
+      toUom: conversion.to_uom,
+      multiplierFactor: Number(conversion.multiplier_factor),
+      createdAt: conversion.created_at as string,
+      updatedAt: conversion.updated_at as string,
+    }));
+  }
+
   async listParLevels(restaurantId: RestaurantId, page = 1, limit = 50): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }> {
     const offset = (page - 1) * limit;
 

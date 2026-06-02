@@ -11,6 +11,7 @@ import type { CreateItemCommand, CreateCategoryCommand } from './i-item.service'
 export interface IItemRepository {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride | null>;
   getUomConversion(itemId: ItemId, fromUom: string, toUom: string): Promise<UomConversion | null>;
+  getUomConversions(itemId: string): Promise<UomConversion[]>;
   listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
   listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]>;
   createItem(data: CreateItemCommand): Promise<Item>;

@@ -160,6 +160,7 @@ interface ITenantService {
 interface IItemReadService {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride>;
   convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
+  getUomConversions(itemId: string): Promise<UomConversion[]>;
   listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
 }
 

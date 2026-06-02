@@ -9,4 +9,5 @@ export const itemApi = {
   listCategories: async () => apiClient<{ data: Category[] }>('/items/categories'),
   updateOverride: async (id: string, dto: any) => apiClient<any>(`/items/${id}/overrides`, { method: 'PATCH', body: dto }),
   upsertUomConversion: async (dto: any) => apiClient<any>('/items/uom-conversions', { method: 'POST', body: dto }),
+  getUomConversions: async (id: string) => apiClient<any>(`/items/${id}/uom-conversions`),
 };

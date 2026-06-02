@@ -55,6 +55,7 @@ describe('ItemService', () => {
     const mockRepo: Mocked<IItemRepository> = {
       findById: vi.fn(),
       getUomConversion: vi.fn(),
+      getUomConversions: vi.fn(),
       listParLevels: vi.fn(),
       createItem: vi.fn(),
       updateItem: vi.fn(),
@@ -133,6 +134,19 @@ describe('ItemService', () => {
       const result = await service.listCategories(mockRestaurantId, 'franchise-1');
       expect(result).toEqual([mockCategory]);
       expect(repo.listCategories).toHaveBeenCalledWith(mockRestaurantId, 'franchise-1');
+    });
+  });
+
+  describe('getUomConversions', () => {
+    it('should return a list of UOM conversions for the item', async () => {
+      const mockConversions: UomConversion[] = [
+        { id: '1', itemId: mockItemId, fromUom: 'CASE', toUom: 'EA', multiplierFactor: 24, createdAt: '', updatedAt: '' }
+      ];
+      repo.getUomConversions.mockResolvedValue(mockConversions);
+      
+      const result = await service.getUomConversions(mockItemId);
+      expect(result).toEqual(mockConversions);
+      expect(repo.getUomConversions).toHaveBeenCalledWith(mockItemId);
     });
   });
 });

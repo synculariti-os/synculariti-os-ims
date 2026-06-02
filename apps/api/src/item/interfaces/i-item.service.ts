@@ -26,6 +26,7 @@ export interface IItemReadService {
   convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
   listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
   listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]>;
+  getUomConversions(itemId: string): Promise<UomConversion[]>;
 }
 
 export interface IItemWriteService extends IItemReadService {
