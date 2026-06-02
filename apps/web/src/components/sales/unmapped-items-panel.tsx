@@ -30,7 +30,7 @@ export function SmartMappingReview({ batchId, onResolved }: SmartMappingReviewPr
       try {
         setIsLoading(true);
         const [rowsRes, recipesRes] = await Promise.all([
-          apiClient<{ data: UnmappedRow[] }>(`/recipes/unmapped-rows?batchId=${batchId}`),
+          apiClient<{ data: UnmappedRow[] }>(`/sales-imports/unmapped-rows?batchId=${batchId}`),
           apiClient<{ data: Recipe[] }>('/recipes')
         ]);
         

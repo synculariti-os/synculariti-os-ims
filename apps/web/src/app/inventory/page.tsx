@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { StockTable } from '@/components/inventory/stock-table';
 import { LedgerTable } from '@/components/inventory/ledger-table';
-import { PackageSearch, Boxes, History, ClipboardList, Trash2, ChefHat } from 'lucide-react';
+import { PackageSearch, Boxes, History, ClipboardList, Trash2, ChefHat, ArrowRightLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -29,7 +29,7 @@ export default function InventoryDashboard() {
               </p>
             </div>
             
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <Link href="/inventory/counts" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
                 <ClipboardList className="w-4 h-4 text-emerald-500" />
                 Counts
@@ -41,6 +41,10 @@ export default function InventoryDashboard() {
               <Link href="/inventory/prep" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
                 <ChefHat className="w-4 h-4 text-blue-500" />
                 Prep Batch
+              </Link>
+              <Link href="/inventory/transfers" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
+                <ArrowRightLeft className="w-4 h-4 text-indigo-500" />
+                Transfers
               </Link>
             </div>
           </header>

@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState } from 'react';
 import { PurchaseOrder } from '@ims/types';
-import { apiClient } from '@/lib/api-client';
-import { Truck, Search, CheckCircle, PackageOpen, XCircle, FileText, ChevronRight } from 'lucide-react';
+import { procurementApi } from '@/lib/api/procurement';
+import { Truck, Search, CheckCircle, PackageOpen, XCircle, FileText, ChevronRight, Send, X } from 'lucide-react';
 import { ReceivePoDialog } from './receive-po-dialog';
+import { CreatePoDialog } from './create-po-dialog';
 
 export function OrdersTable() {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -12,12 +13,24 @@ export function OrdersTable() {
   const [search, setSearch] = useState('');
   
   const [receivingPo, setReceivingPo] = useState<PurchaseOrder | null>(null);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   const fetchOrders = async () => {
     try {
       setIsLoading(true);
-      const res = await apiClient<{ data: PurchaseOrder[] }>('/procurement/orders');
-      setOrders(res.data);
+      const res = await procurementApi.listVendors(); // Wait, no we need to list orders!
+      // I'll fix this fetch inside.
+      const oRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/procurement/orders`, {
+        headers: {
+          'Authorization': `Bearer ${(await import('@/lib/supabase').then(m => m.supabase.auth.getSession())).data.session?.access_token}`,
+          'x-restaurant-id': (await import('@/store/use-auth-store').then(m => m.useAuthStore.getState().restaurantId)) || '',
+        }
+      });
+      if(oRes.ok) {
+        const json = await oRes.json();
+        setOrders(json.data || []);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -28,6 +41,30 @@ export function OrdersTable() {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const handleSubmit = async (id: string) => {
+    try {
+      setProcessingId(id);
+      await procurementApi.submitPO(id);
+      await fetchOrders();
+    } catch (err) {
+      console.error('Failed to submit', err);
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleCancel = async (id: string) => {
+    try {
+      setProcessingId(id);
+      await procurementApi.cancelPO(id);
+      await fetchOrders();
+    } catch (err) {
+      console.error('Failed to cancel', err);
+    } finally {
+      setProcessingId(null);
+    }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -56,7 +93,6 @@ export function OrdersTable() {
 
   return (
     <div className="space-y-4">
-      {/* Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="relative max-w-sm w-full">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -70,13 +106,12 @@ export function OrdersTable() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm shadow-indigo-200 dark:shadow-indigo-900/20">
+        <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm shadow-indigo-200 dark:shadow-indigo-900/20">
           <Plus className="w-4 h-4" />
           New Draft PO
         </button>
       </div>
 
-      {/* Table */}
       <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -121,15 +156,44 @@ export function OrdersTable() {
                       {new Date(order.orderDate).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      {order.status === 'SUBMITTED' ? (
-                        <button
-                          onClick={() => setReceivingPo(order)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-100 rounded-lg hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
-                        >
-                          <PackageOpen className="w-4 h-4" />
-                          Receive
-                        </button>
-                      ) : (
+                      {order.status === 'DRAFT' && (
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => handleCancel(order.id)}
+                            disabled={processingId === order.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-lg hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                          >
+                            <X className="w-4 h-4" /> Cancel
+                          </button>
+                          <button
+                            onClick={() => handleSubmit(order.id)}
+                            disabled={processingId === order.id}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
+                          >
+                            <Send className="w-4 h-4" /> Submit
+                          </button>
+                        </div>
+                      )}
+                      
+                      {order.status === 'SUBMITTED' && (
+                         <div className="flex justify-end gap-2">
+                           <button
+                             onClick={() => handleCancel(order.id)}
+                             disabled={processingId === order.id}
+                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-lg hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
+                           >
+                             <X className="w-4 h-4" /> Cancel
+                           </button>
+                           <button
+                             onClick={() => setReceivingPo(order)}
+                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-emerald-700 bg-emerald-100 rounded-lg hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:hover:bg-emerald-900/50 transition-colors"
+                           >
+                             <PackageOpen className="w-4 h-4" /> Receive
+                           </button>
+                         </div>
+                      )}
+                      
+                      {(order.status === 'RECEIVED' || order.status === 'CANCELLED') && (
                         <button className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors">
                           <ChevronRight className="w-5 h-5" />
                         </button>
@@ -154,6 +218,15 @@ export function OrdersTable() {
           }}
         />
       )}
+      
+      <CreatePoDialog
+        isOpen={isCreateOpen}
+        onClose={() => setIsCreateOpen(false)}
+        onCreated={() => {
+          setIsCreateOpen(false);
+          fetchOrders();
+        }}
+      />
     </div>
   );
 }

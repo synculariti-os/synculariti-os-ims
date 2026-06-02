@@ -66,6 +66,9 @@
 | `role_permissions` | READ |
 | `user_restaurant_roles` | READ |
 
+### UI Views
+- `/profile` — User profile settings and permissions viewer.
+
 ### Contracts Exposed (injectable services)
 ```typescript
 interface IAuthService {
@@ -107,6 +110,9 @@ interface IAuthService {
 | `franchise_groups` | CRUD |
 | `restaurants` | CRUD |
 
+### UI Views
+- `/tenant/restaurants` — Restaurant management and franchise association.
+
 ### Contracts Exposed
 ```typescript
 interface ITenantService {
@@ -146,7 +152,8 @@ interface ITenantService {
 
 ### UI Views
 - `/items` — Main catalog list and Create Item dialog.
-  - *Note:* The item type (RAW vs PREP) is now purely derived from recipes. Users create all items as RAW, and when a recipe is attached, the backend `RecipeService` infers and automatically converts the item to PREP.
+- `/items` (Overrides Dialog) — Set par levels and active status for a specific restaurant.
+- `/items` (UOM Conversion Dialog) — Manage base unit multipliers.
 
 ### Contracts Exposed
 ```typescript
@@ -198,6 +205,10 @@ interface IItemWriteService extends IItemReadService {
 
 > [!NOTE]
 > **Dual ownership**: Procurement Agent owns the INSERT of `inventory_batches` rows (on PO receipt). Inventory Agent owns FIFO costing semantics and stock-level consumption from batches. See [Cross-Agent ACID Critical Path](#acid-critical-path) below.
+
+### UI Views
+- `/procurement/orders` — Purchase Orders list, Draft PO creation, Submission and Receiving UI.
+- `/procurement/vendors` — Vendor directory and contact management.
 
 ### Contracts Exposed
 ```typescript
@@ -304,6 +315,13 @@ interface IRecipeService {
 | `waste_logs` | INSERT |
 | `prep_production_logs` | INSERT |
 
+### UI Views
+- `/inventory` — Dashboard of stock levels and transfers shortcut.
+- `/inventory/counts` — Physical count batch management.
+- `/inventory/ledger` — Transaction history.
+- `/inventory/waste` — Waste logging.
+- `/inventory/prep` — Prep production planning.
+
 ### Contracts Exposed
 ```typescript
 interface ILedgerService {
@@ -408,6 +426,11 @@ interface IPrepService {
 |---|---|
 | `daily_inventory_snapshots` | INSERT (EOD job only) |
 | `mat_view_variance_analytics` | READ |
+
+### UI Views
+- `/reports` — Reports dashboard (Variance, Alerts, COGS).
+- `/reports/snapshots` — End of Day stock snapshots history.
+- `/reports/vendor-pricing` — Vendor historical pricing charts.
 
 ### SOLID Notes
 - **ISP**: Depends only on read interfaces (`IStockQueryService`, `IItemReadService`, `IRecipeService`, `IProcurementReadService`), never on write services.

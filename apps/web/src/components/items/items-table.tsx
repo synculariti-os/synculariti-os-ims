@@ -6,6 +6,9 @@ import { apiClient } from '@/lib/api-client';
 import { Package, Plus, Search, Tag, Scale, Pencil, Trash2, AlertTriangle, TrendingUp } from 'lucide-react';
 import { CreateItemDialog } from './create-item-dialog';
 import { EditItemDialog } from './edit-item-dialog';
+import { ItemOverridesDialog } from './item-overrides-dialog';
+import { UomConversionDialog } from './uom-conversion-dialog';
+import { Settings2 } from 'lucide-react';
 
 function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => void; onCancel: () => void; name: string }) {
   return (
@@ -32,6 +35,8 @@ export function ItemsTable() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemWithOverride | null>(null);
   const [deletingItem, setDeletingItem] = useState<ItemWithOverride | null>(null);
+  const [overrideItem, setOverrideItem] = useState<ItemWithOverride | null>(null);
+  const [uomItem, setUomItem] = useState<ItemWithOverride | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -158,6 +163,20 @@ export function ItemsTable() {
                           <TrendingUp className="w-4 h-4" />
                         </a>
                         <button
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                          onClick={() => setOverrideItem(item)}
+                          title="Par Level & Overrides"
+                        >
+                          <Settings2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                          onClick={() => setUomItem(item)}
+                          title="UOM Conversion"
+                        >
+                          <Scale className="w-4 h-4" />
+                        </button>
+                        <button
                           className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                           onClick={() => setEditingItem(item)}
                           title="Edit item"
@@ -195,6 +214,26 @@ export function ItemsTable() {
         onOpenChange={(open) => !open && setEditingItem(null)}
         onSuccess={() => {
           setEditingItem(null);
+          refreshItems();
+        }}
+      />
+
+      <ItemOverridesDialog
+        item={overrideItem}
+        isOpen={!!overrideItem}
+        onClose={() => setOverrideItem(null)}
+        onSaved={() => {
+          setOverrideItem(null);
+          refreshItems();
+        }}
+      />
+
+      <UomConversionDialog
+        item={uomItem}
+        isOpen={!!uomItem}
+        onClose={() => setUomItem(null)}
+        onSaved={() => {
+          setUomItem(null);
           refreshItems();
         }}
       />

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { BarChart3, BellRing, PieChart, ArrowRight, Calculator } from 'lucide-react';
+import { BarChart3, BellRing, PieChart, ArrowRight, Calculator, TrendingUp } from 'lucide-react';
 
 export default function ReportsDashboard() {
   return (
@@ -69,6 +69,21 @@ export default function ReportsDashboard() {
               </p>
               <div className="flex items-center text-emerald-600 dark:text-emerald-400 font-medium group-hover:gap-2 transition-all">
                 View Costing Report
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </div>
+            </Link>
+
+            {/* Vendor Pricing Card */}
+            <Link href="/reports/vendor-pricing" className="group flex flex-col bg-white dark:bg-zinc-900/50 backdrop-blur-xl border border-zinc-200 dark:border-zinc-800 rounded-3xl p-8 shadow-sm hover:shadow-md transition-all">
+              <div className="w-14 h-14 rounded-2xl bg-blue-500/10 dark:bg-blue-500/20 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-6 group-hover:scale-110 transition-transform">
+                <TrendingUp className="w-7 h-7" />
+              </div>
+              <h3 className="text-2xl font-bold text-zinc-900 dark:text-white mb-3">Vendor Price History</h3>
+              <p className="text-zinc-600 dark:text-zinc-400 flex-grow mb-8">
+                Compare landed costs from various vendors over time to identify pricing trends and optimize your purchasing decisions.
+              </p>
+              <div className="flex items-center text-blue-600 dark:text-blue-400 font-medium group-hover:gap-2 transition-all">
+                View Price Trends
                 <ArrowRight className="w-4 h-4 ml-1" />
               </div>
             </Link>
