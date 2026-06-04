@@ -34,6 +34,8 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
   const items = itemsResponse?.data || [];
   const isLoading = isLoadingVendors || isLoadingItems;
 
+  const [selectedVendorId, setSelectedVendorId] = useState('');
+  const [lineItems, setLineItems] = useState([{ itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {

@@ -24,6 +24,7 @@ export function QuickCreatePoDialog({
 }: QuickCreatePoDialogProps) {
   const [quantity, setQuantity] = useState<number>(suggestedQuantity);
   const [unitPrice, setUnitPrice] = useState<number>(0);
+  const [selectedVendorId, setSelectedVendorId] = useState<string>('');
   
   const restaurantId = useAuthStore(state => state.restaurantId);
   const queryClient = useQueryClient();

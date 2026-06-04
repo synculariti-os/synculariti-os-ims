@@ -76,7 +76,7 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
   const categories = categoriesResponse?.data || [];
 
   const updateMutation = useMutation({
-    mutationFn: (data: UpdateItemForm) => apiClient(`/items/${item.id}`, {
+    mutationFn: (data: UpdateItemForm) => apiClient(`/items/${item!.id}`, {
       method: 'PUT',
       body: {
         ...data,

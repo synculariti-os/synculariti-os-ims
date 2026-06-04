@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { PurchaseOrder } from '@ims/types';
 import { procurementApi } from '@/lib/api/procurement';
+import { apiClient } from '@/lib/api-client';
 import { Truck, Search, CheckCircle, PackageOpen, XCircle, FileText, ChevronRight, Send, X, Plus } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/use-auth-store';

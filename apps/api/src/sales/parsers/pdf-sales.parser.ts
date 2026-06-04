@@ -1,7 +1,14 @@
 import * as fs from 'fs';
-import pdfParse from 'pdf-parse';
+import * as pdfParseModule from 'pdf-parse';
 import { ISalesFileParser, ParsedSalesRow } from '../interfaces/i-sales-file-parser';
 import { InvalidSalesFormatError } from '../errors/invalid-sales-format.error';
+
+interface PdfParseFn {
+  (dataBuffer: Buffer, options?: any): Promise<{ text: string; [key: string]: any }>;
+}
+
+// Handle CJS/ESM interop differences between NestJS runtime and Vitest
+const pdfParse: PdfParseFn = (typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule as any).default) as any;
 
 export class PdfSalesParser implements ISalesFileParser {
   async parse(filePath: string): Promise<ParsedSalesRow[]> {
