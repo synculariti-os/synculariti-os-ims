@@ -1,2 +1,0 @@
-src/app/profile/page.tsx(17,19): error TS18046: 'res' is of type 'unknown'.
-src/app/profile/page.tsx(18,16): error TS18046: 'res' is of type 'unknown'.
