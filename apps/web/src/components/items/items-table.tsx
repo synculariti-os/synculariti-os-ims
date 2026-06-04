@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { ItemWithOverride } from '@ims/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/store/use-auth-store';
 import { Package, Plus, Search, Tag, Scale, Pencil, Trash2, AlertTriangle, TrendingUp } from 'lucide-react';
@@ -30,41 +31,37 @@ function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => vo
 }
 
 export function ItemsTable() {
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ItemWithOverride | null>(null);
   const [overrideItem, setOverrideItem] = useState<ItemWithOverride | null>(null);
   const [uomItem, setUomItem] = useState<ItemWithOverride | null>(null);
   const [deletingItem, setDeletingItem] = useState<ItemWithOverride | null>(null);
-  
   const restaurantId = useAuthStore(state => state.restaurantId);
 
-  useEffect(() => {
-    let isMounted = true;
+  const queryClient = useQueryClient();
 
-    const fetchItems = async () => {
-      try {
-        setIsLoading(true);
-        const data = await apiClient<{ data: ItemWithOverride[] }>('/items');
-        if (isMounted) setItems(data.data || []);
-      } catch (error) {
-        console.error('Failed to fetch items:', error);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
+  const { data: itemsResponse, isLoading } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items'),
+    enabled: !!restaurantId,
+  });
 
-    fetchItems();
-    return () => { isMounted = false; };
-  }, [restaurantId]);
+  const items = itemsResponse?.data || [];
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient(`/items/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items', restaurantId] });
+      setDeletingItem(null);
+    },
+    onError: (err) => {
+      console.error('Failed to delete item', err);
+    },
+  });
 
   const refreshItems = () => {
-    if (!restaurantId) return;
-    apiClient<{ data: ItemWithOverride[] }>('/items')
-      .then(data => setItems(data.data || []))
-      .catch(err => console.error(err));
+    queryClient.invalidateQueries({ queryKey: ['items', restaurantId] });
   };
 
   const filteredItems = items.filter(
@@ -244,14 +241,8 @@ export function ItemsTable() {
       {deletingItem && (
         <ConfirmDeleteModal
           name={deletingItem.name}
-          onConfirm={async () => {
-            try {
-              await apiClient(`/items/${deletingItem.id}`, { method: 'DELETE' });
-              setDeletingItem(null);
-              refreshItems();
-            } catch (err) {
-              console.error('Failed to delete item', err);
-            }
+          onConfirm={() => {
+            if (deletingItem) deleteMutation.mutate(deletingItem.id);
           }}
           onCancel={() => setDeletingItem(null)}
         />

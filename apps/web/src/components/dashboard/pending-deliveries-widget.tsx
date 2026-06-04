@@ -5,21 +5,18 @@ import { apiClient } from '@/lib/api-client';
 import type { PurchaseOrder } from '@ims/types';
 import { Truck, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function PendingDeliveriesWidget() {
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { restaurantId } = useAuthStore();
+  const { data: ordersResponse, isLoading: loading } = useQuery({
+    queryKey: ['orders', restaurantId],
+    queryFn: () => apiClient<{ data: PurchaseOrder[] }>('/procurement/orders?limit=50'),
+    enabled: !!restaurantId,
+  });
 
-  useEffect(() => {
-    // Note: To be perfectly precise we should pass status=SUBMITTED query params 
-    // to the backend, but since this is a quick dashboard widget we fetch recent and filter.
-    apiClient<{ data: PurchaseOrder[] }>('/procurement/orders?limit=50')
-      .then((res) => {
-        setOrders(res.data.filter(o => o.status === 'SUBMITTED'));
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const orders = ordersResponse?.data.filter(o => o.status === 'SUBMITTED') || [];
 
   if (loading) return <div className="h-64 animate-pulse bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800" />;
 

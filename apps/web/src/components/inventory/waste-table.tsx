@@ -5,55 +5,54 @@ import { WasteLog, ItemWithOverride } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
 import { Trash2, Plus, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function WasteTable() {
-  const [logs, setLogs] = useState<WasteLog[]>([]);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
+
+  const { data: logsResponse, isLoading: isLoadingLogs } = useQuery({
+    queryKey: ['waste-logs', restaurantId],
+    queryFn: () => apiClient<{ data: WasteLog[] }>('/inventory/waste'),
+    enabled: !!restaurantId,
+  });
+
+  const { data: itemsResponse, isLoading: isLoadingItems } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000'),
+    enabled: !!restaurantId,
+  });
+
+  const logs = logsResponse?.data || [];
+  const items = itemsResponse?.data || [];
+  const isLoading = isLoadingLogs || isLoadingItems;
 
   const { register, handleSubmit, reset } = useForm();
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const [logsRes, itemsRes] = await Promise.all([
-        apiClient<{ data: WasteLog[] }>('/inventory/waste'),
-        apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000')
-      ]);
-      setLogs(logsRes.data);
-      setItems(itemsRes.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const onSubmit = async (data: any) => {
-    try {
-      setIsSubmitting(true);
-      await apiClient('/inventory/waste', {
-        method: 'POST',
-        body: {
-          itemId: data.itemId,
-          quantity: parseFloat(data.quantity),
-          reason: data.reason || null
-        }
-      });
+  const createMutation = useMutation({
+    mutationFn: (data: any) => apiClient('/inventory/waste', {
+      method: 'POST',
+      body: {
+        itemId: data.itemId,
+        quantity: parseFloat(data.quantity),
+        reason: data.reason || null
+      }
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['waste-logs', restaurantId] });
       setIsModalOpen(false);
       reset();
-      fetchData();
-    } catch (err: any) {
+    },
+    onError: (err: any) => {
       alert(err.message || 'Failed to log waste');
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const onSubmit = (data: any) => {
+    createMutation.mutate(data);
   };
 
   const getItemName = (itemId: string) => {
@@ -161,8 +160,8 @@ export function WasteTable() {
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50">
-                  {isSubmitting ? 'Logging...' : 'Log Waste'}
+                <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors disabled:opacity-50">
+                  {createMutation.isPending ? 'Logging...' : 'Log Waste'}
                 </button>
               </div>
             </form>

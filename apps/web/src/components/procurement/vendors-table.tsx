@@ -2,32 +2,26 @@
 
 import React, { useEffect, useState } from 'react';
 import { Vendor } from '@ims/types';
+import { useQuery } from '@tanstack/react-query';
 import { procurementApi } from '@/lib/api/procurement';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Store, Search, Plus, Edit, Mail } from 'lucide-react';
 import { CreateVendorDialog } from './create-vendor-dialog';
 
 export function VendorsTable() {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingVendor, setEditingVendor] = useState<Vendor | null>(null);
 
-  const fetchVendors = async () => {
-    try {
-      setIsLoading(true);
-      const res = await procurementApi.listVendors();
-      setVendors(res.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const restaurantId = useAuthStore(state => state.restaurantId);
 
-  useEffect(() => {
-    fetchVendors();
-  }, []);
+  const { data: vendorsResponse, isLoading } = useQuery({
+    queryKey: ['vendors', restaurantId],
+    queryFn: () => procurementApi.listVendors(),
+    enabled: !!restaurantId,
+  });
+
+  const vendors = vendorsResponse?.data || [];
 
   const filteredVendors = vendors.filter(v => 
     v.name.toLowerCase().includes(search.toLowerCase()) || 
@@ -123,7 +117,6 @@ export function VendorsTable() {
         onSaved={() => {
           setIsCreateOpen(false);
           setEditingVendor(null);
-          fetchVendors();
         }}
       />
     </div>

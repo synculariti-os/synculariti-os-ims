@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Category } from '@ims/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { useAuthStore } from '@/store/use-auth-store';
 import { Tag, Plus, Search, Pencil, Trash2, AlertTriangle } from 'lucide-react';
@@ -27,32 +28,36 @@ function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => vo
 }
 
 export function CategoriesTable() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deletingCategory, setDeletingCategory] = useState<Category | null>(null);
-
+  
   const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  const fetchCategories = async (isMounted: boolean = true) => {
-    try {
-      setIsLoading(true);
-      const response = await apiClient<{ data: Category[] }>('/items/categories');
-      if (isMounted) setCategories(response.data || []);
-    } catch (error) {
-      console.error('Failed to fetch categories:', error);
-    } finally {
-      if (isMounted) setIsLoading(false);
-    }
+  const { data: categoriesResponse, isLoading } = useQuery({
+    queryKey: ['categories', restaurantId],
+    queryFn: () => apiClient<{ data: Category[] }>('/items/categories'),
+    enabled: !!restaurantId,
+  });
+
+  const categories = categoriesResponse?.data || [];
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient(`/items/categories/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories', restaurantId] });
+      setDeletingCategory(null);
+    },
+    onError: (err) => {
+      console.error('Failed to delete category', err);
+    },
+  });
+
+  const fetchCategories = () => {
+    queryClient.invalidateQueries({ queryKey: ['categories', restaurantId] });
   };
-
-  useEffect(() => {
-    let isMounted = true;
-    fetchCategories(isMounted);
-    return () => { isMounted = false; };
-  }, [restaurantId]);
 
   const filteredCategories = categories.filter((cat) =>
     cat.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -159,14 +164,8 @@ export function CategoriesTable() {
       {deletingCategory && (
         <ConfirmDeleteModal
           name={deletingCategory.name}
-          onConfirm={async () => {
-            try {
-              await apiClient(`/items/categories/${deletingCategory.id}`, { method: 'DELETE' });
-              setDeletingCategory(null);
-              fetchCategories();
-            } catch (err) {
-              console.error('Failed to delete category', err);
-            }
+          onConfirm={() => {
+            if (deletingCategory) deleteMutation.mutate(deletingCategory.id);
           }}
           onCancel={() => setDeletingCategory(null)}
         />

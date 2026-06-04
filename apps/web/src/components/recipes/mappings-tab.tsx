@@ -2,7 +2,9 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { MenuItemMapping } from '@ims/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Link2, Plus, Search, FileSpreadsheet, Trash2, AlertTriangle, ArrowRight } from 'lucide-react';
 import { CreateMappingDialog } from './create-mapping-dialog';
 
@@ -25,40 +27,34 @@ function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => vo
 }
 
 export function MappingsTab() {
-  const [mappings, setMappings] = useState<MenuItemMapping[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [deletingMapping, setDeletingMapping] = useState<MenuItemMapping | null>(null);
 
-  const fetchMappings = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiClient<{ data: MenuItemMapping[] }>('/recipes/mappings');
-      setMappings(data.data || []);
-    } catch (error) {
-      console.error('Failed to fetch mappings:', error);
-      setMappings([]);
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  useEffect(() => { 
-    fetchMappings(); 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: mappingsResponse, isLoading } = useQuery({
+    queryKey: ['mappings', restaurantId],
+    queryFn: () => apiClient<{ data: MenuItemMapping[] }>('/recipes/mappings'),
+    enabled: !!restaurantId,
+  });
 
-  const handleDelete = async () => {
-    if (!deletingMapping) return;
-    try {
-      await apiClient(`/recipes/mappings/${deletingMapping.id}`, { method: 'DELETE' });
+  const mappings = mappingsResponse?.data || [];
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient(`/recipes/mappings/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mappings', restaurantId] });
       setDeletingMapping(null);
-      fetchMappings();
-    } catch (err) {
+    },
+    onError: (err) => {
       console.error('Failed to delete mapping', err);
-    }
+    },
+  });
+
+  const fetchMappings = () => {
+    queryClient.invalidateQueries({ queryKey: ['mappings', restaurantId] });
   };
 
   const filtered = mappings.filter(m =>
@@ -163,7 +159,9 @@ export function MappingsTab() {
       {deletingMapping && (
         <ConfirmDeleteModal
           name={deletingMapping.rawExcelString}
-          onConfirm={handleDelete}
+          onConfirm={() => {
+            if (deletingMapping) deleteMutation.mutate(deletingMapping.id);
+          }}
           onCancel={() => setDeletingMapping(null)}
         />
       )}

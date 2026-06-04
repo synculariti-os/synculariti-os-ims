@@ -5,8 +5,10 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { menuItemMappingSchema } from '@ims/validators';
 import { z } from 'zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, Link } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Recipe } from '@ims/types';
 
 type CreateMappingForm = z.infer<typeof menuItemMappingSchema>;
@@ -18,17 +20,18 @@ interface CreateMappingDialogProps {
 }
 
 export function CreateMappingDialog({ isOpen, onClose, onSuccess }: CreateMappingDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
-  useEffect(() => {
-    if (isOpen) {
-      apiClient<{ data: Recipe[] }>('/recipes')
-        .then(res => setRecipes(res.data || []))
-        .catch(err => console.error('Error fetching recipes for mapping:', err));
-    }
-  }, [isOpen]);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
+
+  const { data: recipesResponse } = useQuery({
+    queryKey: ['recipes', restaurantId],
+    queryFn: () => apiClient<{ data: Recipe[] }>('/recipes'),
+    enabled: isOpen && !!restaurantId,
+  });
+
+  const recipes = recipesResponse?.data || [];
 
   const {
     register,
@@ -43,24 +46,27 @@ export function CreateMappingDialog({ isOpen, onClose, onSuccess }: CreateMappin
     },
   });
 
-  if (!isOpen) return null;
-
-  const onSubmit = async (data: CreateMappingForm) => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await apiClient('/recipes/mappings', {
-        method: 'POST',
-        body: data,
-      });
+  const createMutation = useMutation({
+    mutationFn: (data: CreateMappingForm) => apiClient('/recipes/mappings', {
+      method: 'POST',
+      body: data,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['mappings', restaurantId] });
       reset();
       onSuccess();
-    } catch (err: unknown) {
+    },
+    onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Failed to create POS mapping';
       setError(msg);
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  if (!isOpen) return null;
+
+  const onSubmit = (data: CreateMappingForm) => {
+    setError(null);
+    createMutation.mutate(data);
   };
 
   return (
@@ -133,10 +139,10 @@ export function CreateMappingDialog({ isOpen, onClose, onSuccess }: CreateMappin
           <button
             type="submit"
             form="create-mapping-form"
-            disabled={isSubmitting}
+            disabled={createMutation.isPending}
             className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? (
+            {createMutation.isPending ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Linking...

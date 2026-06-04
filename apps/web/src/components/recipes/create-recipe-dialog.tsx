@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, FileJson, Plus, Trash2, Package, Link2, ChevronDown } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { ItemWithOverride, Recipe } from '@ims/types';
 
 type LineType = 'ingredient' | 'sub_recipe';
@@ -22,10 +24,10 @@ interface CreateRecipeDialogProps {
 }
 
 export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
   const [recipeMode, setRecipeMode] = useState<'prep' | 'menu'>('prep');
   const [producesItemId, setProducesItemId] = useState('');
   const [recipeName, setRecipeName] = useState('');
@@ -35,16 +37,20 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
     { id: crypto.randomUUID(), lineType: 'ingredient', ingredientItemId: '', subRecipeId: '', quantityRequired: 1 },
   ]);
 
-  const fetchData = useCallback(async () => {
-    const [itemsRes, recipesRes] = await Promise.all([
-      apiClient<{ data: ItemWithOverride[] }>('/items').catch(() => ({ data: [] as ItemWithOverride[] })),
-      apiClient<{ data: Recipe[] }>('/recipes').catch(() => ({ data: [] as Recipe[] })),
-    ]);
-    setItems(itemsRes.data || []);
-    setRecipes(recipesRes.data || []);
-  }, []);
+  const { data: itemsResponse } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items'),
+    enabled: isOpen && !!restaurantId,
+  });
 
-  useEffect(() => { if (isOpen) fetchData(); }, [isOpen, fetchData]);
+  const { data: recipesResponse } = useQuery({
+    queryKey: ['recipes', restaurantId],
+    queryFn: () => apiClient<{ data: Recipe[] }>('/recipes'),
+    enabled: isOpen && !!restaurantId,
+  });
+
+  const items = itemsResponse?.data || [];
+  const recipes = recipesResponse?.data || [];
 
   const prepItems = items.filter(i => i.type === 'PREP');
   const allItems = items;
@@ -63,40 +69,43 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
     setLines(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-
-    try {
-      const ingredients = lines.map(l => {
-        if (l.lineType === 'ingredient') {
-          return { lineType: 'ingredient' as const, ingredientItemId: l.ingredientItemId, quantityRequired: l.quantityRequired };
-        } else {
-          return { lineType: 'sub_recipe' as const, subRecipeId: l.subRecipeId, quantityRequired: l.quantityRequired };
-        }
-      });
-
-      const payload = {
-        producesItemId: recipeMode === 'prep' ? (producesItemId || null) : null,
-        recipeName: recipeMode === 'menu' ? (recipeName || null) : null,
-        yieldQuantity,
-        yieldPercent: yieldPercent / 100,
-        ingredients,
-      };
-
-      await apiClient('/recipes', { method: 'POST', body: payload });
+  const createMutation = useMutation({
+    mutationFn: (payload: any) => apiClient('/recipes', { method: 'POST', body: payload }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes', restaurantId] });
       setLines([{ id: crypto.randomUUID(), lineType: 'ingredient', ingredientItemId: '', subRecipeId: '', quantityRequired: 1 }]);
       setProducesItemId('');
       setRecipeName('');
       setYieldQuantity(1);
       setYieldPercent(100);
       onSuccess();
-    } catch (err: unknown) {
+    },
+    onError: (err: unknown) => {
       setError(err instanceof Error ? err.message : 'Failed to create recipe');
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const ingredients = lines.map(l => {
+      if (l.lineType === 'ingredient') {
+        return { lineType: 'ingredient' as const, ingredientItemId: l.ingredientItemId, quantityRequired: l.quantityRequired };
+      } else {
+        return { lineType: 'sub_recipe' as const, subRecipeId: l.subRecipeId, quantityRequired: l.quantityRequired };
+      }
+    });
+
+    const payload = {
+      producesItemId: recipeMode === 'prep' ? (producesItemId || null) : null,
+      recipeName: recipeMode === 'menu' ? (recipeName || null) : null,
+      yieldQuantity,
+      yieldPercent: yieldPercent / 100,
+      ingredients,
+    };
+
+    createMutation.mutate(payload);
   };
 
   if (!isOpen) return null;
@@ -288,10 +297,10 @@ export function CreateRecipeDialog({ isOpen, onClose, onSuccess }: CreateRecipeD
           <button
             type="submit"
             form="create-recipe-form"
-            disabled={isSubmitting}
+            disabled={createMutation.isPending}
             className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Recipe'}
+            {createMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Recipe'}
           </button>
         </div>
       </div>

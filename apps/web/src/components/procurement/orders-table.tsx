@@ -3,60 +3,48 @@
 import React, { useEffect, useState } from 'react';
 import { PurchaseOrder } from '@ims/types';
 import { procurementApi } from '@/lib/api/procurement';
-import { apiClient } from '@/lib/api-client';
 import { Truck, Search, CheckCircle, PackageOpen, XCircle, FileText, ChevronRight, Send, X, Plus } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 import { ReceivePoDialog } from './receive-po-dialog';
 import { CreatePoDialog } from './create-po-dialog';
 
 export function OrdersTable() {
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
-  
   const [receivingPo, setReceivingPo] = useState<PurchaseOrder | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [processingId, setProcessingId] = useState<string | null>(null);
 
-  const fetchOrders = React.useCallback(async (isMounted: boolean = true) => {
-    try {
-      setIsLoading(true);
-      const oRes = await apiClient<{ data: PurchaseOrder[] }>('/procurement/orders');
-      if (isMounted) setOrders(oRes.data || []);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      if (isMounted) setIsLoading(false);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
+
+  const { data: ordersResponse, isLoading } = useQuery({
+    queryKey: ['orders', restaurantId],
+    queryFn: () => apiClient<{ data: PurchaseOrder[] }>('/procurement/orders'),
+    enabled: !!restaurantId,
+  });
+
+  const orders = ordersResponse?.data || [];
+
+  const submitMutation = useMutation({
+    mutationFn: (id: string) => procurementApi.submitPO(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
     }
-  }, []);
+  });
 
-  useEffect(() => {
-    let isMounted = true;
-    fetchOrders(isMounted);
-    return () => { isMounted = false; };
-  }, [fetchOrders]);
-
-  const handleSubmit = async (id: string) => {
-    try {
-      setProcessingId(id);
-      await procurementApi.submitPO(id);
-      await fetchOrders();
-    } catch (err) {
-      console.error('Failed to submit', err);
-    } finally {
-      setProcessingId(null);
+  const cancelMutation = useMutation({
+    mutationFn: (id: string) => procurementApi.cancelPO(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
     }
+  });
+
+  const handleSubmit = (id: string) => {
+    submitMutation.mutate(id);
   };
 
-  const handleCancel = async (id: string) => {
-    try {
-      setProcessingId(id);
-      await procurementApi.cancelPO(id);
-      await fetchOrders();
-    } catch (err) {
-      console.error('Failed to cancel', err);
-    } finally {
-      setProcessingId(null);
-    }
+  const handleCancel = (id: string) => {
+    cancelMutation.mutate(id);
   };
 
   const getStatusIcon = (status: string) => {
@@ -153,14 +141,14 @@ export function OrdersTable() {
                         <div className="flex justify-end gap-2">
                           <button
                             onClick={() => handleCancel(order.id)}
-                            disabled={processingId === order.id}
+                            disabled={cancelMutation.isPending || submitMutation.isPending}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-lg hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
                           >
                             <X className="w-4 h-4" /> Cancel
                           </button>
                           <button
                             onClick={() => handleSubmit(order.id)}
-                            disabled={processingId === order.id}
+                            disabled={submitMutation.isPending || cancelMutation.isPending}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
                           >
                             <Send className="w-4 h-4" /> Submit
@@ -172,7 +160,7 @@ export function OrdersTable() {
                          <div className="flex justify-end gap-2">
                            <button
                              onClick={() => handleCancel(order.id)}
-                             disabled={processingId === order.id}
+                             disabled={cancelMutation.isPending}
                              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-zinc-600 bg-zinc-100 rounded-lg hover:bg-zinc-200 dark:bg-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-700 transition-colors disabled:opacity-50"
                            >
                              <X className="w-4 h-4" /> Cancel
@@ -207,7 +195,6 @@ export function OrdersTable() {
           onClose={() => setReceivingPo(null)}
           onReceived={() => {
             setReceivingPo(null);
-            fetchOrders();
           }}
         />
       )}
@@ -217,7 +204,6 @@ export function OrdersTable() {
         onClose={() => setIsCreateOpen(false)}
         onCreated={() => {
           setIsCreateOpen(false);
-          fetchOrders();
         }}
       />
     </div>

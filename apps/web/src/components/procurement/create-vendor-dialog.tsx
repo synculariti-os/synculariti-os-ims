@@ -5,6 +5,7 @@ import { procurementApi } from '@/lib/api/procurement';
 import { Store, AlertCircle } from 'lucide-react';
 import { Vendor } from '@ims/types';
 import { useAuthStore } from '@/store/use-auth-store';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CreateVendorDialogProps {
   isOpen: boolean;
@@ -18,8 +19,7 @@ export function CreateVendorDialog({ isOpen, vendor, onClose, onSaved }: CreateV
   const [contactEmail, setContactEmail] = useState('');
   const [isActive, setIsActive] = useState(true);
   const restaurantId = useAuthStore(s => s.restaurantId);
-  
-  const [isSaving, setIsSaving] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -31,12 +31,9 @@ export function CreateVendorDialog({ isOpen, vendor, onClose, onSaved }: CreateV
     }
   }, [isOpen, vendor]);
 
-  const handleSave = async () => {
-    try {
-      setError(null);
+  const saveMutation = useMutation({
+    mutationFn: async () => {
       if (!name) throw new Error('Vendor name is required.');
-      
-      setIsSaving(true);
       const dto = { 
         name, 
         contactEmail: contactEmail || null, 
@@ -46,16 +43,23 @@ export function CreateVendorDialog({ isOpen, vendor, onClose, onSaved }: CreateV
       };
       
       if (vendor) {
-        await procurementApi.updateVendor(vendor.id, dto as any);
+        return procurementApi.updateVendor(vendor.id, dto as any);
       } else {
-        await procurementApi.createVendor(dto as any);
+        return procurementApi.createVendor(dto as any);
       }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors', restaurantId] });
       onSaved();
-    } catch (err: any) {
+    },
+    onError: (err: any) => {
       setError(err.message || 'Failed to save vendor');
-    } finally {
-      setIsSaving(false);
     }
+  });
+
+  const handleSave = () => {
+    setError(null);
+    saveMutation.mutate();
   };
 
   if (!isOpen) return null;
@@ -99,11 +103,11 @@ export function CreateVendorDialog({ isOpen, vendor, onClose, onSaved }: CreateV
         </div>
 
         <div className="mt-8 flex justify-end gap-3">
-          <button onClick={onClose} disabled={isSaving} className="px-4 py-2 bg-transparent text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors">
+          <button onClick={onClose} disabled={saveMutation.isPending} className="px-4 py-2 bg-transparent text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 transition-colors">
             Cancel
           </button>
-          <button onClick={handleSave} disabled={isSaving || !name} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">
-            {isSaving ? 'Saving...' : 'Save Vendor'}
+          <button onClick={handleSave} disabled={saveMutation.isPending || !name} className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50">
+            {saveMutation.isPending ? 'Saving...' : 'Save Vendor'}
           </button>
         </div>
       </div>

@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { procurementApi } from '@/lib/api/procurement';
 import { ShoppingCart, AlertCircle } from 'lucide-react';
 import { Vendor } from '@ims/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 interface QuickCreatePoDialogProps {
   itemId: string;
@@ -20,25 +22,20 @@ export function QuickCreatePoDialog({
   isOpen,
   onClose,
 }: QuickCreatePoDialogProps) {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [selectedVendorId, setSelectedVendorId] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(suggestedQuantity);
   const [unitPrice, setUnitPrice] = useState<number>(0);
-  const [isLoadingVendors, setIsLoadingVendors] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-async function fetchVendors() {
-    setIsLoadingVendors(true);
-    try {
-      const response = await procurementApi.listVendors();
-      setVendors(response.data);
-    } catch (err: any) {
-      setError((err as Error).message || 'Failed to load vendors');
-    } finally {
-      setIsLoadingVendors(false);
-    }
-  };
+  const { data: vendorsResponse, isLoading: isLoadingVendors } = useQuery({
+    queryKey: ['vendors', restaurantId],
+    queryFn: () => procurementApi.listVendors(),
+    enabled: !!restaurantId,
+  });
+
+  const vendors = vendorsResponse?.data || [];
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -46,20 +43,17 @@ async function fetchVendors() {
       setUnitPrice(0);
       setSelectedVendorId('');
       setError(null);
-      fetchVendors();
     }
   }, [isOpen, suggestedQuantity]);
 
   
 
-  const handleCreatePo = async () => {
-    try {
-      setError(null);
+  const createMutation = useMutation({
+    mutationFn: () => {
       if (!selectedVendorId) throw new Error('Please select a vendor.');
       if (quantity <= 0) throw new Error('Quantity must be greater than zero.');
       
-      setIsCreating(true);
-      await procurementApi.createDraftPO({
+      return procurementApi.createDraftPO({
         vendorId: selectedVendorId,
         freightCharge: 0,
         taxAmount: 0,
@@ -72,12 +66,19 @@ async function fetchVendors() {
           },
         ],
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
       onClose();
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       setError((error as Error).message || 'Failed to create PO');
-    } finally {
-      setIsCreating(false);
     }
+  });
+
+  const handleCreatePo = () => {
+    setError(null);
+    createMutation.mutate();
   };
 
   if (!isOpen) return null;
@@ -110,7 +111,7 @@ async function fetchVendors() {
             <select
               value={selectedVendorId}
               onChange={(e) => setSelectedVendorId(e.target.value)}
-              disabled={isLoadingVendors || isCreating}
+              disabled={isLoadingVendors || createMutation.isPending}
               className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 outline-none transition-all text-zinc-900 dark:text-white disabled:opacity-50"
             >
               <option value="" disabled>Select a vendor...</option>
@@ -136,7 +137,7 @@ async function fetchVendors() {
                 step="0.1"
                 value={quantity}
                 onChange={(e) => setQuantity(parseFloat(e.target.value) || 0)}
-                disabled={isCreating}
+                disabled={createMutation.isPending}
                 className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-zinc-900 dark:text-white"
               />
             </div>
@@ -150,7 +151,7 @@ async function fetchVendors() {
                 step="0.01"
                 value={unitPrice}
                 onChange={(e) => setUnitPrice(parseFloat(e.target.value) || 0)}
-                disabled={isCreating}
+                disabled={createMutation.isPending}
                 className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none transition-all text-zinc-900 dark:text-white"
               />
             </div>
@@ -160,17 +161,17 @@ async function fetchVendors() {
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={onClose}
-            disabled={isCreating}
+            disabled={createMutation.isPending}
             className="px-4 py-2 bg-transparent text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleCreatePo}
-            disabled={isCreating || !selectedVendorId || quantity <= 0}
+            disabled={createMutation.isPending || !selectedVendorId || quantity <= 0}
             className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {isCreating ? 'Creating...' : 'Create Draft PO'}
+            {createMutation.isPending ? 'Creating...' : 'Create Draft PO'}
           </button>
         </div>
       </div>

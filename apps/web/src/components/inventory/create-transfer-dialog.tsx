@@ -1,50 +1,58 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { CreateTransferDto } from '@ims/validators';
 import { ItemWithOverride } from '@ims/types';
 import { X, Plus, Send } from 'lucide-react';
 
 export function CreateTransferDialog() {
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
   
   const [destinationId, setDestinationId] = useState("");
   const [itemId, setItemId] = useState("");
   const [qty, setQty] = useState("");
 
-  useEffect(() => {
-    if (open) {
-      apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000')
-        .then(res => setItems(res.data))
-        .catch(console.error);
-    }
-  }, [open]);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    try {
-      const dto: CreateTransferDto = {
-        destinationRestaurantId: destinationId,
-        items: [{
-          itemId,
-          qty: Number(qty)
-        }]
-      };
-      await apiClient('/inventory/transfers', {
-        method: 'POST',
-        body: dto
-      });
+  const { data: itemsResponse } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000'),
+    enabled: open && !!restaurantId,
+  });
+
+  const items = itemsResponse?.data || [];
+
+  const createMutation = useMutation({
+    mutationFn: (dto: CreateTransferDto) => apiClient('/inventory/transfers', {
+      method: 'POST',
+      body: dto
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transfers', restaurantId] });
       setOpen(false);
-      window.location.reload();
-    } catch (error: any) {
+      setDestinationId("");
+      setItemId("");
+      setQty("");
+    },
+    onError: (error: any) => {
       alert(`Failed to create transfer: ${error.message}`);
-    } finally {
-      setLoading(false);
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const dto: CreateTransferDto = {
+      destinationRestaurantId: destinationId,
+      items: [{
+        itemId,
+        qty: Number(qty)
+      }]
+    };
+    createMutation.mutate(dto);
   };
 
   return (
@@ -113,8 +121,8 @@ export function CreateTransferDialog() {
                 <button type="button" onClick={() => setOpen(false)} className="px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={loading} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50">
-                  {loading ? 'Creating...' : 'Create Transfer'}
+                <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50">
+                  {createMutation.isPending ? 'Creating...' : 'Create Transfer'}
                 </button>
               </div>
             </form>

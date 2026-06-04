@@ -7,6 +7,8 @@ import { CheckCircle2, Clock, AlertTriangle, Loader2, ChevronDown, ChevronUp } f
 import { SalesImportBatch, ImportStatus } from '@ims/types';
 import { useAuthStore } from '@/store/use-auth-store';
 import { SmartMappingReview } from './unmapped-items-panel';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
 
 const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: string, label: string }> = {
   PENDING: { icon: Clock, class: 'bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400', label: 'Pending' },
@@ -16,46 +18,18 @@ const statusConfig: Record<ImportStatus, { icon: React.ElementType, class: strin
 };
 
 export function BatchesTable({ initialBatches = [] }: { initialBatches?: SalesImportBatch[] }) {
-  const [batches, setBatches] = useState<SalesImportBatch[]>(initialBatches);
   const [expandedBatchId, setExpandedBatchId] = useState<string | null>(null);
   const { restaurantId } = useAuthStore();
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchBatches = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session || !restaurantId) return;
+  const { data: batchesResponse } = useQuery({
+    queryKey: ['sales-imports', restaurantId],
+    queryFn: () => apiClient<{ data: SalesImportBatch[] }>('/sales-imports?limit=20'),
+    enabled: !!restaurantId,
+    refetchInterval: 3000,
+    initialData: initialBatches.length > 0 ? { data: initialBatches } : undefined,
+  });
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/sales-imports?limit=20`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'x-restaurant-id': restaurantId,
-          },
-        });
-
-        if (res.ok) {
-          const json = await res.json();
-          if (isMounted) {
-            setBatches(json.data);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch batches', error);
-      }
-    };
-
-    fetchBatches();
-
-    // Poll every 3 seconds
-    const intervalId = setInterval(fetchBatches, 3000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(intervalId);
-    };
-  }, [restaurantId]);
+  const batches = batchesResponse?.data || [];
 
   return (
     <div className="w-full mt-10">

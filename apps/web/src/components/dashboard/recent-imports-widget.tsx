@@ -5,19 +5,18 @@ import { apiClient } from '@/lib/api-client';
 import type { SalesImportBatch } from '@ims/types';
 import { FileSpreadsheet, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function RecentImportsWidget() {
-  const [batches, setBatches] = useState<SalesImportBatch[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { restaurantId } = useAuthStore();
+  const { data: batchesResponse, isLoading: loading } = useQuery({
+    queryKey: ['sales-imports', restaurantId],
+    queryFn: () => apiClient<{ data: SalesImportBatch[] }>('/sales-imports?limit=5'),
+    enabled: !!restaurantId,
+  });
 
-  useEffect(() => {
-    apiClient<{ data: SalesImportBatch[] }>('/sales-imports?limit=5')
-      .then((res) => {
-        setBatches(res.data.slice(0, 5));
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const batches = batchesResponse?.data.slice(0, 5) || [];
 
   if (loading) return <div className="h-64 animate-pulse bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800" />;
 

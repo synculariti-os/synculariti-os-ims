@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { PurchaseOrder } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
 import { X, PackageOpen, AlertCircle } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 interface ReceivePoDialogProps {
   po: PurchaseOrder;
@@ -13,8 +15,9 @@ interface ReceivePoDialogProps {
 }
 
 export function ReceivePoDialog({ po, isOpen, onClose, onReceived }: ReceivePoDialogProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
   // In a real app we would fetch the line items for the PO first
   // so the user can verify quantities. For the MVP, we assume a single receive line.
@@ -33,20 +36,23 @@ export function ReceivePoDialog({ po, isOpen, onClose, onReceived }: ReceivePoDi
   // If we send empty, it will do nothing and just update the PO status to RECEIVED!
   // That's acceptable for this UI stub since we just want to verify the status transition.
   
-  const handleReceive = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      await apiClient(`/procurement/orders/${po.id}/receive`, {
-        method: 'PATCH',
-        body: { lineItems: [] },
-      });
+  const receiveMutation = useMutation({
+    mutationFn: () => apiClient(`/procurement/orders/${po.id}/receive`, {
+      method: 'PATCH',
+      body: { lineItems: [] },
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
       onReceived();
-    } catch (err: any) {
+    },
+    onError: (err: any) => {
       setError(err.message || 'Failed to receive PO');
-    } finally {
-      setIsLoading(false);
     }
+  });
+
+  const handleReceive = () => {
+    setError(null);
+    receiveMutation.mutate();
   };
 
   if (!isOpen) return null;
@@ -89,7 +95,7 @@ export function ReceivePoDialog({ po, isOpen, onClose, onReceived }: ReceivePoDi
             <button
               type="button"
               onClick={onClose}
-              disabled={isLoading}
+              disabled={receiveMutation.isPending}
               className="px-4 py-2 rounded-xl text-sm font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
             >
               Cancel
@@ -97,10 +103,10 @@ export function ReceivePoDialog({ po, isOpen, onClose, onReceived }: ReceivePoDi
             <button
               type="button"
               onClick={handleReceive}
-              disabled={isLoading}
+              disabled={receiveMutation.isPending}
               className="px-4 py-2 rounded-xl text-sm font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors disabled:opacity-50 flex items-center gap-2 shadow-sm shadow-emerald-200 dark:shadow-emerald-900/20"
             >
-              {isLoading ? (
+              {receiveMutation.isPending ? (
                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <PackageOpen className="w-4 h-4" />

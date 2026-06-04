@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createCategorySchema, type CreateCategoryDto } from '@ims/validators';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { X, Loader2 } from 'lucide-react';
 
@@ -13,7 +14,7 @@ interface CreateCategoryDialogProps {
 }
 
 export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategoryDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -27,21 +28,24 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
     },
   });
 
-  const onSubmit = async (data: CreateCategoryDto) => {
-    try {
-      setIsSubmitting(true);
-      await apiClient('/items/categories', {
-        method: 'POST',
-        body: data,
-      });
+  const createMutation = useMutation({
+    mutationFn: (data: CreateCategoryDto) => apiClient('/items/categories', {
+      method: 'POST',
+      body: data,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Failed to create category:', error);
       alert('Failed to create category');
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: CreateCategoryDto) => {
+    createMutation.mutate(data);
   };
 
   return (
@@ -97,10 +101,10 @@ export function CreateCategoryDialog({ onOpenChange, onSuccess }: CreateCategory
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={createMutation.isPending}
               className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {createMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Create Category
             </button>
           </div>

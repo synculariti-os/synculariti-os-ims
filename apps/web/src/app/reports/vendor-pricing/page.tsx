@@ -27,7 +27,7 @@ export default function VendorPricingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadData = async () => {
+  const loadData = React.useCallback(async () => {
     if (!itemId) {
       setError('No item ID provided in URL.');
       return;
@@ -49,11 +49,11 @@ export default function VendorPricingPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [itemId]);
 
   useEffect(() => {
     loadData();
-  }, [itemId]);
+  }, [loadData]);
 
   const formatCurrency = (val: number) => {
     return new Intl.NumberFormat('en-US', {

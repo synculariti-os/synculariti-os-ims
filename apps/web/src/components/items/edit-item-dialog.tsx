@@ -5,8 +5,10 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateItemSchema } from '@ims/validators';
 import { z } from 'zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, PackagePlus, Wand2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Category, ItemWithOverride } from '@ims/types';
 
 type UpdateItemForm = z.infer<typeof updateItemSchema>;
@@ -18,17 +20,15 @@ interface EditItemDialogProps {
 }
 
 export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const [isGeneratingSku, setIsGeneratingSku] = useState(false);
+
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
   const {
     register,
     handleSubmit,
     reset,
-    watch,
     control,
     setValue,
     getValues,
@@ -49,6 +49,7 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
   });
 
   const itemType = useWatch({ control, name: 'type' });
+  const categoryId = useWatch({ control, name: 'categoryId' });
 
   useEffect(() => {
     if (item) {
@@ -63,58 +64,58 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
         isActive: item.isActive,
         categoryId: item.categoryId || '',
       });
-      
-      const fetchCategories = async () => {
-        try {
-          setIsLoadingCategories(true);
-          const res = await apiClient<{ data: Category[] }>('/items/categories');
-          setCategories(res.data || []);
-        } catch (error) {
-          console.error('Failed to fetch categories:', error);
-        } finally {
-          setIsLoadingCategories(false);
-        }
-      };
-      fetchCategories();
     }
   }, [item, reset]);
 
-  if (!item) return null;
+  const { data: categoriesResponse, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => apiClient<{ data: Category[] }>('/items/categories'),
+    enabled: !!item,
+  });
 
-  const onSubmit = async (data: UpdateItemForm) => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      await apiClient(`/items/${item.id}`, {
-        method: 'PUT',
-        body: {
-          ...data,
-          allergens: typeof data.allergens === 'string' ? (data.allergens as string).split(',').map(a => a.trim()).filter(Boolean) : data.allergens,
-        },
-      });
+  const categories = categoriesResponse?.data || [];
+
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateItemForm) => apiClient(`/items/${item.id}`, {
+      method: 'PUT',
+      body: {
+        ...data,
+        allergens: typeof data.allergens === 'string' ? (data.allergens as string).split(',').map(a => a.trim()).filter(Boolean) : data.allergens,
+      },
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items', restaurantId] });
       onSuccess();
       onOpenChange(false);
-    } catch (err: unknown) {
+    },
+    onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Failed to update item';
       setError(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: UpdateItemForm) => {
+    setError(null);
+    updateMutation.mutate(data);
   };
 
-  const handleGenerateSku = async () => {
+  const generateSkuMutation = useMutation({
+    mutationFn: (categoryId: string) => apiClient<{ sku: string }>(`/items/generate-sku?categoryId=${categoryId}`),
+    onSuccess: (res) => {
+      setValue('sku', res.sku, { shouldValidate: true, shouldDirty: true });
+    },
+    onError: (err) => {
+      console.error('Failed to generate SKU', err);
+    }
+  });
+
+  const handleGenerateSku = () => {
     const categoryId = getValues('categoryId');
     if (!categoryId) return;
-    setIsGeneratingSku(true);
-    try {
-      const res = await apiClient<{ sku: string }>(`/items/generate-sku?categoryId=${categoryId}`);
-      setValue('sku', res.sku, { shouldValidate: true, shouldDirty: true });
-    } catch (err) {
-      console.error('Failed to generate SKU', err);
-    } finally {
-      setIsGeneratingSku(false);
-    }
+    generateSkuMutation.mutate(categoryId);
   };
+
+  if (!item) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -170,11 +171,10 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
                   <button
                     type="button"
                     onClick={handleGenerateSku}
-                    disabled={isGeneratingSku || !watch('categoryId')}
-                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                    title="Auto-generate SKU based on category"
+                    disabled={!categoryId || generateSkuMutation.isPending}
+                    className="inline-flex items-center px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 transition-colors"
                   >
-                    {isGeneratingSku ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                    {generateSkuMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
                     Generate
                   </button>
                 </div>
@@ -264,17 +264,11 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
           <button
             type="submit"
             form="edit-item-form"
-            disabled={isSubmitting}
-            className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={updateMutation.isPending}
+            className="px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-sm"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Saving...
-              </>
-            ) : (
-              'Save Changes'
-            )}
+            {updateMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>

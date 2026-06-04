@@ -2,45 +2,39 @@
 
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { InventoryCountBatch } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { ClipboardList, Plus, ChevronRight, CheckCircle, Clock } from 'lucide-react';
 
 export function CountsTable() {
   const router = useRouter();
-  const [batches, setBatches] = useState<InventoryCountBatch[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isStarting, setIsStarting] = useState(false);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  const fetchBatches = async () => {
-    try {
-      setIsLoading(true);
-      const res = await apiClient<{ data: InventoryCountBatch[] }>('/inventory/counts');
-      setBatches(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: batchesResponse, isLoading } = useQuery({
+    queryKey: ['counts', restaurantId],
+    queryFn: () => apiClient<{ data: InventoryCountBatch[] }>('/inventory/counts'),
+    enabled: !!restaurantId,
+  });
 
-  useEffect(() => {
-    fetchBatches();
-  }, []);
+  const batches = batchesResponse?.data || [];
 
-  const handleStartBatch = async () => {
-    try {
-      setIsStarting(true);
-      const batch = await apiClient<InventoryCountBatch>('/inventory/counts/start', {
-        method: 'POST',
-      });
+  const startBatchMutation = useMutation({
+    mutationFn: () => apiClient<InventoryCountBatch>('/inventory/counts/start', { method: 'POST' }),
+    onSuccess: (batch) => {
+      queryClient.invalidateQueries({ queryKey: ['counts', restaurantId] });
       router.push(`/inventory/counts/${batch.id}`);
-    } catch (err) {
+    },
+    onError: (err) => {
       console.error(err);
       alert('Failed to start count batch');
-    } finally {
-      setIsStarting(false);
     }
+  });
+
+  const handleStartBatch = () => {
+    startBatchMutation.mutate();
   };
 
   const getStatusBadge = (status: string) => {
@@ -65,10 +59,10 @@ export function CountsTable() {
       <div className="flex justify-end items-center gap-4">
         <button 
           onClick={handleStartBatch}
-          disabled={isStarting}
+          disabled={startBatchMutation.isPending}
           className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white rounded-xl text-sm font-medium transition-colors shadow-sm shadow-emerald-200 dark:shadow-emerald-900/20"
         >
-          {isStarting ? (
+          {startBatchMutation.isPending ? (
             <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <Plus className="w-4 h-4" />

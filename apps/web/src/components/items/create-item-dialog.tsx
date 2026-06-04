@@ -5,8 +5,10 @@ import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createItemSchema } from '@ims/validators';
 import { z } from 'zod';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, PackagePlus, Plus, Trash2, Wand2 } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Category, ItemWithOverride } from '@ims/types';
 
 
@@ -19,18 +21,15 @@ interface CreateItemDialogProps {
 }
 
 export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const [isGeneratingSku, setIsGeneratingSku] = useState(false);
+
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
   const {
     register,
     handleSubmit,
     reset,
-    watch,
     control,
     setValue,
     getValues,
@@ -56,80 +55,78 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
   });
 
   const itemType = useWatch({ control, name: 'type' });
+  const categoryId = useWatch({ control, name: 'categoryId' });
 
-  useEffect(() => {
-    if (isOpen) {
-      const fetchCategories = async () => {
-        try {
-          setIsLoadingCategories(true);
-          const [catRes, itemsRes] = await Promise.all([
-            apiClient<{ data: Category[] }>('/items/categories'),
-            apiClient<{ data: ItemWithOverride[] }>('/items')
-          ]);
-          setCategories(catRes.data || []);
-          setItems(itemsRes.data || []);
-        } catch (error) {
-          console.error('Failed to fetch data:', error);
-        } finally {
-          setIsLoadingCategories(false);
-        }
-      };
-      fetchCategories();
-    }
-  }, [isOpen]);
+  const { data: categoriesResponse, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: () => apiClient<{ data: Category[] }>('/items/categories'),
+    enabled: isOpen,
+  });
 
-  if (!isOpen) return null;
+  const { data: itemsResponse } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items'),
+    enabled: isOpen,
+  });
 
-  const onSubmit = async (data: CreateItemForm) => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      // 1. Create the Item Master record
-      await apiClient<{ data: { id: string } }>('/items', {
-        method: 'POST',
-        body: {
-          name: data.name,
-          type: data.type,
-          sku: data.sku,
-          purchasingUom: data.purchasingUom,
-          inventoryUom: data.inventoryUom,
-          recipeUom: data.recipeUom,
-          invToRecipeRatio: data.invToRecipeRatio,
-          isActive: data.isActive,
-          categoryId: data.categoryId,
-          allergens: typeof data.allergens === 'string' ? (data.allergens as string).split(',').map(a => a.trim()).filter(Boolean) : data.allergens,
-          caloriesPerUom: data.caloriesPerUom,
-          proteinGrams: data.proteinGrams,
-          fatGrams: data.fatGrams,
-          carbsGrams: data.carbsGrams,
-        },
-      });
+  const categories = categoriesResponse?.data || [];
+  const items = itemsResponse?.data || [];
 
+  const createMutation = useMutation({
+    mutationFn: (data: CreateItemForm) => apiClient<{ data: { id: string } }>('/items', {
+      method: 'POST',
+      body: {
+        name: data.name,
+        type: data.type,
+        sku: data.sku,
+        purchasingUom: data.purchasingUom,
+        inventoryUom: data.inventoryUom,
+        recipeUom: data.recipeUom,
+        invToRecipeRatio: data.invToRecipeRatio,
+        isActive: data.isActive,
+        categoryId: data.categoryId,
+        allergens: typeof data.allergens === 'string' ? (data.allergens as string).split(',').map(a => a.trim()).filter(Boolean) : data.allergens,
+        caloriesPerUom: data.caloriesPerUom,
+        proteinGrams: data.proteinGrams,
+        fatGrams: data.fatGrams,
+        carbsGrams: data.carbsGrams,
+      },
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items', restaurantId] });
       reset();
       onSuccess();
-    } catch (err: unknown) {
+    },
+    onError: (err: unknown) => {
       const msg = err instanceof Error ? err.message : 'Failed to create item';
       setError(msg);
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: CreateItemForm) => {
+    setError(null);
+    createMutation.mutate(data);
   };
 
 
 
-  const handleGenerateSku = async () => {
+  const generateSkuMutation = useMutation({
+    mutationFn: (categoryId: string) => apiClient<{ sku: string }>(`/items/generate-sku?categoryId=${categoryId}`),
+    onSuccess: (res) => {
+      setValue('sku', res.sku);
+    },
+    onError: (err) => {
+      console.error('Failed to generate SKU', err);
+    }
+  });
+
+  const handleGenerateSku = () => {
     const categoryId = getValues('categoryId');
     if (!categoryId) return;
-    setIsGeneratingSku(true);
-    try {
-      const res = await apiClient<{ sku: string }>(`/items/generate-sku?categoryId=${categoryId}`);
-      setValue('sku', res.sku);
-    } catch (err) {
-      console.error('Failed to generate SKU', err);
-    } finally {
-      setIsGeneratingSku(false);
-    }
+    generateSkuMutation.mutate(categoryId);
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
@@ -185,11 +182,10 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
                   <button
                     type="button"
                     onClick={handleGenerateSku}
-                    disabled={isGeneratingSku || !watch('categoryId')}
-                    className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
-                    title="Auto-generate SKU based on category"
+                    disabled={!categoryId || generateSkuMutation.isPending}
+                    className="inline-flex items-center px-3 py-2 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 disabled:opacity-50 transition-colors"
                   >
-                    {isGeneratingSku ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Wand2 className="w-3.5 h-3.5" />}
+                    {generateSkuMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Wand2 className="w-4 h-4 mr-2" />}
                     Generate
                   </button>
                 </div>
@@ -274,17 +270,11 @@ export function CreateItemDialog({ isOpen, onClose, onSuccess }: CreateItemDialo
           <button
             type="submit"
             form="create-item-form"
-            disabled={isSubmitting}
-            className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+            disabled={createMutation.isPending}
+            className="px-5 py-2.5 rounded-xl text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-sm"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating...
-              </>
-            ) : (
-              'Create Item'
-            )}
+            {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+            {createMutation.isPending ? 'Creating...' : 'Create Item'}
           </button>
         </div>
       </div>

@@ -5,19 +5,18 @@ import { apiClient } from '@/lib/api-client';
 import type { InventoryCountBatch } from '@ims/types';
 import { ClipboardList, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function OpenCountsWidget() {
-  const [batches, setBatches] = useState<InventoryCountBatch[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { restaurantId } = useAuthStore();
+  const { data: batchesResponse, isLoading: loading } = useQuery({
+    queryKey: ['counts', restaurantId],
+    queryFn: () => apiClient<{ data: InventoryCountBatch[] }>('/inventory/counts?limit=50'),
+    enabled: !!restaurantId,
+  });
 
-  useEffect(() => {
-    apiClient<{ data: InventoryCountBatch[] }>('/inventory/counts?limit=50')
-      .then((res) => {
-        setBatches(res.data.filter(b => b.status === 'OPEN'));
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const batches = batchesResponse?.data.filter(b => b.status === 'OPEN') || [];
 
   if (loading) return <div className="h-64 animate-pulse bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800" />;
 

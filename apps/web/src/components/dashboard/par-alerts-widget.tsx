@@ -5,17 +5,18 @@ import { apiClient } from '@/lib/api-client';
 import type { ParAlertRow } from '@ims/types';
 import { AlertTriangle, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useQuery } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function ParAlertsWidget() {
-  const [alerts, setAlerts] = useState<ParAlertRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { restaurantId } = useAuthStore();
+  const { data: alertsResponse, isLoading: loading } = useQuery({
+    queryKey: ['par-alerts', restaurantId],
+    queryFn: () => apiClient<{ data: ParAlertRow[] }>('/reports/par-alerts'),
+    enabled: !!restaurantId,
+  });
 
-  useEffect(() => {
-    apiClient<{ data: ParAlertRow[] }>('/reports/par-alerts')
-      .then((res) => setAlerts(res.data))
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
+  const alerts = alertsResponse?.data || [];
 
   if (loading) return <div className="h-64 animate-pulse bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800" />;
 

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/use-auth-store';
 import { cn } from '@/lib/utils';
 import { apiClient } from '@/lib/api-client';
 import { ItemWithOverride, VarianceReportRow } from '@ims/types';
+import { useQuery } from '@tanstack/react-query';
 
 interface PopulatedVarianceRow extends VarianceReportRow {
   itemName: string;
@@ -13,51 +14,34 @@ interface PopulatedVarianceRow extends VarianceReportRow {
 }
 
 export function VarianceTable() {
-  const [data, setData] = useState<PopulatedVarianceRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const { restaurantId } = useAuthStore();
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchVariance = async () => {
-      try {
-        if (!restaurantId) return;
-        setLoading(true);
+  const { data: varianceDataResponse, isLoading: isVarianceLoading } = useQuery({
+    queryKey: ['variance', restaurantId],
+    queryFn: () => apiClient<{ data: VarianceReportRow[] }>('/reports/variance'),
+    enabled: !!restaurantId,
+  });
 
-        const [varianceRes, itemsRes] = await Promise.all([
-          apiClient<{ data: VarianceReportRow[] }>('/reports/variance'),
-          apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000')
-        ]);
+  const { data: itemsDataResponse, isLoading: isItemsLoading } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000'),
+    enabled: !!restaurantId,
+  });
 
-        if (isMounted) {
-          // Join the item details to the variance rows
-          const itemsMap = new Map(itemsRes.data.map(item => [item.id, item]));
-          
-          const populated = varianceRes.data.map(row => {
-            const item = itemsMap.get(row.itemId);
-            return {
-              ...row,
-              itemName: item?.name || 'Unknown Item',
-              inventoryUom: item?.inventoryUom || '',
-            };
-          });
+  const loading = isVarianceLoading || isItemsLoading;
 
-          setData(populated);
-        }
-      } catch (error) {
-        console.error('Failed to fetch variance data', error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchVariance();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [restaurantId]);
+  let data: PopulatedVarianceRow[] = [];
+  if (varianceDataResponse?.data && itemsDataResponse?.data) {
+    const itemsMap = new Map(itemsDataResponse.data.map(item => [item.id, item]));
+    data = varianceDataResponse.data.map(row => {
+      const item = itemsMap.get(row.itemId);
+      return {
+        ...row,
+        itemName: item?.name || 'Unknown Item',
+        inventoryUom: item?.inventoryUom || '',
+      };
+    });
+  }
 
   return (
     <div className="w-full mt-6">

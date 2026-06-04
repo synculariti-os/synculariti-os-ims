@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { itemApi } from '@/lib/api/item';
 import { Scale, AlertCircle } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UomConversionDialogProps {
   item: any;
@@ -16,24 +17,16 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
   const [toUom, setToUom] = useState('');
   const [factor, setFactor] = useState<number | ''>('');
   
-  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [conversions, setConversions] = useState<any[]>([]);
-  const [isLoadingConversions, setIsLoadingConversions] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchConversions = async () => {
-    if (!item) return;
-    setIsLoadingConversions(true);
-    try {
-      const response = await itemApi.getUomConversions(item.id);
-      const data = (response as any)?.data || response;
-      setConversions(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error('Failed to fetch conversions', err);
-    } finally {
-      setIsLoadingConversions(false);
-    }
-  };
+  const { data: conversionsResponse, isLoading: isLoadingConversions } = useQuery({
+    queryKey: ['uom-conversions', item?.id],
+    queryFn: () => itemApi.getUomConversions(item.id),
+    enabled: isOpen && !!item,
+  });
+
+  const conversions = Array.isArray((conversionsResponse as any)?.data) ? (conversionsResponse as any).data : (Array.isArray(conversionsResponse) ? conversionsResponse : []);
 
   useEffect(() => {
     if (isOpen && item) {
@@ -41,34 +34,34 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
       setToUom(item.inventoryUom || '');
       setFactor('');
       setError(null);
-      fetchConversions();
     }
   }, [isOpen, item]);
 
-  const handleSave = async () => {
+  const upsertMutation = useMutation({
+    mutationFn: () => itemApi.upsertUomConversion({
+      itemId: item.id,
+      fromUom: fromUom.toUpperCase(),
+      toUom: toUom.toUpperCase(),
+      multiplierFactor: Number(factor)
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['uom-conversions', item?.id] });
+      setFromUom('');
+      setFactor('');
+      onSaved();
+    },
+    onError: (err: any) => {
+      setError(err.message || 'Failed to update conversion');
+    }
+  });
+
+  const handleSave = () => {
     if (!fromUom || !toUom || !factor) {
       setError('Please fill in all fields');
       return;
     }
-    
-    setIsSaving(true);
     setError(null);
-    try {
-      await itemApi.upsertUomConversion({
-        itemId: item.id,
-        fromUom: fromUom.toUpperCase(),
-        toUom: toUom.toUpperCase(),
-        multiplierFactor: Number(factor)
-      });
-      await fetchConversions();
-      setFromUom('');
-      setFactor('');
-      onSaved();
-    } catch (err: any) {
-      setError(err.message || 'Failed to update conversion');
-    } finally {
-      setIsSaving(false);
-    }
+    upsertMutation.mutate();
   };
 
   if (!isOpen || !item) return null;
@@ -111,7 +104,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-2">Example: If 1 CASE contains 24 EA, multiplier is 24.</p>
             </div>
             <div className="flex justify-end">
-              <button onClick={handleSave} disabled={isSaving} className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">Save Conversion</button>
+              <button onClick={handleSave} disabled={upsertMutation.isPending} className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition-colors">Save Conversion</button>
             </div>
           </div>
 
@@ -136,7 +129,7 @@ export function UomConversionDialog({ item, isOpen, onClose, onSaved }: UomConve
         </div>
 
         <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end shrink-0">
-          <button onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors">Done</button>
+          <button onClick={onClose} disabled={upsertMutation.isPending} className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 bg-transparent hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-xl transition-colors">Done</button>
         </div>
       </div>
     </div>

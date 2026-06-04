@@ -8,10 +8,9 @@ import { apiClient } from '@/lib/api-client';
 import { ParAlertRow } from '@ims/types';
 import { QuickCreatePoDialog } from '@/components/procurement/quick-create-po-dialog';
 import { ShoppingCart } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 
 export function ParAlertsTable() {
-  const [data, setData] = useState<ParAlertRow[]>([]);
-  const [loading, setLoading] = useState(true);
   const { restaurantId } = useAuthStore();
   const [poDialogItem, setPoDialogItem] = useState<{
     id: string;
@@ -19,32 +18,13 @@ export function ParAlertsTable() {
     suggestedQty: number;
   } | null>(null);
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchAlerts = async () => {
-      try {
-        if (!restaurantId) return;
-        setLoading(true);
+  const { data: alertsResponse, isLoading: loading } = useQuery({
+    queryKey: ['par-alerts', restaurantId],
+    queryFn: () => apiClient<{ data: ParAlertRow[] }>('/reports/par-alerts'),
+    enabled: !!restaurantId,
+  });
 
-        const res = await apiClient<{ data: ParAlertRow[] }>('/reports/par-alerts');
-
-        if (isMounted) {
-          setData(res.data);
-        }
-      } catch (error) {
-        console.error('Failed to fetch par alerts', error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchAlerts();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [restaurantId]);
+  const data = alertsResponse?.data || [];
 
   return (
     <div className="w-full mt-6">

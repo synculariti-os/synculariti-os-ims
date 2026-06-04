@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { Recipe, RecipeIngredient, RecipeNutritionReport } from '@ims/types';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Info } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Plus, Search, Layers, Pencil, Trash2, ChevronDown, ChevronRight, Package, Utensils, Link2, AlertTriangle, Loader2 } from 'lucide-react';
 import { CreateRecipeDialog } from './create-recipe-dialog';
 import { EditRecipeDialog } from './edit-recipe-dialog';
@@ -28,29 +30,22 @@ function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => vo
 }
 
 function RecipeDetailRow({ recipe }: { recipe: Recipe }) {
-  const [ingredients, setIngredients] = useState<RecipeIngredient[] | null>(null);
-  const [nutrition, setNutrition] = useState<RecipeNutritionReport | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [targetYield, setTargetYield] = useState<number>(recipe.yieldQuantity || 1);
 
-  const fetchIngredients = useCallback(async () => {
-    if (ingredients !== null) return;
-    setIsLoading(true);
-    try {
-      const [ingRes, nutRes] = await Promise.all([
-        apiClient<{ data: RecipeIngredient[] }>(`/recipes/${recipe.id}/ingredients`),
-        apiClient<{ data: RecipeNutritionReport }>(`/recipes/${recipe.id}/nutrition`).catch(() => null)
-      ]);
-      setIngredients(ingRes.data || []);
-      if (nutRes) setNutrition(nutRes.data);
-    } catch {
-      setIngredients([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [recipe.id, ingredients]);
+  const { data: ingredientsData, isLoading: isLoadingIngredients } = useQuery({
+    queryKey: ['recipe-ingredients', recipe.id],
+    queryFn: () => apiClient<{ data: RecipeIngredient[] }>(`/recipes/${recipe.id}/ingredients`),
+  });
 
-  useEffect(() => { fetchIngredients(); }, [recipe.id]);
+  const { data: nutritionData, isLoading: isLoadingNutrition } = useQuery({
+    queryKey: ['recipe-nutrition', recipe.id],
+    queryFn: () => apiClient<{ data: RecipeNutritionReport }>(`/recipes/${recipe.id}/nutrition`),
+    retry: false,
+  });
+
+  const ingredients = ingredientsData?.data || [];
+  const nutrition = nutritionData?.data || null;
+  const isLoading = isLoadingIngredients || isLoadingNutrition;
 
   if (isLoading) {
     return (
@@ -151,33 +146,22 @@ function RecipeDetailRow({ recipe }: { recipe: Recipe }) {
 }
 
 export function RecipesTable() {
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [deletingRecipe, setDeletingRecipe] = useState<Recipe | null>(null);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
-  const [isDeleting, setIsDeleting] = useState(false);
 
-  const fetchRecipes = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await apiClient<{ data: Recipe[] }>('/recipes');
-      setRecipes(data.data || []);
-    } catch (error) {
-      console.error('Failed to fetch recipes:', error);
-      setRecipes([]);
-    } finally {
-      setIsLoading(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  useEffect(() => { 
-    fetchRecipes(); 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data: recipesResponse, isLoading } = useQuery({
+    queryKey: ['recipes', restaurantId],
+    queryFn: () => apiClient<{ data: Recipe[] }>('/recipes'),
+    enabled: !!restaurantId,
+  });
+
+  const recipes = recipesResponse?.data || [];
 
   const toggleRow = (id: string) => {
     setExpandedRows(prev => {
@@ -187,18 +171,19 @@ export function RecipesTable() {
     });
   };
 
-  const handleDelete = async () => {
-    if (!deletingRecipe) return;
-    setIsDeleting(true);
-    try {
-      await apiClient(`/recipes/${deletingRecipe.id}`, { method: 'DELETE' });
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => apiClient(`/recipes/${id}`, { method: 'DELETE' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes', restaurantId] });
       setDeletingRecipe(null);
-      fetchRecipes();
-    } catch (err) {
+    },
+    onError: (err) => {
       console.error('Failed to delete recipe', err);
-    } finally {
-      setIsDeleting(false);
-    }
+    },
+  });
+
+  const fetchRecipes = () => {
+    queryClient.invalidateQueries({ queryKey: ['recipes', restaurantId] });
   };
 
   const filtered = recipes.filter(r => {
@@ -341,7 +326,9 @@ export function RecipesTable() {
       {deletingRecipe && (
         <ConfirmDeleteModal
           name={deletingRecipe.producesItemName || deletingRecipe.recipeName || 'this recipe'}
-          onConfirm={handleDelete}
+          onConfirm={() => {
+            if (deletingRecipe) deleteMutation.mutate(deletingRecipe.id);
+          }}
           onCancel={() => setDeletingRecipe(null)}
         />
       )}

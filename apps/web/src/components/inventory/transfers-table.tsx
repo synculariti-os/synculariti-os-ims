@@ -1,37 +1,38 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { InventoryTransfer } from '@ims/types';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function TransfersTable() {
-  const [transfers, setTransfers] = useState<InventoryTransfer[]>([]);
   const [direction, setDirection] = useState<'IN' | 'OUT'>('OUT');
-  const [isLoading, setIsLoading] = useState(true);
+  
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  const fetchTransfers = async () => {
-    setIsLoading(true);
-    try {
-      const res = await apiClient<InventoryTransfer[]>(`/inventory/transfers?direction=${direction}`);
-      setTransfers(res);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
+  const { data: transfersResponse, isLoading } = useQuery({
+    queryKey: ['transfers', restaurantId, direction],
+    queryFn: () => apiClient<InventoryTransfer[]>(`/inventory/transfers?direction=${direction}`),
+    enabled: !!restaurantId,
+  });
+
+  const transfers = Array.isArray(transfersResponse) ? transfersResponse : [];
+
+  const actionMutation = useMutation({
+    mutationFn: ({ id, action }: { id: string, action: 'dispatch' | 'receive' | 'cancel' }) => 
+      apiClient(`/inventory/transfers/${id}/${action}`, { method: 'POST' }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['transfers', restaurantId] });
+    },
+    onError: (error: any) => {
+      alert(`Failed to action transfer: ${error.message}`);
     }
-  };
+  });
 
-  useEffect(() => {
-    fetchTransfers();
-  }, [direction]);
-
-  const handleAction = async (id: string, action: 'dispatch' | 'receive' | 'cancel') => {
-    try {
-      await apiClient(`/inventory/transfers/${id}/${action}`, { method: 'POST' });
-      fetchTransfers();
-    } catch (error: any) {
-      alert(`Failed to ${action} transfer: ${error.message}`);
-    }
+  const handleAction = (id: string, action: 'dispatch' | 'receive' | 'cancel') => {
+    actionMutation.mutate({ id, action });
   };
 
   return (

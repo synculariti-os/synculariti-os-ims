@@ -5,6 +5,8 @@ import { procurementApi } from '@/lib/api/procurement';
 import { ShoppingCart, AlertCircle, Plus, Trash2 } from 'lucide-react';
 import { Vendor, ItemWithOverride } from '@ims/types';
 import { itemApi } from '@/lib/api/item';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 interface CreatePoDialogProps {
   isOpen: boolean;
@@ -13,40 +15,32 @@ interface CreatePoDialogProps {
 }
 
 export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogProps) {
-  const [vendors, setVendors] = useState<Vendor[]>([]);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  
-  const [selectedVendorId, setSelectedVendorId] = useState<string>('');
-  const [lineItems, setLineItems] = useState<{ itemId: string; quantityOrdered: number; rawUnitPrice: number }[]>([
-    { itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }
-  ]);
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [vRes, iRes] = await Promise.all([
-        procurementApi.listVendors(),
-        itemApi.listItems()
-      ]);
-      setVendors(vRes.data);
-      setItems(iRes.data);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load vendors/items');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: vendorsResponse, isLoading: isLoadingVendors } = useQuery({
+    queryKey: ['vendors', restaurantId],
+    queryFn: () => procurementApi.listVendors(),
+    enabled: !!restaurantId,
+  });
+
+  const { data: itemsResponse, isLoading: isLoadingItems } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => itemApi.listItems(),
+    enabled: !!restaurantId,
+  });
+
+  const vendors = vendorsResponse?.data || [];
+  const items = itemsResponse?.data || [];
+  const isLoading = isLoadingVendors || isLoadingItems;
+
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
       setSelectedVendorId('');
       setLineItems([{ itemId: '', quantityOrdered: 1, rawUnitPrice: 0 }]);
       setError(null);
-      fetchData();
     }
   }, [isOpen]);
 
@@ -64,28 +58,33 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
     setLineItems(updated);
   };
 
-  const handleCreatePo = async () => {
-    try {
-      setError(null);
+  const createMutation = useMutation({
+    mutationFn: () => {
       if (!selectedVendorId) throw new Error('Please select a vendor.');
       
       const validLines = lineItems.filter(l => l.itemId && l.quantityOrdered > 0);
       if (validLines.length === 0) throw new Error('Add at least one valid line item.');
       
-      setIsCreating(true);
-      await procurementApi.createDraftPO({
+      return procurementApi.createDraftPO({
         vendorId: selectedVendorId,
         freightCharge: 0,
         taxAmount: 0,
         discountAmount: 0,
         lineItems: validLines,
       });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders', restaurantId] });
       onCreated();
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       setError(error.message || 'Failed to create PO');
-    } finally {
-      setIsCreating(false);
     }
+  });
+
+  const handleCreatePo = () => {
+    setError(null);
+    createMutation.mutate();
   };
 
   if (!isOpen) return null;
@@ -118,7 +117,7 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
             <select
               value={selectedVendorId}
               onChange={(e) => setSelectedVendorId(e.target.value)}
-              disabled={isLoading || isCreating}
+              disabled={isLoading || createMutation.isPending}
               className="w-full px-4 py-2.5 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl focus:ring-2 focus:ring-indigo-500 dark:focus:ring-indigo-400 outline-none transition-all text-zinc-900 dark:text-white disabled:opacity-50"
             >
               <option value="" disabled>Select a vendor...</option>
@@ -191,17 +190,17 @@ export function CreatePoDialog({ isOpen, onClose, onCreated }: CreatePoDialogPro
         <div className="mt-8 flex justify-end gap-3">
           <button
             onClick={onClose}
-            disabled={isCreating}
+            disabled={createMutation.isPending}
             className="px-4 py-2 bg-transparent text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 rounded-xl text-sm font-medium hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors disabled:opacity-50"
           >
             Cancel
           </button>
           <button
             onClick={handleCreatePo}
-            disabled={isCreating || !selectedVendorId}
+            disabled={createMutation.isPending || !selectedVendorId}
             className="px-4 py-2 bg-indigo-600 text-white rounded-xl text-sm font-medium hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2"
           >
-            {isCreating ? 'Creating...' : 'Create Draft PO'}
+            {createMutation.isPending ? 'Creating...' : 'Create Draft PO'}
           </button>
         </div>
       </div>

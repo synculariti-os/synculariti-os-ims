@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { itemApi } from '@/lib/api/item';
 import { Settings2, AlertCircle } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 interface ItemOverridesDialogProps {
   item: any;
@@ -14,8 +16,10 @@ interface ItemOverridesDialogProps {
 export function ItemOverridesDialog({ item, isOpen, onClose, onSaved }: ItemOverridesDialogProps) {
   const [parLevel, setParLevel] = useState<number | ''>('');
   const [active, setActive] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
     if (isOpen && item) {
@@ -25,20 +29,23 @@ export function ItemOverridesDialog({ item, isOpen, onClose, onSaved }: ItemOver
     }
   }, [isOpen, item]);
 
-  const handleSave = async () => {
-    setIsSaving(true);
-    setError(null);
-    try {
-      await itemApi.updateOverride(item.id, {
-        parLevel: parLevel === '' ? null : Number(parLevel),
-        active
-      });
+  const updateMutation = useMutation({
+    mutationFn: () => itemApi.updateOverride(item.id, {
+      parLevel: parLevel === '' ? null : Number(parLevel),
+      active
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['items', restaurantId] });
       onSaved();
-    } catch (err: any) {
+    },
+    onError: (err: any) => {
       setError(err.message || 'Failed to update override');
-    } finally {
-      setIsSaving(false);
     }
+  });
+
+  const handleSave = () => {
+    setError(null);
+    updateMutation.mutate();
   };
 
   if (!isOpen || !item) return null;
@@ -74,8 +81,8 @@ export function ItemOverridesDialog({ item, isOpen, onClose, onSaved }: ItemOver
         </div>
 
         <div className="mt-8 flex justify-end gap-3">
-          <button onClick={onClose} disabled={isSaving} className="px-4 py-2 text-sm hover:bg-zinc-100 rounded-xl">Cancel</button>
-          <button onClick={handleSave} disabled={isSaving} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Save Changes</button>
+          <button onClick={onClose} disabled={updateMutation.isPending} className="px-4 py-2 text-sm hover:bg-zinc-100 rounded-xl">Cancel</button>
+          <button onClick={handleSave} disabled={updateMutation.isPending} className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-xl hover:bg-indigo-700">Save Changes</button>
         </div>
       </div>
     </div>

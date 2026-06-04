@@ -5,6 +5,7 @@ import { apiClient } from '@/lib/api-client';
 import { Recipe } from '@ims/types';
 import { Loader2, AlertCircle, Save, CheckCircle2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface UnmappedRow {
   id: string;
@@ -18,47 +19,31 @@ interface SmartMappingReviewProps {
 }
 
 export function SmartMappingReview({ batchId, onResolved }: SmartMappingReviewProps) {
-  const [unmappedRows, setUnmappedRows] = useState<UnmappedRow[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [mappings, setMappings] = useState<Record<string, string>>({}); // rawItemName -> recipeId
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchData = async () => {
-      try {
-        setIsLoading(true);
-        const [rowsRes, recipesRes] = await Promise.all([
-          apiClient<{ data: UnmappedRow[] }>(`/sales-imports/unmapped-rows?batchId=${batchId}`),
-          apiClient<{ data: Recipe[] }>('/recipes')
-        ]);
-        
-        if (isMounted) {
-          // Group by rawItemName since the same unmapped item might appear multiple times in a batch
-          const uniqueRows = Array.from(
-            new Map(rowsRes.data.map(r => [r.rawItemName, r])).values()
-          );
-          setUnmappedRows(uniqueRows);
-          setRecipes(recipesRes.data || []);
-        }
-      } catch (error) {
-        console.error('Failed to fetch unmapped rows or recipes:', error);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-    fetchData();
-    return () => { isMounted = false; };
-  }, [batchId]);
+  const { data: rowsResponse, isLoading: isRowsLoading } = useQuery({
+    queryKey: ['unmapped-rows', batchId],
+    queryFn: () => apiClient<{ data: UnmappedRow[] }>(`/sales-imports/unmapped-rows?batchId=${batchId}`),
+  });
 
-  const handleSaveMappings = async () => {
-    const itemsToMap = Object.entries(mappings).filter(([_, recipeId]) => recipeId);
-    if (itemsToMap.length === 0) return;
+  const { data: recipesResponse, isLoading: isRecipesLoading } = useQuery({
+    queryKey: ['recipes'],
+    queryFn: () => apiClient<{ data: Recipe[] }>('/recipes'),
+  });
 
-    setIsSubmitting(true);
-    try {
-      // Save all mappings
+  const isLoading = isRowsLoading || isRecipesLoading;
+  const recipes = recipesResponse?.data || [];
+
+  let unmappedRows: UnmappedRow[] = [];
+  if (rowsResponse?.data) {
+    unmappedRows = Array.from(
+      new Map(rowsResponse.data.map(r => [r.rawItemName, r])).values()
+    );
+  }
+
+  const { mutate: saveMappings, isPending: isSubmitting } = useMutation({
+    mutationFn: async (itemsToMap: [string, string][]) => {
       await Promise.all(
         itemsToMap.map(([rawExcelString, recipeId]) =>
           apiClient('/recipes/mappings', {
@@ -67,21 +52,20 @@ export function SmartMappingReview({ batchId, onResolved }: SmartMappingReviewPr
           })
         )
       );
-
-      // We ideally want to re-trigger batch processing or just mark them resolved for now
-      // The user will have to re-upload the file, or we can add a retry batch endpoint later.
-      // For now, let's just clear the mapped items from the UI
-      setUnmappedRows(prev => prev.filter(r => !mappings[r.rawItemName]));
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['unmapped-rows', batchId] });
       setMappings({});
-      
-      if (unmappedRows.length === itemsToMap.length) {
-        onResolved(); // All resolved!
+      if (unmappedRows.length === variables.length) {
+        onResolved();
       }
-    } catch (error) {
-      console.error('Failed to save mappings:', error);
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSaveMappings = () => {
+    const itemsToMap = Object.entries(mappings).filter(([_, recipeId]) => recipeId);
+    if (itemsToMap.length === 0) return;
+    saveMappings(itemsToMap);
   };
 
   if (isLoading) {

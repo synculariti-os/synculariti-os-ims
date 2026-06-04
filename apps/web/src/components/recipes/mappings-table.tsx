@@ -2,44 +2,27 @@
 
 import React, { useEffect, useState } from 'react';
 import { MenuItemMapping } from '@ims/types';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { Link, Plus, Search, FileSpreadsheet } from 'lucide-react';
 import { CreateMappingDialog } from './create-mapping-dialog';
 
 export function MappingsTable() {
-  const [mappings, setMappings] = useState<MenuItemMapping[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    let isMounted = true;
-    const fetchMappings = async () => {
-      try {
-        setIsLoading(true);
-        const data = await apiClient<{ data: MenuItemMapping[] }>('/recipes/mappings');
-        if (isMounted) setMappings(data.data || []);
-      } catch (error) {
-        console.error('Failed to fetch mappings:', error);
-        // Fallback for missing backend endpoint during early dev
-        if (isMounted) setMappings([]);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
+  const { data: mappingsResponse, isLoading } = useQuery({
+    queryKey: ['mappings', restaurantId],
+    queryFn: () => apiClient<{ data: MenuItemMapping[] }>('/recipes/mappings'),
+    enabled: !!restaurantId,
+  });
 
-    fetchMappings();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const mappings = mappingsResponse?.data || [];
 
   const refreshMappings = () => {
-    apiClient<{ data: MenuItemMapping[] }>('/recipes/mappings')
-      .then(data => setMappings(data.data || []))
-      .catch(err => {
-        console.error(err);
-        setMappings([]);
-      });
+    queryClient.invalidateQueries({ queryKey: ['mappings', restaurantId] });
   };
 
   return (

@@ -6,54 +6,53 @@ import { apiClient } from '@/lib/api-client';
 import { ChefHat, Plus, X, Calculator } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import Link from 'next/link';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '@/store/use-auth-store';
 
 export function PrepTable() {
-  const [logs, setLogs] = useState<PrepProductionLog[]>([]);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
+
+  const { data: logsResponse, isLoading: isLoadingLogs } = useQuery({
+    queryKey: ['prep-logs', restaurantId],
+    queryFn: () => apiClient<{ data: PrepProductionLog[] }>('/inventory/prep'),
+    enabled: !!restaurantId,
+  });
+
+  const { data: itemsResponse, isLoading: isLoadingItems } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000'),
+    enabled: !!restaurantId,
+  });
+
+  const logs = logsResponse?.data || [];
+  const items = itemsResponse?.data || [];
+  const isLoading = isLoadingLogs || isLoadingItems;
 
   const { register, handleSubmit, reset } = useForm();
 
-  const fetchData = async () => {
-    try {
-      setIsLoading(true);
-      const [logsRes, itemsRes] = await Promise.all([
-        apiClient<{ data: PrepProductionLog[] }>('/inventory/prep'),
-        apiClient<{ data: ItemWithOverride[] }>('/items?limit=1000')
-      ]);
-      setLogs(logsRes.data);
-      setItems(itemsRes.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const onSubmit = async (data: any) => {
-    try {
-      setIsSubmitting(true);
-      await apiClient('/inventory/prep', {
-        method: 'POST',
-        body: {
-          prepItemId: data.prepItemId,
-          yieldQtyProduced: parseFloat(data.yieldQtyProduced)
-        }
-      });
+  const createMutation = useMutation({
+    mutationFn: (data: any) => apiClient('/inventory/prep', {
+      method: 'POST',
+      body: {
+        prepItemId: data.prepItemId,
+        yieldQtyProduced: parseFloat(data.yieldQtyProduced)
+      }
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['prep-logs', restaurantId] });
       setIsModalOpen(false);
       reset();
-      fetchData();
-    } catch (err: any) {
+    },
+    onError: (err: any) => {
       alert(err.message || 'Failed to log prep batch');
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const onSubmit = (data: any) => {
+    createMutation.mutate(data);
   };
 
   const getItemName = (itemId: string) => {
@@ -156,8 +155,8 @@ export function PrepTable() {
                 <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-800 rounded-xl transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50">
-                  {isSubmitting ? 'Logging...' : 'Log Prep Batch'}
+                <button type="submit" disabled={createMutation.isPending} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors disabled:opacity-50">
+                  {createMutation.isPending ? 'Logging...' : 'Log Prep Batch'}
                 </button>
               </div>
             </form>

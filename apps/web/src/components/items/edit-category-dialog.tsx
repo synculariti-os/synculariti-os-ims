@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateCategorySchema, type UpdateCategoryDto } from '@ims/validators';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiClient } from '@/lib/api-client';
 import { X, Loader2 } from 'lucide-react';
 import type { Category } from '@ims/types';
@@ -15,7 +16,7 @@ interface EditCategoryDialogProps {
 }
 
 export function EditCategoryDialog({ category, onOpenChange, onSuccess }: EditCategoryDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -39,22 +40,25 @@ export function EditCategoryDialog({ category, onOpenChange, onSuccess }: EditCa
     }
   }, [category, reset]);
 
-  const onSubmit = async (data: UpdateCategoryDto) => {
-    if (!category) return;
-    try {
-      setIsSubmitting(true);
-      await apiClient(`/items/categories/${category.id}`, {
-        method: 'PUT',
-        body: data,
-      });
+  const updateMutation = useMutation({
+    mutationFn: (data: UpdateCategoryDto) => apiClient(`/items/categories/${category?.id}`, {
+      method: 'PUT',
+      body: data,
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
       onSuccess();
       onOpenChange(false);
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error('Failed to update category:', error);
       alert('Failed to update category');
-    } finally {
-      setIsSubmitting(false);
-    }
+    },
+  });
+
+  const onSubmit = (data: UpdateCategoryDto) => {
+    if (!category) return;
+    updateMutation.mutate(data);
   };
 
   if (!category) return null;
@@ -112,10 +116,10 @@ export function EditCategoryDialog({ category, onOpenChange, onSuccess }: EditCa
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={updateMutation.isPending}
               className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50"
             >
-              {isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+              {updateMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
               Save Changes
             </button>
           </div>

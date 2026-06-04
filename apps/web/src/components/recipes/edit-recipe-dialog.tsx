@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { X, Loader2, Pencil, Plus, Trash2, Package, Link2, ChevronDown } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
+import { useAuthStore } from '@/store/use-auth-store';
 import { ItemWithOverride, Recipe, RecipeIngredient } from '@ims/types';
 
 type LineType = 'ingredient' | 'sub_recipe';
@@ -32,32 +34,43 @@ interface EditRecipeDialogProps {
 }
 
 export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialogProps) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [items, setItems] = useState<ItemWithOverride[]>([]);
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
+
+  const restaurantId = useAuthStore(state => state.restaurantId);
+  const queryClient = useQueryClient();
   const [yieldQuantity, setYieldQuantity] = useState(recipe.yieldQuantity);
   const [yieldPercent, setYieldPercent] = useState(recipe.yieldPercent ? Math.round(recipe.yieldPercent * 100) : 100);
   const [lines, setLines] = useState<IngredientLine[]>([]);
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
-    const [itemsRes, recipesRes, ingredientsRes] = await Promise.all([
-      apiClient<{ data: ItemWithOverride[] }>('/items').catch(() => ({ data: [] as ItemWithOverride[] })),
-      apiClient<{ data: Recipe[] }>('/recipes').catch(() => ({ data: [] as Recipe[] })),
-      apiClient<{ data: RecipeIngredient[] }>(`/recipes/${recipe.id}/ingredients`).catch(() => ({ data: [] as RecipeIngredient[] })),
-    ]);
-    setItems(itemsRes.data || []);
-    setRecipes((recipesRes.data || []).filter(r => r.id !== recipe.id)); // exclude self
-    setLines((ingredientsRes.data || []).map(mapIngredientToLine));
-    if ((ingredientsRes.data || []).length === 0) {
-      setLines([{ id: crypto.randomUUID(), lineType: 'ingredient', ingredientItemId: '', subRecipeId: '', quantityRequired: 1 }]);
-    }
-    setIsLoading(false);
-  }, [recipe.id]);
+  const { data: itemsResponse, isLoading: isLoadingItems } = useQuery({
+    queryKey: ['items', restaurantId],
+    queryFn: () => apiClient<{ data: ItemWithOverride[] }>('/items'),
+  });
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  const { data: recipesResponse, isLoading: isLoadingRecipes } = useQuery({
+    queryKey: ['recipes', restaurantId],
+    queryFn: () => apiClient<{ data: Recipe[] }>('/recipes'),
+  });
+
+  const { data: ingredientsResponse, isLoading: isLoadingIngredients } = useQuery({
+    queryKey: ['recipe-ingredients', recipe.id],
+    queryFn: () => apiClient<{ data: RecipeIngredient[] }>(`/recipes/${recipe.id}/ingredients`),
+  });
+
+  const items = itemsResponse?.data || [];
+  const recipes = (recipesResponse?.data || []).filter(r => r.id !== recipe.id);
+
+  const isLoading = isLoadingItems || isLoadingRecipes || isLoadingIngredients;
+
+  useEffect(() => {
+    if (!isLoadingIngredients) {
+      if (ingredientsResponse?.data && ingredientsResponse.data.length > 0) {
+        setLines(ingredientsResponse.data.map(mapIngredientToLine));
+      } else {
+        setLines([{ id: crypto.randomUUID(), lineType: 'ingredient', ingredientItemId: '', subRecipeId: '', quantityRequired: 1 }]);
+      }
+    }
+  }, [isLoadingIngredients, ingredientsResponse?.data]);
 
   const addLine = (type: LineType) => {
     setLines(prev => [...prev, { id: crypto.randomUUID(), lineType: type, ingredientItemId: '', subRecipeId: '', quantityRequired: 1 }]);
@@ -69,22 +82,26 @@ export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialo
     setLines(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const ingredients = lines.map(l => l.lineType === 'ingredient'
-        ? { lineType: 'ingredient' as const, ingredientItemId: l.ingredientItemId, quantityRequired: l.quantityRequired }
-        : { lineType: 'sub_recipe' as const, subRecipeId: l.subRecipeId, quantityRequired: l.quantityRequired }
-      );
-      await apiClient(`/recipes/${recipe.id}`, { method: 'PUT', body: { yieldQuantity, yieldPercent: yieldPercent / 100, ingredients } });
+  const updateMutation = useMutation({
+    mutationFn: (payload: any) => apiClient(`/recipes/${recipe.id}`, { method: 'PUT', body: payload }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['recipes', restaurantId] });
+      queryClient.invalidateQueries({ queryKey: ['recipe-ingredients', recipe.id] });
       onSuccess();
-    } catch (err: unknown) {
+    },
+    onError: (err: unknown) => {
       setError(err instanceof Error ? err.message : 'Failed to update recipe');
-    } finally {
-      setIsSubmitting(false);
     }
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    const ingredients = lines.map(l => l.lineType === 'ingredient'
+      ? { lineType: 'ingredient' as const, ingredientItemId: l.ingredientItemId, quantityRequired: l.quantityRequired }
+      : { lineType: 'sub_recipe' as const, subRecipeId: l.subRecipeId, quantityRequired: l.quantityRequired }
+    );
+    updateMutation.mutate({ yieldQuantity, yieldPercent: yieldPercent / 100, ingredients });
   };
 
   const name = recipe.producesItemName || recipe.recipeName || 'Recipe';
@@ -216,10 +233,10 @@ export function EditRecipeDialog({ recipe, onClose, onSuccess }: EditRecipeDialo
           <button
             type="submit"
             form="edit-recipe-form"
-            disabled={isSubmitting || isLoading}
+            disabled={updateMutation.isPending || isLoading}
             className="inline-flex items-center px-5 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Changes'}
+            {updateMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Saving...</> : 'Save Changes'}
           </button>
         </div>
       </div>

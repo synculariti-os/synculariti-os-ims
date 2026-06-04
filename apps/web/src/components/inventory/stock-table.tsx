@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '@/lib/api-client';
 import { Package, AlertTriangle, ArrowRight } from 'lucide-react';
 import { useAuthStore } from '@/store/use-auth-store';
 import { cn } from '@/lib/utils';
@@ -14,46 +15,16 @@ interface StockLevel {
 }
 
 export function StockTable() {
-  const [stock, setStock] = useState<StockLevel[]>([]);
-  const [loading, setLoading] = useState(true);
   const { restaurantId } = useAuthStore();
 
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchStock = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session || !restaurantId) return;
+  const { data: stockResponse, isLoading } = useQuery({
+    queryKey: ['stock', restaurantId],
+    queryFn: () => apiClient<{ data: StockLevel[] }>('/inventory/stock'),
+    enabled: !!restaurantId,
+    refetchInterval: 5000,
+  });
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/inventory/stock`, {
-          headers: {
-            'Authorization': `Bearer ${session.access_token}`,
-            'x-restaurant-id': restaurantId,
-          },
-        });
-
-        if (res.ok) {
-          const json = await res.json();
-          if (isMounted) {
-            setStock(json.data);
-          }
-        }
-      } catch (error) {
-        console.error('Failed to fetch stock', error);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchStock();
-    const intervalId = setInterval(fetchStock, 5000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(intervalId);
-    };
-  }, [restaurantId]);
+  const stock = stockResponse?.data || [];
 
   return (
     <div className="w-full mt-10">
@@ -68,7 +39,7 @@ export function StockTable() {
       </div>
       
       <div className="bg-white/40 dark:bg-zinc-900/40 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-3xl overflow-hidden shadow-sm">
-        {loading && stock.length === 0 ? (
+        {isLoading && stock.length === 0 ? (
           <div className="p-12 text-center text-zinc-500 dark:text-zinc-400 animate-pulse">
             Loading stock levels...
           </div>
