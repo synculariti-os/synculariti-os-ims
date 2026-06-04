@@ -1,7 +1,7 @@
+export { PREP_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { RestaurantId, PrepProductionLog, PrepPlanResponse } from '@ims/types';
 import type { CreatePrepLogDto, PlanPrepDto } from '@ims/validators';
 
-export const PREP_SERVICE_TOKEN = Symbol('IPrepService');
 
 export interface IPrepService {
   logPrepProduction(restaurantId: RestaurantId, dto: CreatePrepLogDto): Promise<PrepProductionLog>;

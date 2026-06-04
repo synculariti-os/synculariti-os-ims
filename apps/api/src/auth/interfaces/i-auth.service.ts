@@ -1,3 +1,4 @@
+export { AUTH_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { PermissionCode, JwtPayload, SafeUser, UserId, RestaurantId } from '@ims/types';
 import type { UpdateProfileInput } from './i-user.repository';
 
@@ -9,4 +10,3 @@ export interface IAuthService {
   updateProfile(userId: UserId, dto: UpdateProfileInput): Promise<SafeUser>;
 }
 
-export const AUTH_SERVICE_TOKEN = Symbol('IAuthService');

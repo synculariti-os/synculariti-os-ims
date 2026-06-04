@@ -25,9 +25,11 @@ import type { IItemReadService } from '../item/interfaces/i-item.service';
 import { LEDGER_SERVICE_TOKEN } from '../inventory/interfaces/i-ledger.service';
 import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
-export const PROCUREMENT_REPOSITORY_TOKEN = Symbol('IProcurementRepository');
 
+import { PROCUREMENT_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { PROCUREMENT_REPOSITORY_TOKEN } from '../core/core.symbols';
 @Injectable()
+
 export class ProcurementService implements IProcurementService {
   constructor(
     @Inject(DB_CLIENT)

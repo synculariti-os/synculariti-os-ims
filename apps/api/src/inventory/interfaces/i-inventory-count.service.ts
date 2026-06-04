@@ -1,7 +1,7 @@
+export { INVENTORY_COUNT_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { InventoryCountBatch, InventoryCountRow, CountBatchId, CountRowId, RestaurantId } from '@ims/types';
 import type { CloseCountBatchDto, SubmitCountRowDto } from '@ims/validators';
 
-export const INVENTORY_COUNT_SERVICE_TOKEN = Symbol('INVENTORY_COUNT_SERVICE_TOKEN');
 
 export interface IInventoryCountService {
   startBatch(restaurantId: RestaurantId): Promise<InventoryCountBatch>;

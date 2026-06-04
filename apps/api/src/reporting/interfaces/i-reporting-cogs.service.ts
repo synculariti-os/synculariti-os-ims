@@ -1,6 +1,6 @@
+export { REPORTING_COGS_SERVICE_TOKEN } from '../../core/core.symbols';
 import { RestaurantId, MenuItemCostReport, VendorPriceHistoryRow } from '@ims/types';
 
-export const REPORTING_COGS_SERVICE_TOKEN = Symbol('IReportingCogsService');
 
 export interface IReportingCogsService {
   /**

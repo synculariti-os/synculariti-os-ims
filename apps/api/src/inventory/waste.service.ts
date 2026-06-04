@@ -7,9 +7,11 @@ import { IWasteService } from './interfaces/i-waste.service';
 import { IWasteRepository } from './interfaces/i-waste.repository';
 import { ILedgerService, LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 
-export const WASTE_REPOSITORY_TOKEN = Symbol('IWasteRepository');
 
+import { WASTE_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { WASTE_REPOSITORY_TOKEN } from '../core/core.symbols';
 @Injectable()
+
 export class WasteService implements IWasteService {
   constructor(
     @Inject(DB_CLIENT) private readonly db: Kysely<Database>,

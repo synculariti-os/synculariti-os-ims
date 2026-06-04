@@ -24,7 +24,8 @@ import type { IRecipeRepository } from './interfaces/i-recipe.repository';
 import type { IItemWriteService } from '../item/interfaces/i-item.service';
 import { ITEM_WRITE_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
-export const RECIPE_REPOSITORY_TOKEN = Symbol('IRecipeRepository');
+import { RECIPE_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { RECIPE_REPOSITORY_TOKEN } from '../core/core.symbols';
 
 @Injectable()
 export class RecipeService implements IRecipeService {

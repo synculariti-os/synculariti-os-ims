@@ -24,9 +24,11 @@ import type { IInventoryCountService } from './interfaces/i-inventory-count.serv
 import type { ILedgerService } from './interfaces/i-ledger.service';
 import { LEDGER_SERVICE_TOKEN } from './interfaces/i-ledger.service';
 
-export const COUNT_REPOSITORY_TOKEN = Symbol('IInventoryCountRepository');
 
+import { COUNT_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { COUNT_REPOSITORY_TOKEN } from '../core/core.symbols';
 @Injectable()
+
 export class InventoryCountService implements IInventoryCountService {
   constructor(
     @Inject(DB_CLIENT)

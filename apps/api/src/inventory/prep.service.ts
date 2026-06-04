@@ -12,9 +12,11 @@ import { IItemReadService, ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-
 import { PrepPlanResponse, PrepPlanLine } from '@ims/types';
 import { PlanPrepDto } from '@ims/validators';
 
-export const PREP_REPOSITORY_TOKEN = Symbol('IPrepRepository');
 
+import { PREP_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { PREP_REPOSITORY_TOKEN } from '../core/core.symbols';
 @Injectable()
+
 export class PrepService implements IPrepService {
   constructor(
     @Inject(DB_CLIENT) private readonly db: Kysely<Database>,

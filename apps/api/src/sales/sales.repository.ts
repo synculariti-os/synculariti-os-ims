@@ -82,6 +82,8 @@ export class SalesRepository implements ISalesRepository {
         restaurantId: row.restaurant_id,
         businessDate: row.business_date,
         errorMessage: row.error_message,
+        fileUrl: (row as Record<string, unknown>).file_url as string | null ?? null,
+        uploadedBy: ((row as Record<string, unknown>).uploaded_by as string | null) as import('@ims/types').UserId | null ?? null,
         createdAt: row.created_at,
         updatedAt: row.updated_at,
       })),

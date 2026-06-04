@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { StockTable } from '@/components/inventory/stock-table';
-import { PackageSearch, Boxes, ClipboardList, Trash2 } from 'lucide-react';
+import { PackageSearch, Boxes, ClipboardList, Trash2, ScrollText } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -36,6 +36,10 @@ export default function InventoryDashboard() {
               <Link href="/inventory/waste" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
                 <Trash2 className="w-4 h-4 text-red-500" />
                 Waste
+              </Link>
+              <Link href="/inventory/ledger" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
+                <ScrollText className="w-4 h-4 text-indigo-500" />
+                Ledger
               </Link>
             </div>
           </header>

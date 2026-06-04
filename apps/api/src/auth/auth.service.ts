@@ -15,10 +15,11 @@ import type { IPermissionRepository } from './interfaces/i-permission.repository
 import type { ITenantService } from '../tenant/interfaces/i-tenant.service';
 import { TENANT_SERVICE_TOKEN } from '../tenant/interfaces/i-tenant.service';
 
-export const USER_REPOSITORY_TOKEN = Symbol('IUserRepository');
-export const PERMISSION_REPOSITORY_TOKEN = Symbol('IPermissionRepository');
 
+import { USER_REPOSITORY_TOKEN, PERMISSION_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { USER_REPOSITORY_TOKEN, PERMISSION_REPOSITORY_TOKEN } from '../core/core.symbols';
 @Injectable()
+
 export class AuthService implements IAuthService {
   constructor(
     @Inject(SUPABASE_ADMIN_CLIENT) private readonly supabase: SupabaseClient,

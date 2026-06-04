@@ -24,8 +24,8 @@
 
 | Symbol | Kind | Source Table(s) | Description |
 |---|---|---|---|
-| `FranchiseGroup` | `interface` | `franchise_groups` | Top-level tenant. Fields: `id`, `name`, `legalName`, `taxId`, `countryCode`, `active` |
-| `Restaurant` | `interface` | `restaurants` | Location within a franchise. Carries `franchiseGroupId`, `code`, `timezone` |
+| `FranchiseGroup` | `interface` | `franchise_groups` | Top-level tenant. Fields: `id`, `name`, `createdAt`, `updatedAt` |
+| `Restaurant` | `interface` | `restaurants` | Location within a franchise. Carries `franchiseGroupId`, `timezone` |
 | `TenantContext` | `interface` | — | Runtime context: `{ restaurantId: RestaurantId; franchiseGroupId: FranchiseGroupId }` |
 
 ---
@@ -36,10 +36,9 @@
 |---|---|---|---|
 | `User` | `interface` | `users` | App user. **`passwordHash` field is `@Exclude()`-decorated** |
 | `Role` | `interface` | `roles` | Named permission bundle |
-| `Permission` | `interface` | `permissions` | Atomic permission code with module scope |
 | `UserRestaurantRole` | `interface` | `user_restaurant_roles` | Junction: user ↔ restaurant ↔ role assignment |
 | `JwtPayload` | `interface` | — | Shape of the JWT: `{ sub, email, restaurantId, franchiseGroupId, permissions }` |
-| `PermissionCode` | `const enum` | `permissions` | All valid permission codes (e.g. `INVENTORY_READ`, `PROCUREMENT_WRITE`) |
+| `PermissionCode` | `type` | `permissions` | All valid permission codes (e.g. `INVENTORY_READ`, `PROCUREMENT_WRITE`) |
 
 ---
 
@@ -74,7 +73,7 @@
 | Symbol | Kind | Source Table(s) | Description |
 |---|---|---|---|
 | `Recipe` | `interface` | `recipes` | BOM header: `producesItemId`, `yieldQuantity`, `yieldPercent`, scope (`franchiseGroupId?` or `restaurantId?`) |
-| `RecipeIngredient` | `interface` | `recipe_ingredients` | BOM line: `ingredientItemId`, `quantityRequired` |
+| `RecipeIngredient` | `interface` | `recipe_ingredients` | BOM line: `ingredientItemId`, `quantityRequired`, `lineType`, `subRecipeId` |
 | `MenuItemMapping` | `interface` | `menu_item_mappings` | POS string → recipe mapping: `rawExcelString`, `recipeId`, `restaurantId` |
 | `BomExpansion` | `interface` | — | Result of BOM expansion: `{ itemId: ItemId; consumedQty: number }[]` |
 
@@ -135,7 +134,7 @@
 
 | Symbol | Kind | Description |
 |---|---|---|
-| `loginSchema` | `ZodObject` | `{ email: z.string().email(), password: z.string().min(8), restaurantId: z.string().uuid() }` |
+| `loginSchema` | `ZodObject` | `{ email: z.string().email(), password: z.string().min(8) }` |
 | `LoginDto` | `inferred type` | `z.infer<typeof loginSchema>` |
 
 ### Item Schemas
@@ -145,7 +144,7 @@
 | `createItemSchema` | `ZodObject` | Full item creation fields; `type` is `.enum(['RAW', 'PREP'])` |
 | `updateItemSchema` | `ZodObject` | Partial of `createItemSchema` via `.partial()` |
 | `createCategorySchema` | `ZodObject` | `name`, `description?`, exactly one of `franchiseGroupId` or `restaurantId` via `.refine()` |
-| `uomConversionSchema` | `ZodObject` | `{ itemId, fromUom, toUom, multiplierFactor: z.number().positive() }` |
+| `createUomConversionSchema` | `ZodObject` | `{ itemId, fromUom, toUom, multiplierFactor: z.number().positive() }` |
 
 ### Procurement Schemas
 
@@ -153,7 +152,7 @@
 |---|---|---|
 | `createVendorSchema` | `ZodObject` | `name`, `contactEmail?`, exactly one scope via `.refine()` |
 | `createPoSchema` | `ZodObject` | PO header + `lineItems: z.array(poLineItemSchema).min(1)` |
-| `receivePoSchema` | `ZodObject` | `{ lineItems: { id, quantityReceived }[] }` |
+| `receivePoSchema` | `ZodObject` | `{ lineItems: { itemId, quantityReceived }[] }` |
 | `poLineItemSchema` | `ZodObject` | `{ itemId, quantityOrdered: z.number().positive(), rawUnitPrice: z.number().nonnegative() }` |
 
 ### Recipe Schemas
@@ -168,8 +167,8 @@
 
 | Symbol | Kind | Description |
 |---|---|---|
-| `createTransferSchema` | `ZodObject` | `{ destinationRestaurantId, itemId, qty: z.number().positive() }` |
-| `submitCountRowSchema` | `ZodObject` | `{ actualQty: z.number().nonnegative() }` |
+| `createTransferSchema` | `ZodObject` | `{ destinationRestaurantId, items: { itemId, qty }[] }` |
+| `submitCountRowSchema` | `ZodObject` | `{ itemId, actualQty: z.number().nonnegative() }` |
 | `createWasteLogSchema` | `ZodObject` | `{ itemId, quantity: z.number().positive(), reason? }` |
 | `createPrepLogSchema` | `ZodObject` | `{ prepItemId, yieldQtyProduced: z.number().positive() }` |
 
@@ -194,8 +193,6 @@ All decorators live in `apps/api/src/common/decorators/` and are re-exported by 
 | `@Public()` | Decorator | `common` | Marks a route as not requiring JWT. |
 | `@TokenOnly()` | Decorator | `common` | Marks a route as requiring JWT, but bypassing the `x-restaurant-id` context check (used for `GET /tenant/context`). |
 | `@CurrentUser()` | Decorator | `common` | Parameter decorator — extracts `JwtPayload` from the request. |
-| `@TenantId()` | Decorator | `common` | Parameter decorator — extracts `restaurantId` from JWT. |
-| `@Transactional()` | Decorator | `common` | AOP decorator that wraps a service method in a Kysely transaction (metadata-only; actual tx handled by service layer). |
 
 ### Global Providers (registered in `AppModule`)
 

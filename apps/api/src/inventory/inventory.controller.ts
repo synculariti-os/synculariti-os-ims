@@ -26,12 +26,12 @@ export class InventoryController {
   @RequirePermission('INVENTORY.READ')
   async getLedger(
     @CurrentUser() user: JwtPayload,
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
+    @Query('limit') limit?: string | number,
+    @Query('offset') offset?: string | number,
   ) {
-    const limitNum = limit ? Number(limit) : 50;
-    const offsetNum = offset ? Number(offset) : 0;
+    const limitNum = limit ? typeof limit === 'number' ? limit : parseInt(limit as string, 10) : 50;
+    const offsetNum = offset ? typeof offset === 'number' ? offset : parseInt(offset as string, 10) : 0;
     const data = await this.ledgerService.getLedgerEntries(user.restaurantId, limitNum, offsetNum);
-    return { data };
+    return { data, meta: { limit: limitNum, offset: offsetNum } };
   }
 }

@@ -88,6 +88,7 @@ interface IAuthService {
 ### SOLID Notes
 - **SRP**: Only handles token verification and permission resolution. Does NOT issue tokens (Supabase does).
 - **DIP**: `IUserRepository` injected; Supabase admin client injected via `SUPABASE_ADMIN_CLIENT` token.
+- **Dependency Exception**: `AuthModule` imports `TenantModule` to validate restaurant/franchise context during token enrichment.
 
 ---
 
@@ -109,6 +110,7 @@ interface IAuthService {
 |---|---|
 | `franchise_groups` | CRUD |
 | `restaurants` | CRUD |
+| `user_restaurant_roles` | READ ONLY (Cross-Agent Exception for fast validation) |
 
 ### UI Views
 - `/tenant/restaurants` — Restaurant management and franchise association.
@@ -358,6 +360,7 @@ interface IPrepService {
 ### SOLID Notes
 - **SRP**: `LedgerService` only writes entries. `StockQueryService` only reads/aggregates them.
 - **LSP**: `LedgerEntryDto` has a `reason_code` discriminant — new codes extend the union without breaking existing consumers.
+- **Dependency Exception**: `InventoryModule` imports `RecipeModule` for `PrepService` BOM explosion.
 
 ---
 
@@ -464,12 +467,12 @@ interface IPrepService {
 ## Cross-Agent Dependency Rules
 
 ```
-Auth ──────────────────────► (no deps on other agents)
+Auth ──────────────────────► Tenant
 Tenant ────────────────────► (no deps on other agents)
-ItemMaster ────────────────► Tenant (restaurant validation)
+ItemMaster ────────────────► (no deps on other agents)
 Procurement ───────────────► ItemMaster, Inventory (LedgerService)
 Recipe ────────────────────► ItemMaster
-Inventory ─────────────────► ItemMaster, Tenant
+Inventory ─────────────────► ItemMaster, Recipe
 Sales ─────────────────────► Recipe, Inventory (LedgerService)
 Reporting ─────────────────► ItemMaster (read), Inventory (read), Recipe (read), Procurement (read)
 Audit ─────────────────────► (receives from all via interceptor, no outbound deps)

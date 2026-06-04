@@ -1,7 +1,7 @@
+export { INVENTORY_TRANSFER_SERVICE_TOKEN } from '../../core/core.symbols';
 import { InventoryTransfer, RestaurantId, FranchiseGroupId, TransferId } from '@ims/types';
 import { CreateTransferDto } from '@ims/validators';
 
-export const INVENTORY_TRANSFER_SERVICE_TOKEN = Symbol('IInventoryTransferService');
 
 export interface IInventoryTransferService {
   createTransfers(originRestaurantId: RestaurantId, franchiseGroupId: FranchiseGroupId, dto: CreateTransferDto): Promise<InventoryTransfer[]>;

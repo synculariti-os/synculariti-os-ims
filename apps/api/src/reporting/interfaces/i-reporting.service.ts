@@ -1,7 +1,7 @@
+export { REPORTING_SERVICE_TOKEN } from '../../core/core.symbols';
 import { RestaurantId } from '@ims/types';
 import { VarianceReportRow, ParAlertRow, SnapshotRow } from '@ims/types';
 
-export const REPORTING_SERVICE_TOKEN = Symbol('IReportingService');
 
 export interface IReportingService {
   getVarianceReport(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<VarianceReportRow[]>;

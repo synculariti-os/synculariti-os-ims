@@ -1,3 +1,4 @@
+export { ITEM_READ_SERVICE_TOKEN, ITEM_WRITE_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { ItemWithOverride, ItemId, RestaurantId, FranchiseGroupId, Item, Category, UomConversion, ItemRestaurantOverride } from '@ims/types';
 import type { 
   CreateItemDto, 
@@ -41,5 +42,3 @@ export interface IItemWriteService extends IItemReadService {
   generateSku(categoryId: string): Promise<string>;
 }
 
-export const ITEM_READ_SERVICE_TOKEN = Symbol('IItemReadService');
-export const ITEM_WRITE_SERVICE_TOKEN = Symbol('IItemWriteService');

@@ -1,3 +1,4 @@
+export { LEDGER_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { RestaurantId, ItemId, StockLevel } from '@ims/types';
 import type { LedgerEntryDto } from '../dto/ledger-entry.dto';
 
@@ -8,4 +9,3 @@ export interface ILedgerService {
   getLedgerEntries(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<any[]>;
 }
 
-export const LEDGER_SERVICE_TOKEN = Symbol('ILedgerService');

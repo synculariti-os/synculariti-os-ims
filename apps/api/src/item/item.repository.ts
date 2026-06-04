@@ -2,7 +2,7 @@ import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject } from '@nestjs/common';
 import { IItemRepository } from './interfaces/i-item.repository';
 import type { CreateItemCommand, CreateCategoryCommand } from './interfaces/i-item.service';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import { Database, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride, Item, asRestaurantId, asItemId, asCategoryId, asFranchiseGroupId } from '@ims/types';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateItemDto, UpdateCategoryDto, CreateUomConversionDto, UpdateItemOverrideDto } from '@ims/validators';
@@ -17,7 +17,7 @@ export class ItemRepository implements IItemRepository {
       .selectFrom('items')
       .leftJoin('item_restaurant_overrides', (join) =>
         join.onRef('item_restaurant_overrides.item_id', '=', 'items.id')
-            .on('item_restaurant_overrides.restaurant_id', '=', sql`${restaurantId}`)
+            .on('item_restaurant_overrides.restaurant_id', '=', restaurantId)
       )
       .select([
         'items.id as id',
@@ -147,7 +147,7 @@ export class ItemRepository implements IItemRepository {
       .selectFrom('items')
       .leftJoin('item_restaurant_overrides', (join) =>
         join.onRef('item_restaurant_overrides.item_id', '=', 'items.id')
-            .on('item_restaurant_overrides.restaurant_id', '=', sql`${restaurantId}`)
+            .on('item_restaurant_overrides.restaurant_id', '=', restaurantId)
       )
       .leftJoin('categories', 'categories.id', 'items.category_id')
       .select([

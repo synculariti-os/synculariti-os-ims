@@ -1,3 +1,4 @@
+export { ITEM_REPOSITORY_TOKEN } from '../../core/core.symbols';
 import type { Item, ItemWithOverride, ItemId, RestaurantId, UomConversion, Category, ItemRestaurantOverride } from '@ims/types';
 import type { 
   UpdateItemDto, 
@@ -25,4 +26,3 @@ export interface IItemRepository {
   generateSku(categoryId: string): Promise<string>;
 }
 
-export const ITEM_REPOSITORY_TOKEN = Symbol('IItemRepository');

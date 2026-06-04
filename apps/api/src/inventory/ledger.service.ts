@@ -1,3 +1,5 @@
+import { LEDGER_REPOSITORY_TOKEN } from '../core/core.symbols';
+export { LEDGER_REPOSITORY_TOKEN } from '../core/core.symbols';
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
 
 import type { RestaurantId, ItemId, StockLevel, } from '@ims/types';
@@ -8,7 +10,6 @@ import type { ILedgerRepository } from './interfaces/i-ledger.repository';
 import type { IItemReadService } from '../item/interfaces/i-item.service';
 import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
-export const LEDGER_REPOSITORY_TOKEN = Symbol('ILedgerRepository');
 
 const VALID_REASON_CODES = new Set<string>(Object.values(LEDGER_REASON_CODES));
 

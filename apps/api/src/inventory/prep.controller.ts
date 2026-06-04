@@ -48,14 +48,12 @@ export class PrepController {
   @RequirePermission('INVENTORY.READ')
   async listPrepLogs(
     @CurrentUser() user: JwtPayload,
-    @Query('limit') limit?: number,
-    @Query('offset') offset?: number,
-  ): Promise<{ data: PrepProductionLog[] }> {
-    const data = await this.prepService.listPrepLogs(
-      user.restaurantId,
-      limit ? typeof limit === "string" ? parseInt(limit, 10) : limit : undefined,
-      offset ? typeof offset === "string" ? parseInt(offset, 10) : offset : undefined
-    );
-    return { data };
+    @Query('limit') limit?: string | number,
+    @Query('offset') offset?: string | number,
+  ): Promise<{ data: PrepProductionLog[]; meta: { limit: number; offset: number } }> {
+    const limitNum = limit ? typeof limit === 'number' ? limit : parseInt(limit as string, 10) : 50;
+    const offsetNum = offset ? typeof offset === 'number' ? offset : parseInt(offset as string, 10) : 0;
+    const data = await this.prepService.listPrepLogs(user.restaurantId, limitNum, offsetNum);
+    return { data, meta: { limit: limitNum, offset: offsetNum } };
   }
 }

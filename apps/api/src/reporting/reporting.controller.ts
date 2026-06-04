@@ -19,28 +19,26 @@ export class ReportingController {
   @RequirePermission(PERMISSION_CODES.REPORTING_READ)
   async getVarianceReport(
     @CurrentUser() user: JwtPayload,
-    @Query('limit') limit?: string,
-    @Query('offset') offset?: string,
+    @Query('limit') limit?: string | number,
+    @Query('offset') offset?: string | number,
   ) {
-    return this.reportingService.getVarianceReport(
-      user.restaurantId,
-      limit ? parseInt(limit, 10) : 100,
-      offset ? parseInt(offset, 10) : 0,
-    );
+    const limitNum = limit ? typeof limit === 'number' ? limit : parseInt(limit as string, 10) : 100;
+    const offsetNum = offset ? typeof offset === 'number' ? offset : parseInt(offset as string, 10) : 0;
+    const data = await this.reportingService.getVarianceReport(user.restaurantId, limitNum, offsetNum);
+    return { data, meta: { limit: limitNum, offset: offsetNum } };
   }
 
   @Get('snapshots')
   @RequirePermission(PERMISSION_CODES.REPORTING_READ)
   async getSnapshots(
     @CurrentUser() user: JwtPayload,
-    @Query('limit') limit?: string,
-    @Query('offset') offset?: string,
+    @Query('limit') limit?: string | number,
+    @Query('offset') offset?: string | number,
   ) {
-    return this.reportingService.getSnapshots(
-      user.restaurantId,
-      limit ? parseInt(limit, 10) : 100,
-      offset ? parseInt(offset, 10) : 0,
-    );
+    const limitNum = limit ? typeof limit === 'number' ? limit : parseInt(limit as string, 10) : 100;
+    const offsetNum = offset ? typeof offset === 'number' ? offset : parseInt(offset as string, 10) : 0;
+    const data = await this.reportingService.getSnapshots(user.restaurantId, limitNum, offsetNum);
+    return { data, meta: { limit: limitNum, offset: offsetNum } };
   }
 
   @Get('par-alerts')

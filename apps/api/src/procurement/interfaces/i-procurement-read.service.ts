@@ -1,6 +1,6 @@
+export { PROCUREMENT_READ_SERVICE_TOKEN } from '../../core/core.symbols';
 import { RestaurantId, VendorPriceHistoryRow } from '@ims/types';
 
-export const PROCUREMENT_READ_SERVICE_TOKEN = Symbol('IProcurementReadService');
 
 export interface IProcurementReadService {
   /**

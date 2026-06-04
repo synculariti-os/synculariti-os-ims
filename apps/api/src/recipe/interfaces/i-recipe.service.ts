@@ -1,3 +1,4 @@
+export { RECIPE_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { BomExpansion, Recipe, RecipeIngredient, RecipeId, RestaurantId, MenuItemMapping, RecipeNutritionReport } from '@ims/types';
 import type { CreateRecipeDto, UpdateRecipeDto, MenuItemMappingDto, RecipeIngredientDto } from '@ims/validators';
 import type { FranchiseGroupId } from '@ims/types';
@@ -29,4 +30,3 @@ export interface IRecipeService {
   deleteMapping(mappingId: string): Promise<void>;
 }
 
-export const RECIPE_SERVICE_TOKEN = Symbol('IRecipeService');

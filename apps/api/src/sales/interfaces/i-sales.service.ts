@@ -1,4 +1,4 @@
-export const SALES_SERVICE_TOKEN = Symbol('SALES_SERVICE_TOKEN');
+export { SALES_SERVICE_TOKEN } from '../../core/core.symbols';
 
 export interface ISalesService {
   uploadSalesFile(
