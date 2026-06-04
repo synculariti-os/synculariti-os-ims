@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { updateItemSchema } from '@ims/validators';
 import { z } from 'zod';
@@ -29,7 +29,9 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
     handleSubmit,
     reset,
     watch,
+    control,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<UpdateItemForm>({
     resolver: zodResolver(updateItemSchema),
@@ -46,7 +48,7 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
     },
   });
 
-  const itemType = watch('type');
+  const itemType = useWatch({ control, name: 'type' });
 
   useEffect(() => {
     if (item) {
@@ -101,7 +103,7 @@ export function EditItemDialog({ item, onOpenChange, onSuccess }: EditItemDialog
   };
 
   const handleGenerateSku = async () => {
-    const categoryId = watch('categoryId');
+    const categoryId = getValues('categoryId');
     if (!categoryId) return;
     setIsGeneratingSku(true);
     try {

@@ -171,9 +171,13 @@ export function RecipesTable() {
     } finally {
       setIsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { fetchRecipes(); }, []);
+  useEffect(() => { 
+    fetchRecipes(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const toggleRow = (id: string) => {
     setExpandedRows(prev => {

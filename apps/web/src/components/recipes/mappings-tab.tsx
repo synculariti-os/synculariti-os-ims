@@ -42,9 +42,13 @@ export function MappingsTab() {
     } finally {
       setIsLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => { fetchMappings(); }, []);
+  useEffect(() => { 
+    fetchMappings(); 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDelete = async () => {
     if (!deletingMapping) return;

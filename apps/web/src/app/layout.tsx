@@ -14,6 +14,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+import Providers from "@/lib/react-query";
+
 export const metadata: Metadata = {
   title: "Synculariti IMS",
   description: "Enterprise Inventory Management System",
@@ -30,10 +32,12 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-zinc-50 dark:bg-zinc-950">
-        <ProtectedLayout>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-        </ProtectedLayout>
+        <Providers>
+          <ProtectedLayout>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+          </ProtectedLayout>
+        </Providers>
       </body>
     </html>
   );

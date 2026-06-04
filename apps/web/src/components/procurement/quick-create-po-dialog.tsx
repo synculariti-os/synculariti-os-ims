@@ -42,7 +42,6 @@ async function fetchVendors() {
 
   useEffect(() => {
     if (isOpen) {
-// eslint-disable-next-line react-hooks/set-state-in-effect
       setQuantity(suggestedQuantity);
       setUnitPrice(0);
       setSelectedVendorId('');
