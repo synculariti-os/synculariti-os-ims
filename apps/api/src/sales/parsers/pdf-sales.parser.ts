@@ -1,13 +1,20 @@
 import * as fs from 'fs';
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
+import pdfParse from 'pdf-parse';
 import { ISalesFileParser, ParsedSalesRow } from '../interfaces/i-sales-file-parser';
+import { InvalidSalesFormatError } from '../errors/invalid-sales-format.error';
 
 export class PdfSalesParser implements ISalesFileParser {
   async parse(filePath: string): Promise<ParsedSalesRow[]> {
     const dataBuffer = fs.readFileSync(filePath);
     const data = await pdfParse(dataBuffer);
-    const lines = data.text.split('\n').map((l: string) => l.trim()).filter((l: string) => l.length > 0);
+    const text: string = data.text;
+
+    // Pre-flight validation
+    if (!text.includes('Tržby podľa produktov') && !text.includes('Trzby podla produktov')) {
+      throw new InvalidSalesFormatError('Invalid PDF format: Missing expected keyword "Tržby podľa produktov". This does not appear to be a valid POS export.');
+    }
+
+    const lines = text.split('\n').map((l: string) => l.trim()).filter((l: string) => l.length > 0);
 
     const parsedRows: ParsedSalesRow[] = [];
 

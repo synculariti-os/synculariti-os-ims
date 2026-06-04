@@ -369,7 +369,7 @@ interface IPrepService {
 **Responsibility**: Accept XLSX/CSV/PDF POS export files, parse them asynchronously, map rows to recipes via `menu_item_mappings`, and trigger BOM-based inventory depletion.
 
 ### Inputs
-- `POST /sales-imports/upload` → multipart file upload
+- `POST /sales-imports/upload` → multipart file upload (supports `.xlsx`, `.pdf`) with strict pre-flight validation to reject invalid formats
 - `GET /sales-imports` → returns paginated list of batches for the current restaurant
 - BullMQ internal job queue messages
 

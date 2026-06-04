@@ -255,6 +255,9 @@ All Dependency Injection tokens must be `Symbol` objects exported from `core.sym
 | `SalesImportProcessor` | `class` | BullMQ worker that processes sales import jobs |
 | `ISalesFileParser` | `interface` | Interface for parsing different POS export file formats |
 | `ISalesFileParserFactory` | `interface` | Factory to inject the correct parser based on file extension |
+| `XlsxSalesParser` | `class` | Parser implementation for `.xlsx` formats with header validation |
+| `PdfSalesParser` | `class` | Parser implementation for `.pdf` formats with keyword validation |
+| `InvalidSalesFormatError` | `class` | Custom error thrown when pre-flight validation fails |
 
 ---
 

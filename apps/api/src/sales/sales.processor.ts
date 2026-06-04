@@ -12,6 +12,7 @@ import { Database } from '@ims/types';
 import * as path from 'path';
 import { Kysely } from 'kysely';
 import { tenantContext } from '../common/context/tenant.context';
+import { InvalidSalesFormatError } from './errors/invalid-sales-format.error';
 
 @Processor('sales_import')
 export class SalesImportProcessor extends WorkerHost {
@@ -105,6 +106,13 @@ export class SalesImportProcessor extends WorkerHost {
         const stack = error instanceof Error ? error.stack : undefined;
         this.logger.error(`Failed to process batch ${batchId}`, stack);
         await this.salesRepository.updateBatchStatus(batchId, 'FAILED', msg);
+        
+        // If it's a validation error, do not throw so BullMQ doesn't retry
+        if (error instanceof InvalidSalesFormatError) {
+          this.logger.warn(`Batch ${batchId} failed validation. Not retrying.`);
+          return;
+        }
+
         throw error;
       }
     });

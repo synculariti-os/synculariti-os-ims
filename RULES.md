@@ -105,7 +105,9 @@ Permission codes (e.g., `'INVENTORY.WRITE'`) must be imported from `@ims/types/p
 ### R-SEC-04 — Sanitize File Uploads
 Sales import files must be validated:
 - Max size: 10 MB
-- Allowed MIME types: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `text/csv`
+- Allowed MIME types: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet`, `application/pdf`, `text/csv`
+- Strict Pre-flight validation: Ensure the structural integrity of the uploaded data (e.g., verifying XLSX headers, finding specific PDF keywords).
+- Poison pill prevention: If validation fails, immediately mark the batch as `FAILED` to prevent BullMQ from perpetually retrying and jamming the queue. Do not re-throw generic errors to the worker loop.
 - File content must be parsed in a sandboxed BullMQ worker, never in the HTTP request handler.
 
 ### R-SEC-05 — Never Log Sensitive Fields
