@@ -35,6 +35,9 @@ jobs:
       - name: Lint
         run: pnpm lint
         
+      - name: Enforce Immutable Tests
+        run: ./scripts/enforce-immutable-tests.sh origin/main
+        
       - name: Unit Tests with Coverage
         run: pnpm test -- --coverage
         

@@ -250,3 +250,6 @@ Any change to the Supabase schema must be accompanied by a new migration file in
 
 ### R-CI-04 — Generated Types Must Be Committed
 After any migration, `pnpm run generate:types` must be run and the updated `packages/types/src/database.types.ts` committed in the same PR as the migration.
+
+### R-CI-05 — Immutable Tests Contract
+The CI pipeline automatically enforces the TDD contract. Any file containing the `@immutable-test` directive cannot be modified once committed to `main`. If modifications are detected, the build will fail.
