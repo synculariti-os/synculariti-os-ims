@@ -1,5 +1,6 @@
-import { XlsxSalesParser } from './xlsx-sales.parser';
-import { PdfSalesParser } from './pdf-sales.parser';
+import { describe, it, expect } from 'vitest';
+import { XlsxSalesParser } from '../parsers/xlsx-sales.parser';
+import { PdfSalesParser } from '../parsers/pdf-sales.parser';
 
 
 describe('Sales Parsers', () => {

@@ -2,8 +2,7 @@
 
 ## Current Phase: Phase 2B — Backend Remediation & Gap Closure
 
-> Full detail in `implementation_plan.md`. Concepts from `pepperoni_pizza_ims_analysis.md` reconciled.
-> Note: Recursive BOM expansion, prep/waste/count/procurement UIs are **already implemented** (doc was outdated).
+> Note: Recursive BOM expansion, prep/waste/count/procurement UIs are **already implemented**.
 
 ---
 
@@ -70,5 +69,3 @@
 - Audit fixed 23 violations across 6 phases (resolved)
 - `pnpm type-check`: ✅ Passes (0 errors)
 - `pnpm test`: ✅ 54/54 tests pass
-- `implementation_plan.md`: ✅ Created with full reconciliation
-- `pepperoni_pizza_ims_analysis.md` gaps reconciled with actual codebase

@@ -11,9 +11,9 @@ import { LedgerService } from '../../src/inventory/ledger.service';
 describe('Procurement ACID Integration Tests', () => {
   let app: INestApplication;
   let db: Kysely<Database>;
-  let _procurementService: ProcurementService;
-  let _itemService: ItemService;
-  let _ledgerService: LedgerService;
+  let procurementService: ProcurementService;
+  let itemService: ItemService;
+  let ledgerService: LedgerService;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({

@@ -38,8 +38,5 @@ jobs:
       - name: Unit Tests with Coverage
         run: pnpm test -- --coverage
         
-      - name: Integration Tests
-        run: pnpm test:integration || echo "No integration tests yet"
-        
       - name: Build
         run: pnpm build

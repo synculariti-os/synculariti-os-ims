@@ -28,6 +28,7 @@ describe('ItemController', () => {
       createCategory: vi.fn(),
       updateCategory: vi.fn(),
       listCategories: vi.fn(),
+      getUomConversions: vi.fn(),
       upsertUomConversion: vi.fn(),
       updateOverride: vi.fn(),
       deleteItem: vi.fn(),

@@ -4,7 +4,7 @@ import { describe, it, expect, vi, Mocked, beforeEach } from 'vitest';
 import { ReportingController } from '../reporting.controller';
 import { IReportingService, REPORTING_SERVICE_TOKEN } from '../interfaces/i-reporting.service';
 import { IReportingCogsService, REPORTING_COGS_SERVICE_TOKEN } from '../interfaces/i-reporting-cogs.service';
-import { RestaurantId } from '@ims/types';
+import { RestaurantId, JwtPayload } from '@ims/types';
 
 describe('ReportingController', () => {
   let controller: ReportingController;
@@ -24,12 +24,13 @@ describe('ReportingController', () => {
       getVarianceReport: vi.fn(),
       getSnapshots: vi.fn(),
       getParAlerts: vi.fn(),
-    } as unknown;
+      runEodSnapshots: vi.fn(),
+    } as unknown as Mocked<IReportingService>;
 
     mockCogsService = {
       getMenuCostingReport: vi.fn(),
       getVendorPriceHistory: vi.fn(),
-    } as unknown;
+    } as unknown as Mocked<IReportingCogsService>;
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ReportingController],
@@ -51,9 +52,9 @@ describe('ReportingController', () => {
   describe('getVendorPriceHistory', () => {
     it('calls cogsService.getVendorPriceHistory with correct params', async () => {
       const mockResult = [{ date: '2023-01-01', landedUnitCost: 10, vendorId: 'v1', vendorName: 'Vendor 1', poId: 'po1' }];
-      (mockCogsService.getVendorPriceHistory as unknown).mockResolvedValue(mockResult);
+      mockCogsService.getVendorPriceHistory.mockResolvedValue(mockResult);
 
-      const result = await controller.getVendorPriceHistory(mockUser as unknown, { itemId: 'item-1' });
+      const result = await controller.getVendorPriceHistory(mockUser as unknown as JwtPayload, { itemId: 'item-1' });
 
       expect(result).toEqual(mockResult);
       expect(mockCogsService.getVendorPriceHistory).toHaveBeenCalledWith('rest-1', 'item-1');

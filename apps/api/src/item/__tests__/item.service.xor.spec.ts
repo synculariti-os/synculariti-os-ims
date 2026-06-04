@@ -39,6 +39,7 @@ describe('ItemService — owner XOR guard', () => {
       getUomConversion: vi.fn(),
       listParLevels: vi.fn(),
       listCategories: vi.fn(),
+      getUomConversions: vi.fn(),
       createItem: vi.fn(),
       updateItem: vi.fn(),
       createCategory: vi.fn(),

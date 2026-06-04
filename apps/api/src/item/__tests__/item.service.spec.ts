@@ -31,7 +31,7 @@ describe('ItemService', () => {
     updatedAt: '2026-05-23T00:00:00Z',
     override: undefined,
     effectiveParLevel: 0,
-    effectiveIsActive: true,
+    effectiveIsActive: true, allergens: [], caloriesPerUom: 0, proteinGrams: 0, fatGrams: 0, carbsGrams: 0,
   };
 
   const mockOverride: ItemRestaurantOverride = {

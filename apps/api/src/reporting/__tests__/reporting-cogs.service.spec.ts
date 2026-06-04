@@ -21,15 +21,15 @@ describe('ReportingCogsService', () => {
     mockRecipeService = {
       listMenuRecipes: vi.fn(),
       expandBOM: vi.fn(),
-    } as unknown;
+    } as unknown as Mocked<IRecipeService>;
 
     mockProcurementReadService = {
       getAverageUnitCosts: vi.fn(),
-    } as unknown;
+    } as unknown as Mocked<IProcurementReadService>;
 
     mockItemReadService = {
       findById: vi.fn(),
-    } as unknown;
+    } as unknown as Mocked<IItemReadService>;
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -54,8 +54,8 @@ describe('ReportingCogsService', () => {
 
   describe('getMenuCostingReport', () => {
     it('returns empty array when no menu recipes exist', async () => {
-      (mockRecipeService.listMenuRecipes as unknown).mockResolvedValueOnce([]);
-      (mockProcurementReadService.getAverageUnitCosts as unknown).mockResolvedValueOnce({});
+      mockRecipeService.listMenuRecipes.mockResolvedValueOnce([]);
+      mockProcurementReadService.getAverageUnitCosts.mockResolvedValueOnce({});
 
       const result = await service.getMenuCostingReport(mockRestaurantId);
       expect(result).toEqual([]);
@@ -86,12 +86,12 @@ describe('ReportingCogsService', () => {
         'cheese-id': 10.0, // $10 per kg
       };
 
-      (mockRecipeService.listMenuRecipes as unknown).mockResolvedValueOnce(mockRecipes);
-      (mockRecipeService.expandBOM as unknown).mockResolvedValueOnce(mockBom);
-      (mockProcurementReadService.getAverageUnitCosts as unknown).mockResolvedValueOnce(mockCosts);
-      (mockItemReadService.findById as unknown)
-        .mockResolvedValueOnce({ name: 'Dough', inventoryUom: 'kg' })
-        .mockResolvedValueOnce({ name: 'Cheese', inventoryUom: 'kg' });
+      mockRecipeService.listMenuRecipes.mockResolvedValueOnce(mockRecipes);
+      mockRecipeService.expandBOM.mockResolvedValueOnce(mockBom);
+      mockProcurementReadService.getAverageUnitCosts.mockResolvedValueOnce(mockCosts);
+      mockItemReadService.findById
+        .mockResolvedValueOnce({ name: 'Dough', inventoryUom: 'kg' } as any)
+        .mockResolvedValueOnce({ name: 'Cheese', inventoryUom: 'kg' } as any);
 
       const result = await service.getMenuCostingReport(mockRestaurantId);
 
@@ -123,11 +123,11 @@ describe('ReportingCogsService', () => {
         { itemId: 'tap-water-id' as ItemId, consumedQty: 1 },
       ];
 
-      (mockRecipeService.listMenuRecipes as unknown).mockResolvedValueOnce(mockRecipes);
-      (mockRecipeService.expandBOM as unknown).mockResolvedValueOnce(mockBom);
+      mockRecipeService.listMenuRecipes.mockResolvedValueOnce(mockRecipes);
+      mockRecipeService.expandBOM.mockResolvedValueOnce(mockBom);
       // No costs returned
-      (mockProcurementReadService.getAverageUnitCosts as unknown).mockResolvedValueOnce({});
-      (mockItemReadService.findById as unknown).mockResolvedValueOnce({ name: 'Tap Water', inventoryUom: 'L' });
+      mockProcurementReadService.getAverageUnitCosts.mockResolvedValueOnce({});
+      mockItemReadService.findById.mockResolvedValueOnce({ name: 'Tap Water', inventoryUom: 'L' } as any);
 
       const result = await service.getMenuCostingReport(mockRestaurantId);
 

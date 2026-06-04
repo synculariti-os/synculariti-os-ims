@@ -2,6 +2,7 @@
 import { DB_CLIENT } from '../../core/core.symbols';
 // @immutable-test
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { InventoryTransferService } from '../inventory-transfer.service';
 import { IInventoryTransferService, } from '../interfaces/i-inventory-transfer.service';
 import { LEDGER_SERVICE_TOKEN } from '../interfaces/i-ledger.service';

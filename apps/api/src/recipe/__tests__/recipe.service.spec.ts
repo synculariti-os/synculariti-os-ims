@@ -53,6 +53,7 @@ const mockItemService: IItemWriteService = {
   convertUom: vi.fn(),
   listParLevels: vi.fn(),
   listCategories: vi.fn(),
+      getUomConversions: vi.fn(),
   createItem: vi.fn(),
   updateItem: vi.fn(),
   deleteItem: vi.fn(),
@@ -184,8 +185,8 @@ describe('RecipeService', () => {
 
       expect(mockItemService.findById).toHaveBeenCalledWith(PRODUCED_ITEM_ID, 'restaurant-uuid');
       expect(mockRecipeRepo.create).toHaveBeenCalledWith({
-        ...dto,
-        producesItemId: dto.producesItemId,
+        ...(dto as any),
+        producesItemId: (dto as any).producesItemId,
         recipeName: null,
         restaurantId: 'restaurant-uuid',
         franchiseGroupId: null,

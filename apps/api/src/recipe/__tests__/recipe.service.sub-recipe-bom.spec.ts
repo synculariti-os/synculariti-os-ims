@@ -127,6 +127,7 @@ const mockItemService: IItemWriteService = {
   convertUom:        vi.fn(),
   listParLevels:     vi.fn(),
   listCategories:    vi.fn(),
+  getUomConversions: vi.fn(),
   createItem:        vi.fn(),
   updateItem:        vi.fn(),
   deleteItem:        vi.fn(),

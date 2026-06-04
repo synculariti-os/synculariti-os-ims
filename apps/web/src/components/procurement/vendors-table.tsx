@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Vendor } from '@ims/types';
 import { procurementApi } from '@/lib/api/procurement';
-import { Store, Search, Plus, Edit, Phone, Mail } from 'lucide-react';
+import { Store, Search, Plus, Edit, Mail } from 'lucide-react';
 import { CreateVendorDialog } from './create-vendor-dialog';
 
 export function VendorsTable() {
