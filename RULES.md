@@ -20,6 +20,7 @@ Every Kysely query that touches a tenant-scoped table (anything with `restaurant
 All database queries must use **Kysely** query builder. Raw SQL strings (`db.execute(sql\`...\``) are forbidden except in:
 - DB migration files (`supabase/migrations/`)
 - One-off maintenance scripts (in `scripts/` folder, never imported by the app)
+- `REFRESH MATERIALIZED VIEW` commands (intentional DDL exception for ReportingAgent)
 
 ### R-DB-04 — Transactions for Multi-Table Writes
 Any service method that writes to **more than one table** must wrap all writes in a single Kysely transaction. Partial writes that leave the DB in an inconsistent state are a critical bug.
@@ -48,6 +49,8 @@ Updates to `inventory_count_batches` must include a `WHERE version = :currentVer
 
 ### R-ARCH-01 — No Cross-Repository Dependencies
 A NestJS module's `Repository` class may only query tables **owned by that module** (see agents.md). To access data from another domain, import and inject that domain's *service interface*, never its repository.
+
+**Exceptions**: `TenantRepository` is explicitly allowed to read `user_restaurant_roles` to quickly validate the tenant context without a full AuthAgent round-trip. This is an intentional exception for performance.
 
 ```typescript
 // ✅ Correct — inject the service interface
@@ -84,7 +87,7 @@ NestJS Dependency Injection for services and repositories must use `Symbol` toke
 ## 3. Security Rules
 
 ### R-SEC-01 — JWT Verification on Every Protected Route
-All NestJS routes must be protected by `SupabaseAuthGuard` (registered globally via `APP_GUARD` in `AppModule`). Use `@Public()` decorator on routes that should not require authentication (e.g., health checks). Use the `@TokenOnly()` decorator on routes that require JWT authentication but do not yet have a restaurant context (e.g., `GET /tenant/context`). JWT issuance is delegated entirely to Supabase Auth — NestJS never issues tokens.
+All NestJS routes must be protected by `SupabaseAuthGuard` (registered globally via `APP_GUARD` in `AppModule`). Use `@Public()` decorator on routes that should not require authentication (e.g., health checks). Use the `@TokenOnly()` decorator on routes that require JWT authentication but do not yet have a restaurant context (e.g., `GET /tenant/context`, `POST /auth/select-restaurant`, `GET /auth/me`, `PATCH /auth/profile`). JWT issuance is delegated entirely to Supabase Auth — NestJS never issues tokens.
 
 ### R-SEC-02 — Permission Guard is Mandatory for Mutations
 Every mutating endpoint (POST, PUT, PATCH, DELETE) must carry a `@RequirePermission('MODULE.ACTION')` decorator. The guard verifies the permission is present in the JWT `permissions` array.

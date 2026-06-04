@@ -61,6 +61,14 @@ export class ProcurementService implements IProcurementService {
     return this.procurementRepo.findVendors(restaurantId);
   }
 
+  async createVendor(restaurantId: string | null, franchiseGroupId: string | null, dto: import('@ims/validators').CreateVendorDto): Promise<Vendor> {
+    return this.procurementRepo.createVendor(restaurantId, franchiseGroupId, dto);
+  }
+
+  async updateVendor(vendorId: string, dto: import('@ims/validators').UpdateVendorDto): Promise<Vendor> {
+    return this.procurementRepo.updateVendor(vendorId, dto);
+  }
+
   async submitPO(poId: PurchaseOrderId): Promise<PurchaseOrder> {
     const po = await this.findOrThrow(poId);
 

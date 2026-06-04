@@ -101,7 +101,7 @@ describe('InventoryCountController', () => {
       const result = await controller.listBatches(mockUser, 10, 5);
       
       expect(service.listBatches).toHaveBeenCalledWith(mockUser.restaurantId, 10, 5);
-      expect(result).toEqual({ data: mockResult });
+      expect(result).toEqual({ data: mockResult, meta: { limit: 10, offset: 5 } });
     });
   });
 

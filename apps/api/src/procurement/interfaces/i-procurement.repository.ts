@@ -29,4 +29,6 @@ export interface IProcurementRepository {
   getAverageUnitCosts(restaurantId: string): Promise<Record<string, number>>;
   getVendorPriceHistory(restaurantId: string, itemId: string): Promise<VendorPriceHistoryRow[]>;
   findVendors(restaurantId: string): Promise<Vendor[]>;
+  createVendor(restaurantId: string | null, franchiseGroupId: string | null, dto: import('@ims/validators').CreateVendorDto): Promise<Vendor>;
+  updateVendor(vendorId: string, dto: import('@ims/validators').UpdateVendorDto): Promise<Vendor>;
 }

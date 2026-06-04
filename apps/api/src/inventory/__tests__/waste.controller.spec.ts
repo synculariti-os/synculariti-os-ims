@@ -71,7 +71,7 @@ describe('WasteController', () => {
       const result = await controller.listWasteLogs(mockUser, 10, 5);
       
       expect(service.listWasteLogs).toHaveBeenCalledWith(mockUser.restaurantId, 10, 5);
-      expect(result).toEqual({ data: mockResult });
+      expect(result).toEqual({ data: mockResult, meta: { limit: 10, offset: 5 } });
     });
   });
 });

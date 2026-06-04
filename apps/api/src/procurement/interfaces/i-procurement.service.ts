@@ -1,6 +1,6 @@
 export { PROCUREMENT_SERVICE_TOKEN } from '../../core/core.symbols';
 import type { PurchaseOrder, PurchaseOrderId, Vendor } from '@ims/types';
-import type { CreatePoDto, ReceivePoDto } from '@ims/validators';
+import type { CreatePoDto, ReceivePoDto, CreateVendorDto, UpdateVendorDto } from '@ims/validators';
 
 
 export interface IProcurementService {
@@ -10,4 +10,6 @@ export interface IProcurementService {
   cancelPO(poId: PurchaseOrderId): Promise<void>;
   listPOs(restaurantId: string, page?: number, limit?: number): Promise<{ data: PurchaseOrder[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
   listVendors(restaurantId: string): Promise<Vendor[]>;
+  createVendor(restaurantId: string | null, franchiseGroupId: string | null, dto: CreateVendorDto): Promise<Vendor>;
+  updateVendor(vendorId: string, dto: UpdateVendorDto): Promise<Vendor>;
 }

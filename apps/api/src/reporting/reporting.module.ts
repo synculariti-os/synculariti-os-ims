@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ReportingController } from './reporting.controller';
 import { ReportingService } from './reporting.service';
+import { ReportingRepository } from './reporting.repository';
 import { InventoryModule } from '../inventory/inventory.module';
 import { ItemModule } from '../item/item.module';
 import { RecipeModule } from '../recipe/recipe.module';
@@ -10,6 +11,7 @@ import { ReportingCogsService } from './reporting-cogs.service';
 
 import { REPORTING_SERVICE_TOKEN } from './interfaces/i-reporting.service';
 import { REPORTING_COGS_SERVICE_TOKEN } from './interfaces/i-reporting-cogs.service';
+import { REPORTING_REPOSITORY_TOKEN } from '../core/core.symbols';
 
 @Module({
   imports: [
@@ -21,6 +23,10 @@ import { REPORTING_COGS_SERVICE_TOKEN } from './interfaces/i-reporting-cogs.serv
   ],
   controllers: [ReportingController],
   providers: [
+    {
+      provide: REPORTING_REPOSITORY_TOKEN,
+      useClass: ReportingRepository,
+    },
     {
       provide: REPORTING_SERVICE_TOKEN,
       useClass: ReportingService,

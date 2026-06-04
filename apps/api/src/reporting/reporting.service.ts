@@ -1,41 +1,31 @@
 import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { Kysely, sql } from 'kysely';
+import { Kysely } from 'kysely';
 import crypto from 'crypto';
 import { Database, RestaurantId, ItemId } from '@ims/types';
 import { VarianceReportRow, ParAlertRow, SnapshotRow } from '@ims/types';
 import { IReportingService } from './interfaces/i-reporting.service';
+import { IReportingRepository } from './interfaces/i-reporting.repository';
+import { ReportingRepository } from './reporting.repository';
 import { IStockQueryService, STOCK_QUERY_SERVICE_TOKEN } from '../inventory/interfaces/i-stock-query.service';
 import { IItemReadService, ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
 
 @Injectable()
 export class ReportingService implements IReportingService {
   private readonly logger = new Logger(ReportingService.name);
+  private readonly reportingRepo: IReportingRepository;
 
   constructor(
     @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
     @Inject(STOCK_QUERY_SERVICE_TOKEN) private readonly stockQueryService: IStockQueryService,
     @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
-  ) {}
+  ) {
+    this.reportingRepo = new ReportingRepository(db);
+  }
 
   async getVarianceReport(restaurantId: RestaurantId, limit: number = 100, offset: number = 0): Promise<VarianceReportRow[]> {
-    const records = await this.db
-      .selectFrom('mat_view_variance_analytics')
-      .selectAll()
-      .where('restaurant_id', '=', restaurantId)
-      .limit(limit)
-      .offset(offset)
-      .execute();
-
-    return records.map(r => ({
-      restaurantId: r.restaurant_id as RestaurantId,
-      itemId: r.item_id as ItemId,
-      reportingMonth: r.reporting_month!,
-      actualQty: r.actual_qty ? Number(r.actual_qty) : null,
-      theoreticalQty: r.theoretical_qty ? Number(r.theoretical_qty) : null,
-      unexplainedVarianceQty: r.unexplained_variance_qty ? Number(r.unexplained_variance_qty) : null,
-    }));
+    return this.reportingRepo.getVarianceReport(restaurantId, limit, offset);
   }
 
   async getParAlerts(restaurantId: RestaurantId): Promise<ParAlertRow[]> {
@@ -70,22 +60,7 @@ export class ReportingService implements IReportingService {
   }
 
   async getSnapshots(restaurantId: RestaurantId, limit: number = 100, offset: number = 0): Promise<SnapshotRow[]> {
-    const records = await this.db
-      .selectFrom('daily_inventory_snapshots')
-      .selectAll()
-      .where('restaurant_id', '=', restaurantId)
-      .orderBy('business_date', 'desc')
-      .limit(limit)
-      .offset(offset)
-      .execute();
-
-    return records.map(r => ({
-      restaurantId: r.restaurant_id as RestaurantId,
-      itemId: r.item_id as ItemId,
-      businessDate: typeof r.business_date === 'string' ? r.business_date : (r.business_date as Date).toISOString().split('T')[0],
-      eodQty: Number(r.eod_qty),
-      fifoTotalValue: Number(r.fifo_total_value),
-    }));
+    return this.reportingRepo.getSnapshots(restaurantId, limit, offset);
   }
 
   @Cron(CronExpression.EVERY_DAY_AT_2AM)
@@ -94,10 +69,9 @@ export class ReportingService implements IReportingService {
     const businessDate = new Date().toISOString().split('T')[0]; // Simple UTC date for now
 
     // Get all restaurants
-    const restaurants = await this.db.selectFrom('restaurants').select('id').execute();
+    const restaurants = await this.reportingRepo.getAllRestaurants();
 
-    for (const r of restaurants) {
-      const restaurantId = r.id as RestaurantId;
+    for (const restaurantId of restaurants) {
       try {
         const itemsRes = await this.itemService.listParLevels(restaurantId, 1, 10000);
         const activeItems = itemsRes.data.filter(i => i.isActive);
@@ -109,8 +83,6 @@ export class ReportingService implements IReportingService {
 
         const snapshotRows = activeItems.map(item => {
           const eodQty = stockMap.get(item.id) || 0;
-          // In a full implementation, we'd query `inventory_batches` to calculate actual FIFO value.
-          // For now, we mock value calculation as 0 since Pricing Agent logic isn't fully expanded.
           return {
             id: crypto.randomUUID() as import('@ims/types').SnapshotId,
             restaurant_id: restaurantId,
@@ -122,16 +94,10 @@ export class ReportingService implements IReportingService {
         });
 
         // Insert in batches if necessary, but for simplicity here insert all at once
-        await this.db
-          .insertInto('daily_inventory_snapshots')
-          .values(snapshotRows)
-          .execute();
+        await this.reportingRepo.insertSnapshots(snapshotRows);
 
         // Refresh the materialized view for variance analytics after snapshots are taken
-        await sql`REFRESH MATERIALIZED VIEW CONCURRENTLY mat_view_variance_analytics`.execute(this.db).catch(_e => {
-            // Concurrent refresh requires unique index, if it fails, try normal refresh
-            sql`REFRESH MATERIALIZED VIEW mat_view_variance_analytics`.execute(this.db).catch(console.error);
-        });
+        await this.reportingRepo.refreshVarianceAnalytics();
 
       } catch (e) {
         this.logger.error(`Failed to process snapshots for restaurant ${restaurantId}`, e);
@@ -140,3 +106,4 @@ export class ReportingService implements IReportingService {
     this.logger.log('Finished EOD inventory snapshots.');
   }
 }
+

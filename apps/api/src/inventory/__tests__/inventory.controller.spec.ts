@@ -58,7 +58,7 @@ describe('InventoryController', () => {
 
       const result = await controller.getLedger(mockUser as never, 20, 10);
       
-      expect(result).toEqual({ data: mockResult });
+      expect(result).toEqual({ data: mockResult, meta: { limit: 20, offset: 10 } });
       expect(mockLedgerService.getLedgerEntries).toHaveBeenCalledWith('rest-123', 20, 10);
     });
   });

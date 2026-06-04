@@ -107,7 +107,7 @@
 | `DailyInventorySnapshot` | `interface` | `daily_inventory_snapshots` | EOD tracking: `restaurantId`, `itemId`, `recordedAt`, `stockLevel` |
 | `CostReportIngredient` | `interface` | N/A | Sub-type for COGS report: `itemId`, `itemName`, `qty`, `uom`, `unitCost`, `totalCost` |
 | `MenuItemCostReport` | `interface` | N/A | Theoretical COGS report: `recipeId`, `recipeName`, `totalCost`, `ingredients: CostReportIngredient[]` |
-| `VarianceAnalyticRow` | `interface` | `mat_view_variance_analytics` | `{ restaurantId, itemId, reportingMonth, actualQty, theoreticalQty, unexplainedVarianceQty }` |
+| `VarianceAnalyticRow` | `interface` | `mat_view_variance_analytics` | `{ restaurantId, itemId, reportingMonth, unexplainedVarianceQty }` |
 
 ---
 
@@ -281,10 +281,6 @@ All Dependency Injection tokens must be `Symbol` objects exported from `core.sym
 | `SUPABASE_ANON_KEY` | `web` | Public anon key (for Next.js RSC → Supabase with RLS) |
 | `SUPABASE_SERVICE_ROLE_KEY` | `api` | Service role key for NestJS direct DB access |
 | `DATABASE_URL` | `api` | Direct PostgreSQL connection string (pooled via PgBouncer) |
-| `JWT_PRIVATE_KEY` | `api` | RS256 private key for JWT signing |
-| `JWT_PUBLIC_KEY` | `api`, `web` | RS256 public key for JWT verification |
-| `JWT_EXPIRY` | `api` | Access token TTL (default: `'15m'`) |
-| `REFRESH_TOKEN_EXPIRY` | `api` | Refresh token TTL (default: `'7d'`) |
 | `REDIS_URL` | `api` | Redis connection string for BullMQ |
 | `SALES_IMPORT_MAX_FILE_SIZE_MB` | `api` | Max upload size (default: `10`) |
 | `NODE_ENV` | all | `development` \| `test` \| `production` |

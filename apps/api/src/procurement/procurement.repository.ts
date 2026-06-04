@@ -236,6 +236,40 @@ export class ProcurementRepository implements IProcurementRepository {
     return rows.map(r => this.mapVendor(r));
   }
 
+  async createVendor(restaurantId: string | null, franchiseGroupId: string | null, dto: import('@ims/validators').CreateVendorDto): Promise<Vendor> {
+    const id = asVendorId(randomUUID());
+    const row = await this.db
+      .insertInto('vendors')
+      .values({
+        id,
+        restaurant_id: restaurantId as RestaurantId | null,
+        franchise_group_id: franchiseGroupId as import('@ims/types').FranchiseGroupId | null,
+        name: dto.name,
+        contact_email: dto.contactEmail ?? null,
+        is_active: dto.isActive ?? true,
+      })
+      .returningAll()
+      .executeTakeFirstOrThrow();
+      
+    return this.mapVendor(row);
+  }
+
+  async updateVendor(vendorId: string, dto: import('@ims/validators').UpdateVendorDto): Promise<Vendor> {
+    const updates: any = { updated_at: new Date().toISOString() };
+    if (dto.name !== undefined) updates.name = dto.name;
+    if (dto.contactEmail !== undefined) updates.contact_email = dto.contactEmail;
+    if (dto.isActive !== undefined) updates.is_active = dto.isActive;
+
+    const row = await this.db
+      .updateTable('vendors')
+      .set(updates)
+      .where('id', '=', vendorId as VendorId)
+      .returningAll()
+      .executeTakeFirstOrThrow();
+
+    return this.mapVendor(row);
+  }
+
   async getVendorPriceHistory(restaurantId: string, itemId: string): Promise<VendorPriceHistoryRow[]> {
     const records = await this.db
       .selectFrom('inventory_batches')

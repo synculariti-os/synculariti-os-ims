@@ -7,10 +7,11 @@ import { ProcurementRepository } from './procurement.repository';
 import { InventoryModule } from '../inventory/inventory.module';
 import { ItemModule } from '../item/item.module';
 import { ProcurementController } from './procurement.controller';
+import { VendorController } from './vendor.controller';
 
 @Module({
   imports: [InventoryModule, ItemModule],
-  controllers: [ProcurementController],
+  controllers: [ProcurementController, VendorController],
   providers: [
     {
       provide: PROCUREMENT_SERVICE_TOKEN,

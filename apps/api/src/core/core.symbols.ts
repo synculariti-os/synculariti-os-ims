@@ -42,6 +42,7 @@ export const SALES_SERVICE_TOKEN = Symbol('ISalesService');
 // ─── Reporting ────────────────────────────────────────────────────────────────
 export const REPORTING_SERVICE_TOKEN = Symbol('IReportingService');
 export const REPORTING_COGS_SERVICE_TOKEN = Symbol('IReportingCogsService');
+export const REPORTING_REPOSITORY_TOKEN = Symbol('IReportingRepository');
 
 // ─── Audit ────────────────────────────────────────────────────────────────────
 export const AUDIT_SERVICE_TOKEN = Symbol('IAuditService');

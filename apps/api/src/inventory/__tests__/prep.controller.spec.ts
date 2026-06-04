@@ -72,7 +72,7 @@ describe('PrepController', () => {
       const result = await controller.listPrepLogs(mockUser, 10, 5);
       
       expect(service.listPrepLogs).toHaveBeenCalledWith(mockUser.restaurantId, 10, 5);
-      expect(result).toEqual({ data: mockResult });
+      expect(result).toEqual({ data: mockResult, meta: { limit: 10, offset: 5 } });
     });
   });
 });

@@ -10,11 +10,11 @@
 
 | # | Task | Files | Status | Priority |
 |---|---|---|---|---|
-| 1.1 | **Remove mock `LEDGER_SERVICE_TOKEN` from `CoreModule`** — delete mock provider + unused imports + export | `core.module.ts` | PENDING | 🔴 CRITICAL |
-| 1.2 | **Fix Recipe controller auth** — remove `@Public()`, remove mock fallback IDs, use direct `user.restaurantId` | `recipe.controller.ts` | PENDING | 🔴 CRITICAL |
-| 1.3 | **Add `PATCH /auth/profile`** — new route + `ZodValidationPipe(updateProfileSchema)` + delegate to service | `auth.controller.ts` | PENDING | 🟠 HIGH |
-| 1.4 | **Create initial DB migration** — full 26-table schema + `set_tenant_context` + ledger triggers + mat view | `supabase/migrations/20260531230000_initial_schema.sql` | PENDING | 🟠 HIGH |
-| 1.5 | **Implement `StockQueryService`** — new class delegating to `LedgerService`, register under `STOCK_QUERY_SERVICE_TOKEN` in module | `inventory/stock-query.service.ts`, `inventory.module.ts` | PENDING | 🟠 HIGH |
+| 1.1 | **Remove mock `LEDGER_SERVICE_TOKEN` from `CoreModule`** — delete mock provider + unused imports + export | `core.module.ts` | [x] DONE | 🔴 CRITICAL |
+| 1.2 | **Fix Recipe controller auth** — remove `@Public()`, remove mock fallback IDs, use direct `user.restaurantId` | `recipe.controller.ts` | [x] DONE | 🔴 CRITICAL |
+| 1.3 | **Add `PATCH /auth/profile`** — new route + `ZodValidationPipe(updateProfileSchema)` + delegate to service | `auth.controller.ts` | [x] DONE | 🟠 HIGH |
+| 1.4 | **Create initial DB migration** — full 26-table schema + `set_tenant_context` + ledger triggers + mat view | `supabase/migrations/20260531230000_initial_schema.sql` | [x] DONE | 🟠 HIGH |
+| 1.5 | **Implement `StockQueryService`** — new class delegating to `LedgerService`, register under `STOCK_QUERY_SERVICE_TOKEN` in module | `inventory/stock-query.service.ts`, `inventory.module.ts` | [x] DONE | 🟠 HIGH |
 
 **Verify**: `pnpm type-check && pnpm test && pnpm lint`
 
@@ -22,19 +22,19 @@
 
 | # | Task | Status | Priority |
 |---|---|---|---|
-| 2.1 | Create service: variance queries, par alerts, EOD snapshots | PENDING | 🟠 HIGH |
-| 2.2 | Create controller: `GET /reports/variance`, `/snapshots`, `/par-alerts` | PENDING | 🟠 HIGH |
-| 2.3 | Create repository: Kysely queries to mat views + items | PENDING | 🟠 HIGH |
-| 2.4 | Create EOD cron job (`@nestjs/schedule`) | PENDING | 🟠 HIGH |
-| 2.5 | Write unit tests | PENDING | 🟠 HIGH |
+| 2.1 | Create service: variance queries, par alerts, EOD snapshots | [x] DONE | 🟠 HIGH |
+| 2.2 | Create controller: `GET /reports/variance`, `/snapshots`, `/par-alerts` | [x] DONE | 🟠 HIGH |
+| 2.3 | Create repository: Kysely queries to mat views + items | [x] DONE | 🟠 HIGH |
+| 2.4 | Create EOD cron job (`@nestjs/schedule`) | [x] DONE | 🟠 HIGH |
+| 2.5 | Write unit tests | [x] DONE | 🟠 HIGH |
 
 ### Sprint 3: Missing CRUD
 
 | # | Task | Status | Priority |
 |---|---|---|---|
-| 3.1 | Add vendor CRUD to Procurement | PENDING | 🟡 MED |
-| 3.2 | Add inventory transfers | PENDING | 🟡 MED |
-| 3.3 | Add `updateVendorSchema` to validators | PENDING | 🟡 MED |
+| 3.1 | Add vendor CRUD to Procurement | [/] IN PROGRESS | 🟡 MED |
+| 3.2 | Add inventory transfers | [/] IN PROGRESS | 🟡 MED |
+| 3.3 | Add `updateVendorSchema` to validators | [/] IN PROGRESS | 🟡 MED |
 
 ### Sprint 4: Prep Items as Countable Inventory + Two-Phase Depletion
 

@@ -47,7 +47,7 @@ When starting a new feature from the **Phase Task List** (e.g., implementing the
 ### Step 5: Implement the Service (The "Green" Phase)
 - Create the `[service-name].service.ts` file implementing the interface.
 - Implement the methods, adhering strictly to SOLID and ACID principles.
-- Use the `@Transactional()` decorator or `db.transaction()` via Kysely for any multi-table writes.
+- Use `db.transaction()` via Kysely for any multi-table writes.
 - Do NOT directly inject another module's repository — only use their exported Service.
 - **Run the test** and verify it passes (Green).
 
@@ -69,7 +69,7 @@ The project is executed in the following phases. Always consult the active Task 
 
 ### Phase 1: Monorepo Foundation
 - Set up TurboRepo, pnpm workspaces, formatting, linting.
-- Scaffold `@ims/types`, `@ims/validators`, and `@ims/config`.
+- Scaffold `@ims/types` and `@ims/validators`.
 
 ### Phase 2: NestJS Backend (`apps/api`)
 - Follow the TDD cycle for all 9 Agent Modules:
@@ -90,4 +90,4 @@ The project is executed in the following phases. Always consult the active Task 
 
 ### Phase 4: CI/CD & Deployment
 - Set up GitHub actions to enforce immutable tests and run test suites.
-- Deploy to Vercel (Frontend) and Railway (API).
+- Deploy to Render (API) and Koyeb (Web).

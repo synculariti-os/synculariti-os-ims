@@ -39,7 +39,14 @@ export const receivePoSchema = z.object({
   discountAmount: z.number().min(0).optional(),
 });
 
+export const updateVendorSchema = z.object({
+  name: z.string().min(1).optional(),
+  contactEmail: z.string().email().optional().nullable(),
+  isActive: z.boolean().optional(),
+});
+
 export type CreateVendorDto = z.infer<typeof createVendorSchema>;
+export type UpdateVendorDto = z.infer<typeof updateVendorSchema>;
 export type PoLineItemDto = z.infer<typeof poLineItemSchema>;
 export type CreatePoDto = z.infer<typeof createPoSchema>;
 export type ReceivePoLineItemDto = z.infer<typeof receivePoLineItemSchema>;
