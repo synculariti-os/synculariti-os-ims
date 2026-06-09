@@ -211,6 +211,11 @@ export class ItemController {
         recipeUom: recipeUomRaw || null,
         invToRecipeRatio: invToRecipeRatioRaw ? Number(invToRecipeRatioRaw) : 1.0,
         isActive: isActiveRaw ? isActiveRaw.toLowerCase() === 'true' : true,
+        allergens: [],
+        caloriesPerUom: 0,
+        proteinGrams: 0,
+        fatGrams: 0,
+        carbsGrams: 0,
       };
 
       const parsed = createItemSchema.safeParse(dto);

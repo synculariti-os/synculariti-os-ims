@@ -259,7 +259,7 @@ export class RecipeService implements IRecipeService {
               sku: firstRow.producesItemSku,
               name: firstRow.producesItemName || firstRow.recipeName || firstRow.producesItemSku,
               categoryName: firstRow.categoryName || 'General',
-              type: 'INGREDIENTS',
+              type: 'RAW',
               uom: firstRow.uom || undefined,
             },
             resolvedRestaurantId,
@@ -313,7 +313,7 @@ export class RecipeService implements IRecipeService {
               sku: row.ingredientSku,
               name: row.ingredientName || row.ingredientSku,
               categoryName: firstRow.categoryName || 'General',
-              type: 'INGREDIENTS',
+              type: 'RAW',
               uom: row.uom || undefined,
             },
             resolvedRestaurantId,
@@ -343,6 +343,7 @@ export class RecipeService implements IRecipeService {
           producesItemId,
           recipeName,
           yieldQuantity: firstRow.yieldQuantity,
+          yieldPercent: 100,
           ingredients,
         };
 

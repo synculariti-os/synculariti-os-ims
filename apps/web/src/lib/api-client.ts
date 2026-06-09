@@ -9,6 +9,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || defaultApiUrl;
 type FetchOptions = Omit<RequestInit, 'body'> & {
   params?: Record<string, string | number | boolean | undefined>;
   body?: unknown;
+  responseType?: 'json' | 'text' | 'blob';
 };
 
 export async function apiClient<T>(endpoint: string, options: FetchOptions = {}): Promise<T> {
@@ -74,6 +75,13 @@ export async function apiClient<T>(endpoint: string, options: FetchOptions = {})
     // Handle 204 No Content
     if (response.status === 204) {
       return {} as T;
+    }
+
+    if (options.responseType === 'text') {
+      return response.text() as unknown as T;
+    }
+    if (options.responseType === 'blob') {
+      return response.blob() as unknown as T;
     }
 
     return response.json();

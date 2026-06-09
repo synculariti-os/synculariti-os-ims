@@ -1,5 +1,6 @@
 import { DB_CLIENT } from '../core/core.symbols';
 import { Injectable, Inject, } from '@nestjs/common';
+import * as crypto from 'crypto';
 import { Kysely } from 'kysely';
 import { Database, PermissionCode, UserId, RestaurantId, RoleId, Role, FranchiseGroupId } from '@ims/types';
 import { IPermissionRepository } from './interfaces/i-permission.repository';
@@ -54,6 +55,7 @@ export class PermissionRepository implements IPermissionRepository {
     const r = await this.db
       .insertInto('roles')
       .values({
+        id: crypto.randomUUID() as RoleId,
         name: dto.name,
         description: dto.description,
       })

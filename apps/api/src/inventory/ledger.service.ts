@@ -89,7 +89,7 @@ export class LedgerService implements ILedgerService {
         restaurantId,
         itemId,
         changeAmount: quantity,
-        reasonCode: LEDGER_REASON_CODES.OPENING_BALANCE,
+        reasonCode: LEDGER_REASON_CODES.COUNT_ADJUSTMENT,
         referenceId: id,
       });
     });

@@ -3,6 +3,8 @@ import type {
   RecipeIngredient,
   RecipeId,
   RestaurantId,
+  FranchiseGroupId,
+  MenuItemMapping,
 } from '@ims/types';
 import type { UpdateRecipeDto } from '@ims/validators';
 import type { CreateRecipeCommand } from './i-recipe.service';
