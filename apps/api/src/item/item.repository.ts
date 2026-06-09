@@ -114,6 +114,20 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
+  async findBySku(sku: string, restaurantId: RestaurantId): Promise<Item | null> {
+    const item = await this.db
+      .selectFrom('items')
+      .selectAll()
+      .where('sku', '=', sku)
+      .where((eb) => eb.or([
+        eb('restaurant_id', '=', restaurantId),
+        eb('restaurant_id', 'is', null)
+      ]))
+      .executeTakeFirst();
+    if (!item) return null;
+    return this.mapItemRecord(item);
+  }
+
   async getUomConversions(itemId: ItemId): Promise<UomConversion[]> {
     const conversions = await this.db
       .selectFrom('uom_conversions')
@@ -226,8 +240,8 @@ export class ItemRepository implements IItemRepository {
     };
   }
 
-  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]> {
-    const categories = await this.db
+  async listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null, itemType?: string): Promise<Category[]> {
+    let query = this.db
       .selectFrom('categories')
       .selectAll()
       .where((eb) => {
@@ -244,10 +258,20 @@ export class ItemRepository implements IItemRepository {
         }
 
         return eb.or(conditions);
-      })
-      .orderBy('name', 'asc')
-      .execute();
+      });
 
+    if (itemType) {
+      query = query.where((eb) => 
+        eb.exists(
+          eb.selectFrom('items')
+            .select('items.id')
+            .whereRef('items.category_id', '=', 'categories.id')
+            .where('items.type', '=', itemType as import('@ims/types').ItemType)
+        )
+      ) as any;
+    }
+
+    const categories = await query.orderBy('name', 'asc').execute();
     return categories.map(c => this.mapCategoryRecord(c));
   }
 
@@ -468,10 +492,27 @@ export class ItemRepository implements IItemRepository {
       .execute();
   }
 
+  async deleteItemsBulk(itemIds: ItemId[], trx?: unknown): Promise<void> {
+    if (!itemIds || itemIds.length === 0) return;
+    const db = trx ? (trx as Kysely<Database>) : this.db;
+    await db
+      .deleteFrom('items')
+      .where('id', 'in', itemIds)
+      .execute();
+  }
+
   async deleteCategory(categoryId: string): Promise<void> {
     await this.db
       .deleteFrom('categories')
       .where('id', '=', categoryId as import('@ims/types').CategoryId)
+      .execute();
+  }
+
+  async deleteCategoriesBulk(categoryIds: string[]): Promise<void> {
+    if (!categoryIds || categoryIds.length === 0) return;
+    await this.db
+      .deleteFrom('categories')
+      .where('id', 'in', categoryIds.map(id => id as import('@ims/types').CategoryId))
       .execute();
   }
 

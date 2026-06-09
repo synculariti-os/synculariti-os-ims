@@ -18,6 +18,7 @@ import { ProcurementModule } from './procurement/procurement.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { ReportingModule } from './reporting/reporting.module';
 import { AuditModule } from './audit/audit.module';
+import { SettingsModule } from './settings/settings.module';
 
 const redisUrl = process.env.REDIS_URL ? new URL(process.env.REDIS_URL) : null;
 

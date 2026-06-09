@@ -88,12 +88,12 @@ describe('ItemController', () => {
 
   describe('listCategories', () => {
     it('should call service.listCategories', async () => {
-      const mockResult = [{ id: 'cat-1', name: 'Veg' }] as never;
+      const mockResult = [{ id: 'cat-1', name: 'Veg' }] as any;
       service.listCategories.mockResolvedValue(mockResult);
 
       const result = await controller.listCategories(mockUser);
       
-      expect(service.listCategories).toHaveBeenCalledWith(mockUser.restaurantId, mockUser.franchiseGroupId);
+      expect(service.listCategories).toHaveBeenCalledWith(mockUser.restaurantId, mockUser.franchiseGroupId, undefined);
       expect(result).toEqual(mockResult);
     });
   });

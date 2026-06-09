@@ -113,6 +113,24 @@ export class InventoryCountRepository implements IInventoryCountRepository {
     return rows.map(r => this.mapRow(r));
   }
 
+  async findRowsWithItemName(batchId: CountBatchId): Promise<import('./interfaces/i-inventory-count.repository').ExportRow[]> {
+    const rows = await this.db
+      .selectFrom('inventory_count_rows')
+      .innerJoin('items', 'items.id', 'inventory_count_rows.item_id')
+      .selectAll('inventory_count_rows')
+      .select('items.name as item_name')
+      .where('batch_id', '=', batchId)
+      .execute();
+
+    return rows.map(r => {
+      const baseRow = this.mapRow(r);
+      return {
+        ...baseRow,
+        itemName: r.item_name as string
+      };
+    });
+  }
+
   async updateCountRow(
     db: any,
     rowId: CountRowId,

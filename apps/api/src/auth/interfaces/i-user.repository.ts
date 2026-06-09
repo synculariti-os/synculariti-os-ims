@@ -10,4 +10,5 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<SafeUser | null>;
   updateLastLogin(userId: UserId): Promise<void>;
   updateProfile(userId: UserId, data: UpdateProfileInput): Promise<SafeUser>;
+  findAll(): Promise<SafeUser[]>;
 }

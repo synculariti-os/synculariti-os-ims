@@ -17,6 +17,7 @@
 | 7 | [Sales Ingestion Agent](#7-sales-ingestion-agent) | `SalesModule` | `sales_import_batches`, `sales_import_rows` |
 | 8 | [Reporting Agent](#8-reporting-agent) | `ReportingModule` | `daily_inventory_snapshots`, `mat_view_variance_analytics` (read-only) |
 | 9 | [Audit Agent](#9-audit-agent) | `AuditModule` | `audit_log` |
+| 10 | [Settings Agent](#10-settings-agent) | `SettingsModule` | `feature_flags` |
 
 ---
 
@@ -248,6 +249,8 @@ COMMIT
 - `POST /recipes` — Create a new recipe with ingredients
 - `PUT /recipes/:id` — Update recipe yield/ingredients
 - `POST /recipes/mappings` — Map raw POS string to a recipe
+- `POST /recipes/upload` — Bulk upload recipes via CSV/XLSX
+- `GET /recipes/unmapped-rows` — Retrieve POS rows not mapped to recipes
 - CRUD for `recipes` + `recipe_ingredients`
 - CRUD for `menu_item_mappings` (raw POS string ↔ recipe)
 
@@ -298,6 +301,9 @@ interface IRecipeService {
 - `POST /inventory/counts/start` — open count batch
 - `PATCH /inventory/counts/:batchId/rows/:rowId` — submit actual count
 - `POST /inventory/counts/:batchId/close` — reconcile and write adjustment
+- `GET /inventory/counts/:batchId/export` — export count rows to CSV
+- `POST /inventory/counts/:batchId/import` — import count rows from CSV/XLSX
+- `POST /inventory/adjustment` — log an initial opening balance or manual stock adjustment
 - `POST /inventory/waste` — waste log entry
 - `POST /inventory/prep` — prep production log entry
 - `GET /inventory/prep/plan` — plan prep production to calculate ingredient requirements and check for shortages
@@ -461,6 +467,35 @@ interface IPrepService {
 ### SOLID Notes
 - **SRP**: No business logic. Pure event recording.
 - **OCP**: New event types are supported by inserting new `entity_type` values — no code changes needed.
+
+---
+
+## 10. Settings Agent
+
+**Responsibility**: Manage configuration options, feature flags, and settings per restaurant or franchise level.
+
+### Inputs
+- CRUD for `feature_flags` (per restaurant context)
+
+### Outputs
+- Feature flag state checking
+
+### Owned Tables
+| Table | Access |
+|---|---|
+| `feature_flags` | CRUD |
+
+### Contracts Exposed
+```typescript
+interface ISettingsService {
+  getFeatureFlag(restaurantId: RestaurantId, key: FeatureFlagKey): Promise<boolean>;
+  getAllFeatureFlags(restaurantId: RestaurantId): Promise<FeatureFlag[]>;
+  setFeatureFlag(restaurantId: RestaurantId, key: FeatureFlagKey, value: boolean): Promise<FeatureFlag>;
+}
+```
+
+### SOLID Notes
+- **SRP**: Encapsulates all global and tenant-level configurations away from the operational agents.
 
 ---
 

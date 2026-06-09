@@ -11,6 +11,10 @@ export interface CreateCountRowInput {
   expected_qty: number;
 }
 
+export interface ExportRow extends InventoryCountRow {
+  itemName: string;
+}
+
 export interface IInventoryCountRepository {
   createBatch(db: unknown, restaurantId: RestaurantId): Promise<InventoryCountBatch>;
   findBatchById(batchId: CountBatchId): Promise<InventoryCountBatch | null>;
@@ -22,6 +26,7 @@ export interface IInventoryCountRepository {
     version: number,
   ): Promise<boolean>; // returns false on optimistic lock failure
   findRowsByBatchId(batchId: CountBatchId): Promise<InventoryCountRow[]>;
+  findRowsWithItemName(batchId: CountBatchId): Promise<ExportRow[]>;
   updateCountRow(
     db: unknown,
     rowId: CountRowId,

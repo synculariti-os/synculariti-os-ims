@@ -166,14 +166,59 @@ export default function ActiveCountSessionPage() {
           </div>
           
           {isOpen && (
-            <button
-              onClick={handleCloseBatch}
-              disabled={isClosing}
-              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm disabled:opacity-50"
-            >
-              {isClosing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-              Reconcile & Close Batch
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={async () => {
+                  try {
+                    const csv = await apiClient(`/inventory/counts/${batchId}/export`, { responseType: 'text' });
+                    const blob = new Blob([csv as string], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `count-batch-${batchId}.csv`;
+                    a.click();
+                  } catch (err: any) {
+                    alert('Failed to export CSV: ' + err.message);
+                  }
+                }}
+                className="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl text-sm font-medium transition-colors"
+              >
+                Export CSV
+              </button>
+              
+              <label className="flex items-center gap-2 px-4 py-2.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-xl text-sm font-medium transition-colors cursor-pointer">
+                <span>Import CSV</span>
+                <input
+                  type="file"
+                  accept=".csv,.xlsx"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const formData = new FormData();
+                      formData.append('file', file);
+                      await apiClient(`/inventory/counts/${batchId}/import`, {
+                        method: 'POST',
+                        body: formData as any,
+                      });
+                      window.location.reload();
+                    } catch (err: any) {
+                      alert('Failed to import: ' + err.message);
+                    }
+                  }}
+                />
+              </label>
+
+              <button
+                onClick={handleCloseBatch}
+                disabled={isClosing}
+                className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm disabled:opacity-50"
+              >
+                {isClosing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                Reconcile & Close Batch
+              </button>
+            </div>
           )}
         </header>
 

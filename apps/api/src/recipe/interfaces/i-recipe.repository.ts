@@ -15,8 +15,12 @@ export interface IRecipeRepository {
   findByProducesItemId(itemId: string): Promise<Recipe | null>;
   findIngredients(recipeId: RecipeId): Promise<RecipeIngredient[]>;
   resolveByPosString(restaurantId: RestaurantId, rawString: string): Promise<Recipe | null>;
-  resolveRecipesByPosStrings(restaurantId: RestaurantId, rawStrings: string[]): Promise<import('@ims/types').MenuItemMapping[]>;
-  create(data: CreateRecipeCommand, trx?: unknown): Promise<Recipe>;
+  resolveRecipesByPosStrings(restaurantId: RestaurantId, rawStrings: string[]): Promise<MenuItemMapping[]>;
+  getUnmappedRows(
+    restaurantId: RestaurantId,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>>;
+  create(command: CreateRecipeCommand, trx?: unknown): Promise<Recipe>;
   update(recipeId: RecipeId, dto: UpdateRecipeDto): Promise<Recipe>;
   deleteRecipe(recipeId: RecipeId, trx?: unknown): Promise<void>;
   upsertMapping(restaurantId: RestaurantId, rawString: string, recipeId: RecipeId): Promise<void>;

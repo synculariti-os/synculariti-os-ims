@@ -2,12 +2,14 @@
 
 import React, { useState } from 'react';
 import { StockTable } from '@/components/inventory/stock-table';
-import { PackageSearch, Boxes, ClipboardList, Trash2, ScrollText } from 'lucide-react';
+import { PackageSearch, Boxes, ClipboardList, Trash2, ScrollText, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { OpeningBalanceDialog } from '@/components/inventory/opening-balance-dialog';
 
 export default function InventoryDashboard() {
   const [activeTab, setActiveTab] = useState<'stock'>('stock');
+  const [isAdjustmentOpen, setIsAdjustmentOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#fafafa] dark:bg-[#0a0a0a] bg-[url('/grid.svg')] dark:bg-[url('/grid-dark.svg')] bg-center selection:bg-indigo-500/30">
@@ -29,6 +31,10 @@ export default function InventoryDashboard() {
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
+              <button onClick={() => setIsAdjustmentOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors shadow-sm">
+                <Plus className="w-4 h-4" />
+                Add Stock
+              </button>
               <Link href="/inventory/counts" className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors shadow-sm">
                 <ClipboardList className="w-4 h-4 text-emerald-500" />
                 Counts
@@ -67,6 +73,11 @@ export default function InventoryDashboard() {
 
         </div>
       </main>
+
+      <OpeningBalanceDialog
+        isOpen={isAdjustmentOpen}
+        onClose={() => setIsAdjustmentOpen(false)}
+      />
     </div>
   );
 }

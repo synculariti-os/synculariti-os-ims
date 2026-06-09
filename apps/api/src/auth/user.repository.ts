@@ -94,4 +94,25 @@ export class UserRepository implements IUserRepository {
       id: asUserId(updated.id)
     };
   }
+
+  async findAll(): Promise<SafeUser[]> {
+    const users = await this.db
+      .selectFrom('users')
+      .select([
+        'id',
+        'email',
+        'full_name as fullName',
+        'phone_number as phoneNumber',
+        'active',
+        'created_at as createdAt',
+        'updated_at as updatedAt',
+        'last_login_at as lastLoginAt'
+      ])
+      .execute();
+
+    return users.map(user => ({
+      ...user,
+      id: asUserId(user.id)
+    }));
+  }
 }

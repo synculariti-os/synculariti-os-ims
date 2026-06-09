@@ -36,4 +36,24 @@ export class AuditService implements IAuditService {
       // We don't throw here to avoid failing the business transaction if audit logging fails
     }
   }
+
+  async listLogs(restaurantId: RestaurantId, limit: number, offset: number): Promise<any[]> {
+    return this.db
+      .selectFrom('audit_log')
+      .selectAll()
+      .where('restaurant_id', '=', restaurantId)
+      .orderBy('created_at', 'desc')
+      .limit(limit)
+      .offset(offset)
+      .execute();
+  }
+
+  async findLogById(id: string): Promise<any | null> {
+    const log = await this.db
+      .selectFrom('audit_log')
+      .selectAll()
+      .where('id', '=', id)
+      .executeTakeFirst();
+    return log || null;
+  }
 }

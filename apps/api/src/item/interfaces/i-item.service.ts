@@ -26,7 +26,7 @@ export interface IItemReadService {
   findById(itemId: ItemId, restaurantId: RestaurantId): Promise<ItemWithOverride>;
   convertUom(itemId: ItemId, qty: number, fromUom: string, toUom: string): Promise<number>;
   listParLevels(restaurantId: RestaurantId, page?: number, limit?: number): Promise<{ data: ItemWithOverride[]; meta: { total: number; page: number; limit: number; totalPages: number } }>;
-  listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null): Promise<Category[]>;
+  listCategories(restaurantId: RestaurantId, franchiseGroupId: string | null, itemType?: string): Promise<Category[]>;
   getUomConversions(itemId: ItemId): Promise<UomConversion[]>;
 }
 
@@ -34,11 +34,19 @@ export interface IItemWriteService extends IItemReadService {
   createItem(dto: CreateItemDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Item>;
   updateItem(itemId: ItemId, dto: UpdateItemDto, trx?: unknown): Promise<Item>;
   deleteItem(itemId: ItemId, trx?: unknown): Promise<void>;
+  deleteItemsBulk(itemIds: ItemId[], trx?: unknown): Promise<void>;
   createCategory(dto: CreateCategoryDto, restaurantId: RestaurantId | null, franchiseGroupId: string | null): Promise<Category>;
   updateCategory(categoryId: string, dto: UpdateCategoryDto): Promise<Category>;
   deleteCategory(categoryId: string): Promise<void>;
+  deleteCategoriesBulk(categoryIds: string[]): Promise<void>;
   upsertUomConversion(dto: CreateUomConversionDto): Promise<UomConversion>;
   updateOverride(itemId: ItemId, restaurantId: RestaurantId, dto: UpdateItemOverrideDto): Promise<ItemRestaurantOverride>;
   generateSku(categoryId: string): Promise<string>;
+  findBySku(sku: string, restaurantId: RestaurantId): Promise<Item | null>;
+  ensureItemDependencies(
+    dto: { sku: string; name: string; categoryName: string; type: import('@ims/types').ItemType; uom?: string },
+    restaurantId: RestaurantId | null,
+    franchiseGroupId: string | null,
+  ): Promise<string | null>;
 }
 

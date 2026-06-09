@@ -4,6 +4,7 @@ export const SUPABASE_ADMIN_CLIENT = Symbol('SUPABASE_ADMIN_CLIENT');
 
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 export const AUTH_SERVICE_TOKEN = Symbol('IAuthService');
+export const AUTH_ADMIN_SERVICE_TOKEN = Symbol('IAuthAdminService');
 export const USER_REPOSITORY_TOKEN = Symbol('IUserRepository');
 export const PERMISSION_REPOSITORY_TOKEN = Symbol('IPermissionRepository');
 
@@ -30,6 +31,8 @@ export const LEDGER_REPOSITORY_TOKEN = Symbol('ILedgerRepository');
 export const STOCK_QUERY_SERVICE_TOKEN = Symbol('IStockQueryService');
 export const INVENTORY_COUNT_SERVICE_TOKEN = Symbol('IInventoryCountService');
 export const COUNT_REPOSITORY_TOKEN = Symbol('IInventoryCountRepository');
+export const SETTINGS_SERVICE_TOKEN = Symbol('ISettingsService');
+export const SETTINGS_REPOSITORY_TOKEN = Symbol('ISettingsRepository');
 export const WASTE_SERVICE_TOKEN = Symbol('IWasteService');
 export const WASTE_REPOSITORY_TOKEN = Symbol('IWasteRepository');
 export const PREP_SERVICE_TOKEN = Symbol('IPrepService');
@@ -38,6 +41,7 @@ export const INVENTORY_TRANSFER_SERVICE_TOKEN = Symbol('IInventoryTransferServic
 
 // ─── Sales ────────────────────────────────────────────────────────────────────
 export const SALES_SERVICE_TOKEN = Symbol('ISalesService');
+export const SALES_FILE_PARSER_FACTORY_TOKEN = Symbol('ISalesFileParserFactory');
 
 // ─── Reporting ────────────────────────────────────────────────────────────────
 export const REPORTING_SERVICE_TOKEN = Symbol('IReportingService');

@@ -176,4 +176,53 @@ describe('InventoryCountService', () => {
       expect(mockLedgerService.record).not.toHaveBeenCalled();
     });
   });
+
+  // ── exportBatch ───────────────────────────────────────────────────────────
+
+  describe('exportBatch()', () => {
+    it('returns rows formatted for export', async () => {
+      vi.mocked(mockCountRepo.findBatchById).mockResolvedValueOnce(OPEN_BATCH as never);
+      vi.mocked(mockCountRepo.findRowsByBatchId).mockResolvedValueOnce([
+        { id: ROW_ID_A, batchId: BATCH_ID, itemId: ITEM_ID_A, expectedQty: 50, actualQty: 45, varianceQty: -5 },
+      ] as never);
+      mockCountRepo.findRowsWithItemName = vi.fn().mockResolvedValueOnce([
+        { id: ROW_ID_A, batchId: BATCH_ID, itemId: ITEM_ID_A, expectedQty: 50, actualQty: 45, itemName: 'Tomato' },
+      ]);
+
+      const result = await service.exportBatch(BATCH_ID);
+      expect(result).toEqual([
+        { id: ROW_ID_A, batchId: BATCH_ID, itemId: ITEM_ID_A, expectedQty: 50, actualQty: 45, itemName: 'Tomato' },
+      ]);
+    });
+  });
+
+  // ── importBatch ───────────────────────────────────────────────────────────
+
+  describe('importBatch()', () => {
+    it('updates multiple rows from import array', async () => {
+      vi.mocked(mockCountRepo.findBatchById).mockResolvedValueOnce(OPEN_BATCH as never);
+      vi.mocked(mockCountRepo.findRowsByBatchId).mockResolvedValueOnce([
+        { id: ROW_ID_A, batchId: BATCH_ID, itemId: ITEM_ID_A, expectedQty: 50, actualQty: null },
+      ] as never);
+      vi.mocked(mockCountRepo.updateCountRow).mockResolvedValue({} as never);
+
+      const updated = await service.importBatch(BATCH_ID, [{ itemId: ITEM_ID_A, actualQty: 42 }]);
+
+      expect(updated).toBe(1);
+      expect(mockCountRepo.updateCountRow).toHaveBeenCalledWith(
+        expect.anything(), // trx
+        ROW_ID_A,
+        42,
+        -8, // 42 - 50 = -8
+      );
+    });
+
+    it('throws when trying to import into a CLOSED batch', async () => {
+      vi.mocked(mockCountRepo.findBatchById).mockResolvedValueOnce(CLOSED_BATCH as never);
+
+      await expect(
+        service.importBatch(BATCH_ID, [{ itemId: ITEM_ID_A, actualQty: 42 }]),
+      ).rejects.toThrow(/cannot import.*closed/i);
+    });
+  });
 });

@@ -128,6 +128,33 @@ export class InventoryCountService implements IInventoryCountService {
     });
   }
 
+  async exportBatch(batchId: CountBatchId): Promise<import('./interfaces/i-inventory-count.repository').ExportRow[]> {
+    const batch = await this.findBatchOrThrow(batchId);
+    return this.countRepo.findRowsWithItemName(batchId);
+  }
+
+  async importBatch(batchId: CountBatchId, rows: { itemId: string; actualQty: number }[]): Promise<number> {
+    const batch = await this.findBatchOrThrow(batchId);
+
+    if (batch.status !== COUNT_STATUS.OPEN) {
+      throw new BadRequestException(
+        `Cannot import counts to a ${batch.status.toLowerCase()} batch`,
+      );
+    }
+
+    const existingRows = await this.countRepo.findRowsByBatchId(batchId);
+    let updated = 0;
+
+    for (const row of rows) {
+      const match = existingRows.find(r => r.itemId === row.itemId);
+      if (!match) continue;
+      await this.countRepo.updateCountRow(this.db, match.id, row.actualQty);
+      updated++;
+    }
+
+    return updated;
+  }
+
   private async findBatchOrThrow(batchId: CountBatchId): Promise<InventoryCountBatch> {
     const batch = await this.countRepo.findBatchById(batchId);
     if (!batch) {

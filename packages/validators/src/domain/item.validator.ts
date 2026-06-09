@@ -60,10 +60,20 @@ export const updateItemOverrideSchema = z.object({
   isActive: z.boolean().optional(),
 });
 
+export const deleteItemsBulkSchema = z.object({
+  itemIds: z.array(z.string().uuid()).min(1),
+});
+
+export const deleteCategoriesBulkSchema = z.object({
+  categoryIds: z.array(z.string().uuid()).min(1),
+});
+
 export type CreateItemDto = z.infer<typeof createItemSchema>;
 export type UpdateItemDto = z.infer<typeof updateItemSchema>;
 export type CreateUomConversionDto = z.infer<typeof createUomConversionSchema>;
 export type CreateCategoryDto = z.infer<typeof createCategorySchema>;
 export type UpdateCategoryDto = z.infer<typeof updateCategorySchema>;
 export type UpdateItemOverrideDto = z.infer<typeof updateItemOverrideSchema>;
+export type DeleteItemsBulkDto = z.infer<typeof deleteItemsBulkSchema>;
+export type DeleteCategoriesBulkDto = z.infer<typeof deleteCategoriesBulkSchema>;
 

@@ -239,10 +239,10 @@ All Dependency Injection tokens must be `Symbol` objects exported from `core.sym
 | `CreateItemCommand` | `type` | `ItemModule` | Backend-only type: `CreateItemDto & { restaurantId: RestaurantId \| null; franchiseGroupId: FranchiseGroupId \| null }` |
 | `CreateCategoryCommand` | `type` | `ItemModule` | Backend-only type: `CreateCategoryDto & { restaurantId: RestaurantId \| null; franchiseGroupId: FranchiseGroupId \| null }` |
 | `IProcurementService` | `interface` | `ProcurementModule` | `createDraftPO`, `submitPO`, `receivePO`, `cancelPO` |
-| `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients`, `createRecipe`, `updateRecipe`, `createMenuItemMapping` |
+| `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients`, `createRecipe`, `updateRecipe`, `createMenuItemMapping`, `bulkCreateRecipes` |
 | `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk` |
 | `IStockQueryService` | `interface` | `InventoryModule` | Read-only: `getCurrentStock`, `getCurrentStockBulk` (for Reporting) |
-| `IInventoryCountService` | `interface` | `InventoryModule` | `startBatch`, `submitActualCount`, `closeBatch` |
+| `IInventoryCountService` | `interface` | `InventoryModule` | `startBatch`, `submitActualCount`, `closeBatch`, `exportBatch`, `importBatch`, `listBatches`, `findBatchById`, `findRowsByBatchId` |
 | `IWasteService` | `interface` | `InventoryModule` | `logWaste`, `listWasteLogs` |
 | `IPrepService` | `interface` | `InventoryModule` | `logPrepProduction`, `planPrepProduction`, `listPrepLogs` |
 | `ISalesService` | `interface` | `SalesModule` | `uploadSalesFile`, `listBatches` |

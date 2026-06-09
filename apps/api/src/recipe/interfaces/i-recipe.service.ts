@@ -28,5 +28,26 @@ export interface IRecipeService {
   deleteRecipe(recipeId: RecipeId): Promise<void>;
   createMenuItemMapping(restaurantId: RestaurantId, dto: MenuItemMappingDto): Promise<void>;
   deleteMapping(mappingId: string): Promise<void>;
+  bulkCreateRecipes(
+    rows: Array<{
+      producesItemSku: string;
+      producesItemName: string | null;
+      categoryName: string | null;
+      recipeName: string | null;
+      yieldQuantity: number;
+      priceEur: number | null;
+      vatRate: number | null;
+      ingredientSku: string;
+      ingredientName: string | null;
+      quantityRequired: number;
+      uom: string | null;
+    }>,
+    restaurantId: RestaurantId | null,
+    franchiseGroupId: FranchiseGroupId | null,
+  ): Promise<{ createdCount: number; skippedCount: number; errors: Array<{ row: number; message: string }> }>;
+  getUnmappedRows(
+    restaurantId: RestaurantId,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>>;
 }
 

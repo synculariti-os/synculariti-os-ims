@@ -9,4 +9,6 @@ export interface IInventoryCountService {
   closeBatch(batchId: CountBatchId, dto: CloseCountBatchDto): Promise<void>;
   listBatches(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<InventoryCountBatch[]>;
   getBatchById(batchId: CountBatchId): Promise<{ batch: InventoryCountBatch; rows: InventoryCountRow[] }>;
+  exportBatch(batchId: CountBatchId): Promise<import('./i-inventory-count.repository').ExportRow[]>;
+  importBatch(batchId: CountBatchId, rows: { itemId: string; actualQty: number }[]): Promise<number>;
 }

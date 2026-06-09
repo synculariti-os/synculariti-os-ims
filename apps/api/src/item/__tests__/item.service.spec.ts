@@ -65,7 +65,9 @@ describe('ItemService', () => {
       upsertUomConversion: vi.fn(),
       upsertItemOverride: vi.fn(),
       deleteItem: vi.fn(),
+      deleteItemsBulk: vi.fn(),
       deleteCategory: vi.fn(),
+      deleteCategoriesBulk: vi.fn(),
       generateSku: vi.fn(),
     };
 
@@ -133,7 +135,7 @@ describe('ItemService', () => {
       repo.listCategories.mockResolvedValue([mockCategory]);
       const result = await service.listCategories(mockRestaurantId, 'franchise-1');
       expect(result).toEqual([mockCategory]);
-      expect(repo.listCategories).toHaveBeenCalledWith(mockRestaurantId, 'franchise-1');
+      expect(repo.listCategories).toHaveBeenCalledWith(mockRestaurantId, 'franchise-1', undefined);
     });
   });
 
@@ -147,6 +149,24 @@ describe('ItemService', () => {
       const result = await service.getUomConversions(mockItemId);
       expect(result).toEqual(mockConversions);
       expect(repo.getUomConversions).toHaveBeenCalledWith(mockItemId);
+    });
+  });
+
+  describe('deleteItemsBulk', () => {
+    it('should call deleteItemsBulk on repository', async () => {
+      repo.deleteItemsBulk.mockResolvedValue();
+      const ids = ['item-1' as ItemId, 'item-2' as ItemId];
+      await service.deleteItemsBulk(ids);
+      expect(repo.deleteItemsBulk).toHaveBeenCalledWith(ids, undefined);
+    });
+  });
+
+  describe('deleteCategoriesBulk', () => {
+    it('should call deleteCategoriesBulk on repository', async () => {
+      repo.deleteCategoriesBulk.mockResolvedValue();
+      const ids = ['cat-1', 'cat-2'];
+      await service.deleteCategoriesBulk(ids);
+      expect(repo.deleteCategoriesBulk).toHaveBeenCalledWith(ids);
     });
   });
 });

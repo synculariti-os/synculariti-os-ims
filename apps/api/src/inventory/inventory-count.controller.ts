@@ -1,5 +1,6 @@
-import { Controller, Post, Patch, Get, Query, Body, Param, Inject, UseGuards, UseInterceptors, Req } from '@nestjs/common';
+import { Controller, Post, Patch, Get, Query, Body, Param, Inject, UseGuards, UseInterceptors, Req, UploadedFile, ParseFilePipeBuilder, BadRequestException, HttpStatus } from '@nestjs/common';
 import type { Request } from 'express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { SupabaseAuthGuard } from '../common/guards/supabase-auth.guard';
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
@@ -81,5 +82,55 @@ export class InventoryCountController {
   ) {
     await this.countService.closeBatch(batchId as CountBatchId, dto);
     return { success: true };
+  }
+
+  @Get(':batchId/export')
+  @RequirePermission('INVENTORY.READ')
+  async exportBatch(@Param('batchId') batchId: string) {
+    const rows = await this.countService.exportBatch(batchId as CountBatchId);
+    let csv = 'itemId,itemName,expectedQty,actualQty\n';
+    for (const row of rows) {
+      csv += `"${row.itemId}","${row.itemName.replace(/"/g, '""')}",${row.expectedQty},${row.actualQty ?? ''}\n`;
+    }
+    return csv;
+  }
+
+  @Post(':batchId/import')
+  @RequirePermission('INVENTORY.WRITE')
+  @UseInterceptors(FileInterceptor('file'))
+  async importBatch(
+    @Param('batchId') batchId: string,
+    @UploadedFile(
+      new ParseFilePipeBuilder()
+        .addFileTypeValidator({
+          fileType: /(csv|xlsx|xls|vnd\.ms-excel|vnd\.openxmlformats-officedocument\.spreadsheetml\.sheet)/i,
+          skipMagicNumbersValidation: true,
+        })
+        .addMaxSizeValidator({ maxSize: 10 * 1024 * 1024 })
+        .build({ errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY }),
+    ) file: Express.Multer.File,
+  ) {
+    const xlsx = await import('xlsx');
+    let buf = file.buffer;
+    if (buf.length >= 3 && buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF) {
+      buf = buf.subarray(3);
+    }
+    const workbook = xlsx.read(buf, { type: 'buffer', codepage: 65001 });
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) throw new BadRequestException('Uploaded file contains no sheets');
+    const sheet = workbook.Sheets[sheetName];
+    const rawRows: Record<string, string | number | undefined>[] = xlsx.utils.sheet_to_json(sheet);
+
+    const rowsToImport: { itemId: string; actualQty: number }[] = [];
+    for (const row of rawRows) {
+      const itemId = String(row['itemId'] ?? '').trim();
+      const actualQty = row['actualQty'];
+      if (itemId && actualQty !== undefined && actualQty !== null && actualQty !== '') {
+        rowsToImport.push({ itemId, actualQty: Number(actualQty) });
+      }
+    }
+
+    const updated = await this.countService.importBatch(batchId as CountBatchId, rowsToImport);
+    return { success: true, updated };
   }
 }

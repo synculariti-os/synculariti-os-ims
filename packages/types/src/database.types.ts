@@ -284,6 +284,14 @@ export interface Database {
     franchise_group_id: FranchiseGroupId | null;
     created_at: Generated<string>;
   };
+  feature_flags: {
+    id: Generated<string>;
+    restaurant_id: RestaurantId;
+    flag_key: string;
+    flag_value: boolean;
+    created_at: Generated<string>;
+    updated_at: Generated<string>;
+  };
 }
 
 export type Tables<T extends keyof Database> = Selectable<Database[T]>;

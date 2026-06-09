@@ -30,6 +30,11 @@ export const createPrepLogSchema = z.object({
   yieldQtyProduced: z.number().positive(),
 });
 
+export const createOpeningBalanceSchema = z.object({
+  itemId: z.string().uuid(),
+  quantity: z.number().positive(),
+});
+
 export const planPrepSchema = z.object({
   itemId: z.string().uuid(),
   targetYield: z.number().positive(),
@@ -40,4 +45,5 @@ export type SubmitCountRowDto = z.infer<typeof submitCountRowSchema>;
 export type CloseCountBatchDto = z.infer<typeof closeCountBatchSchema>;
 export type CreateWasteLogDto = z.infer<typeof createWasteLogSchema>;
 export type CreatePrepLogDto = z.infer<typeof createPrepLogSchema>;
+export type CreateOpeningBalanceDto = z.infer<typeof createOpeningBalanceSchema>;
 export type PlanPrepDto = z.infer<typeof planPrepSchema>;

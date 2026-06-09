@@ -17,3 +17,4 @@ export interface PaginationMeta {
 }
 export * from './domain/reporting';
 export * from './domain/audit';
+export * from './domain/settings';

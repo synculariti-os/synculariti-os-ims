@@ -140,6 +140,31 @@ export class RecipeRepository implements IRecipeRepository {
     }));
   }
 
+  async getUnmappedRows(
+    restaurantId: RestaurantId,
+    batchId: string,
+  ): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>> {
+    const rows = await this.db
+      .selectFrom('sales_import_rows')
+      .innerJoin('sales_import_batches', 'sales_import_batches.id', 'sales_import_rows.batch_id')
+      .leftJoin('menu_item_mappings', (join) =>
+        join
+          .on('menu_item_mappings.restaurant_id', '=', restaurantId)
+          .onRef('menu_item_mappings.raw_excel_string', '=', 'sales_import_rows.raw_item_name')
+      )
+      .select(['sales_import_rows.id', 'sales_import_rows.raw_item_name', 'sales_import_rows.quantity_sold'])
+      .where('sales_import_rows.batch_id', '=', batchId as any)
+      .where('menu_item_mappings.id', 'is', null)
+      .where('sales_import_batches.restaurant_id', '=', restaurantId)
+      .execute();
+
+    return rows.map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      rawItemName: r.raw_item_name as string,
+      quantitySold: Number(r.quantity_sold),
+    }));
+  }
+
   // ── Write ─────────────────────────────────────────────────────────────────
 
   async create(command: CreateRecipeCommand, trx?: unknown): Promise<Recipe> {

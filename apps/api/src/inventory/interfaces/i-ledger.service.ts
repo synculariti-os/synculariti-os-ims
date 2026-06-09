@@ -7,5 +7,6 @@ export interface ILedgerService {
   getCurrentStock(restaurantId: RestaurantId, itemId: ItemId): Promise<number>;
   getCurrentStockBulk(restaurantId: RestaurantId): Promise<StockLevel[]>;
   getLedgerEntries(restaurantId: RestaurantId, limit?: number, offset?: number): Promise<any[]>;
+  recordOpeningBalance(restaurantId: RestaurantId, itemId: ItemId, quantity: number): Promise<void>;
 }
 

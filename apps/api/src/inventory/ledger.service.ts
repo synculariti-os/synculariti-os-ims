@@ -1,15 +1,16 @@
-import { LEDGER_REPOSITORY_TOKEN } from '../core/core.symbols';
+import { LEDGER_REPOSITORY_TOKEN, DB_CLIENT } from '../core/core.symbols';
 export { LEDGER_REPOSITORY_TOKEN } from '../core/core.symbols';
 import { Injectable, BadRequestException, Inject } from '@nestjs/common';
+import type { Kysely } from 'kysely';
 
-import type { RestaurantId, ItemId, StockLevel, } from '@ims/types';
+import type { Database, RestaurantId, ItemId, StockLevel, } from '@ims/types';
 import { LEDGER_REASON_CODES } from '@ims/types';
 import type { LedgerEntryDto } from './dto/ledger-entry.dto';
 import type { ILedgerService } from './interfaces/i-ledger.service';
 import type { ILedgerRepository } from './interfaces/i-ledger.repository';
 import type { IItemReadService } from '../item/interfaces/i-item.service';
 import { ITEM_READ_SERVICE_TOKEN } from '../item/interfaces/i-item.service';
-
+import { randomUUID } from 'crypto';
 
 const VALID_REASON_CODES = new Set<string>(Object.values(LEDGER_REASON_CODES));
 
@@ -22,6 +23,7 @@ export class LedgerService implements ILedgerService {
   constructor(
     @Inject(LEDGER_REPOSITORY_TOKEN) private readonly ledgerRepo: ILedgerRepository,
     @Inject(ITEM_READ_SERVICE_TOKEN) private readonly itemService: IItemReadService,
+    @Inject(DB_CLIENT) private readonly db: Kysely<Database>,
   ) {}
 
   async record(trx: unknown, entry: LedgerEntryDto): Promise<void> {
@@ -78,5 +80,18 @@ export class LedgerService implements ILedgerService {
       }
     }));
     return entries;
+  }
+
+  async recordOpeningBalance(restaurantId: RestaurantId, itemId: ItemId, quantity: number): Promise<void> {
+    const id = randomUUID();
+    await this.db.transaction().execute(async (trx) => {
+      await this.record(trx, {
+        restaurantId,
+        itemId,
+        changeAmount: quantity,
+        reasonCode: LEDGER_REASON_CODES.OPENING_BALANCE,
+        referenceId: id,
+      });
+    });
   }
 }
