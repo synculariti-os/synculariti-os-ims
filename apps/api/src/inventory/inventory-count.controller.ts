@@ -11,7 +11,8 @@ import { setAuditBeforeState } from '../common/utils/audit.utils';
 
 import { INVENTORY_COUNT_SERVICE_TOKEN } from './interfaces/i-inventory-count.service';
 import type { IInventoryCountService } from './interfaces/i-inventory-count.service';
-import type { JwtPayload, CountBatchId, CountRowId } from '@ims/types';
+import { JwtPayload, PERMISSION_CODES } from '@ims/types';
+import type { CountBatchId, CountRowId } from '@ims/types';
 import { submitCountRowSchema, closeCountBatchSchema } from '@ims/validators';
 import type { SubmitCountRowDto, CloseCountBatchDto } from '@ims/validators';
 
@@ -25,7 +26,7 @@ export class InventoryCountController {
   ) {}
 
   @Get()
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async listBatches(
     @CurrentUser() user: JwtPayload,
     @Query('limit') limit?: string | number,
@@ -38,7 +39,7 @@ export class InventoryCountController {
   }
 
   @Get(':id')
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async getBatchById(
     @Param('id') id: string,
   ) {
@@ -48,13 +49,13 @@ export class InventoryCountController {
   }
 
   @Post('start')
-  @RequirePermission('INVENTORY.WRITE')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_WRITE)
   async startBatch(@CurrentUser() user: JwtPayload) {
     return this.countService.startBatch(user.restaurantId);
   }
 
   @Patch(':batchId/rows/:rowId')
-  @RequirePermission('INVENTORY.WRITE')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_WRITE)
   async submitActualCount(
     @Req() req: Request,
     @Param('batchId') batchId: string,
@@ -75,7 +76,7 @@ export class InventoryCountController {
   }
 
   @Post(':batchId/close')
-  @RequirePermission('INVENTORY.WRITE')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_WRITE)
   async closeBatch(
     @Param('batchId') batchId: string,
     @Body(new ZodValidationPipe(closeCountBatchSchema)) dto: CloseCountBatchDto,
@@ -85,7 +86,7 @@ export class InventoryCountController {
   }
 
   @Get(':batchId/export')
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async exportBatch(@Param('batchId') batchId: string) {
     const rows = await this.countService.exportBatch(batchId as CountBatchId);
     let csv = 'itemId,itemName,expectedQty,actualQty\n';
@@ -96,7 +97,7 @@ export class InventoryCountController {
   }
 
   @Post(':batchId/import')
-  @RequirePermission('INVENTORY.WRITE')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_WRITE)
   @UseInterceptors(FileInterceptor('file'))
   async importBatch(
     @Param('batchId') batchId: string,

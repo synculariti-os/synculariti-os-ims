@@ -4,7 +4,7 @@ import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { RequirePermission } from '../common/decorators/require-permission.decorator';
 import { TenantContextInterceptor } from '../common/interceptors/tenant-context.interceptor';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload } from '@ims/types';
+import { JwtPayload, PERMISSION_CODES } from '@ims/types';
 import { LEDGER_SERVICE_TOKEN, ILedgerService } from './interfaces/i-ledger.service';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { createOpeningBalanceSchema, CreateOpeningBalanceDto } from '@ims/validators';
@@ -19,7 +19,7 @@ export class InventoryController {
 
   @Post('adjustment')
   @HttpCode(HttpStatus.OK)
-  @RequirePermission('INVENTORY.WRITE')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_WRITE)
   async recordOpeningBalance(
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createOpeningBalanceSchema)) dto: CreateOpeningBalanceDto,
@@ -29,14 +29,14 @@ export class InventoryController {
   }
 
   @Get('stock')
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async getStock(@CurrentUser() user: JwtPayload) {
     const data = await this.ledgerService.getCurrentStockBulk(user.restaurantId);
     return { data };
   }
 
   @Get('ledger')
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async getLedger(
     @CurrentUser() user: JwtPayload,
     @Query('limit') limit?: string | number,

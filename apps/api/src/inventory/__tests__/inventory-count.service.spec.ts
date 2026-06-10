@@ -212,8 +212,7 @@ describe('InventoryCountService', () => {
       expect(mockCountRepo.updateCountRow).toHaveBeenCalledWith(
         expect.anything(), // trx
         ROW_ID_A,
-        42,
-        -8, // 42 - 50 = -8
+        42
       );
     });
 

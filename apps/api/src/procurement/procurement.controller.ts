@@ -5,7 +5,7 @@ import { RequirePermission } from '../common/decorators/require-permission.decor
 import { TenantContextInterceptor } from '../common/interceptors/tenant-context.interceptor';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { JwtPayload, PurchaseOrderId } from '@ims/types';
+import { JwtPayload, PurchaseOrderId, PERMISSION_CODES } from '@ims/types';
 import { CreatePoDto, createPoSchema, ReceivePoDto, receivePoSchema } from '@ims/validators';
 
 import { PROCUREMENT_SERVICE_TOKEN } from './interfaces/i-procurement.service';
@@ -21,7 +21,7 @@ export class ProcurementController {
   ) {}
 
   @Post()
-  @RequirePermission('PROCUREMENT.WRITE')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_WRITE)
   async createDraftPO(
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createPoSchema)) dto: CreatePoDto,
@@ -30,7 +30,7 @@ export class ProcurementController {
   }
 
   @Get()
-  @RequirePermission('PROCUREMENT.READ')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_READ)
   async listPOs(
     @CurrentUser() user: JwtPayload,
     @Query('page') page?: number,
@@ -42,7 +42,7 @@ export class ProcurementController {
   }
 
   @Patch(':id/submit')
-  @RequirePermission('PROCUREMENT.WRITE')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_WRITE)
   async submitPO(
     @Param('id') poId: PurchaseOrderId,
     @CurrentUser() _user: JwtPayload,
@@ -51,7 +51,7 @@ export class ProcurementController {
   }
 
   @Patch(':id/receive')
-  @RequirePermission('PROCUREMENT.WRITE')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_WRITE)
   async receivePO(
     @Param('id') poId: PurchaseOrderId,
     @Body(new ZodValidationPipe(receivePoSchema)) dto: ReceivePoDto,
@@ -61,7 +61,7 @@ export class ProcurementController {
   }
 
   @Patch(':id/cancel')
-  @RequirePermission('PROCUREMENT.WRITE')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_WRITE)
   async cancelPO(
     @Param('id') poId: PurchaseOrderId,
     @CurrentUser() _user: JwtPayload,

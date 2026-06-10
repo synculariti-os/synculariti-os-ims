@@ -5,7 +5,7 @@ import { RequirePermission } from '../common/decorators/require-permission.decor
 import { TenantContextInterceptor } from '../common/interceptors/tenant-context.interceptor';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { JwtPayload } from '@ims/types';
+import { JwtPayload, PERMISSION_CODES } from '@ims/types';
 import { CreateVendorDto, createVendorSchema, UpdateVendorDto, updateVendorSchema } from '@ims/validators';
 
 import { PROCUREMENT_SERVICE_TOKEN } from './interfaces/i-procurement.service';
@@ -21,14 +21,14 @@ export class VendorController {
   ) {}
 
   @Get()
-  @RequirePermission('PROCUREMENT.READ')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_READ)
   async listVendors(@CurrentUser() user: JwtPayload) {
     const data = await this.procurementService.listVendors(user.restaurantId);
     return { data };
   }
 
   @Post()
-  @RequirePermission('PROCUREMENT.WRITE')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_WRITE)
   async createVendor(
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createVendorSchema)) dto: CreateVendorDto,
@@ -37,7 +37,7 @@ export class VendorController {
   }
 
   @Put(':id')
-  @RequirePermission('PROCUREMENT.WRITE')
+  @RequirePermission(PERMISSION_CODES.PROCUREMENT_WRITE)
   async updateVendor(
     @Param('id') vendorId: string,
     @Body(new ZodValidationPipe(updateVendorSchema)) dto: UpdateVendorDto,

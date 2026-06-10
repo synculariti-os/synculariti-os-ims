@@ -4,7 +4,7 @@ import { RequirePermission } from '../common/decorators/require-permission.decor
 import { PermissionsGuard } from '../common/guards/permissions.guard';
 import { TenantContextInterceptor } from '../common/interceptors/tenant-context.interceptor';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
-import { JwtPayload, PrepProductionLog, PrepPlanResponse } from '@ims/types';
+import { JwtPayload, PERMISSION_CODES, PrepProductionLog, PrepPlanResponse } from '@ims/types';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { CreatePrepLogDto, createPrepLogSchema, PlanPrepDto, planPrepSchema } from '@ims/validators';
 import { IPrepService, PREP_SERVICE_TOKEN } from './interfaces/i-prep.service';
@@ -18,7 +18,7 @@ export class PrepController {
   ) {}
 
   @Post()
-  @RequirePermission('INVENTORY.WRITE')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_WRITE)
   async logPrepProduction(
     @CurrentUser() user: JwtPayload,
     @Body(new ZodValidationPipe(createPrepLogSchema)) dto: CreatePrepLogDto,
@@ -27,7 +27,7 @@ export class PrepController {
   }
 
   @Get('plan')
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async planPrepProduction(
     @CurrentUser() user: JwtPayload,
     @Query('itemId') itemId: string,
@@ -45,7 +45,7 @@ export class PrepController {
   }
 
   @Get()
-  @RequirePermission('INVENTORY.READ')
+  @RequirePermission(PERMISSION_CODES.INVENTORY_READ)
   async listPrepLogs(
     @CurrentUser() user: JwtPayload,
     @Query('limit') limit?: string | number,

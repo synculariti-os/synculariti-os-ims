@@ -8,6 +8,7 @@ interface PdfParseFn {
 }
 
 // Handle CJS/ESM interop differences between NestJS runtime and Vitest
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- ESM/CJS interop: pdf-parse exports differ between Node runtime and Vitest environments
 const pdfParse: PdfParseFn = (typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule as any).default) as any;
 
 export class PdfSalesParser implements ISalesFileParser {

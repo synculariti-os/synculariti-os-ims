@@ -153,6 +153,7 @@ export class RecipeRepository implements IRecipeRepository {
           .onRef('menu_item_mappings.raw_excel_string', '=', 'sales_import_rows.raw_item_name')
       )
       .select(['sales_import_rows.id', 'sales_import_rows.raw_item_name', 'sales_import_rows.quantity_sold'])
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Kysely string column can't directly accept a branded string type without cast
       .where('sales_import_rows.batch_id', '=', batchId as any)
       .where('menu_item_mappings.id', 'is', null)
       .where('sales_import_batches.restaurant_id', '=', restaurantId)

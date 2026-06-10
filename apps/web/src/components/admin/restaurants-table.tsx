@@ -1,0 +1,129 @@
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { Restaurant, FranchiseGroup } from '@ims/types';
+import { apiClient } from '@/lib/api-client';
+import { Store, Plus, Search, Pencil, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
+import { CreateRestaurantDialog, EditRestaurantDialog } from './restaurant-dialogs';
+
+function ConfirmDeleteModal({ onConfirm, onCancel, name }: { onConfirm: () => void; onCancel: () => void; name: string }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={onCancel}>
+      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 border border-zinc-200 dark:border-zinc-800" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full"><AlertTriangle className="w-5 h-5 text-red-500" /></div>
+          <h3 className="text-lg font-semibold text-zinc-900 dark:text-white">Delete Restaurant</h3>
+        </div>
+        <p className="text-zinc-600 dark:text-zinc-400 mb-6 text-sm">Delete <span className="font-semibold text-zinc-900 dark:text-white">{name}</span>? This cannot be undone.</p>
+        <div className="flex gap-3 justify-end">
+          <button onClick={onCancel} className="px-4 py-2 rounded-xl text-sm font-medium border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors">Cancel</button>
+          <button onClick={onConfirm} className="px-4 py-2 rounded-xl text-sm font-medium bg-red-600 hover:bg-red-700 text-white transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function RestaurantsTable() {
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [franchiseGroups, setFranchiseGroups] = useState<FranchiseGroup[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingRestaurant, setEditingRestaurant] = useState<Restaurant | null>(null);
+  const [deletingRestaurant, setDeletingRestaurant] = useState<Restaurant | null>(null);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const [restRes, fgRes] = await Promise.all([
+        apiClient<{ data: Restaurant[] }>('/tenant/restaurants'),
+        apiClient<{ data: FranchiseGroup[] }>('/tenant/franchise-groups'),
+      ]);
+      setRestaurants(restRes.data || []);
+      setFranchiseGroups(fgRes.data || []);
+    } catch (error) {
+      console.error('Failed to fetch data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const groupMap = Object.fromEntries(franchiseGroups.map((g) => [g.id, g.name]));
+
+  const filtered = restaurants.filter((r) =>
+    r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.timezone.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+      <div className="p-4 border-b border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="relative max-w-md w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400" />
+          <input type="text" placeholder="Search restaurants..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-9 pr-4 py-2 bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition-shadow" />
+        </div>
+        <button onClick={() => setIsCreateOpen(true)} className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors whitespace-nowrap shadow-sm">
+          <Plus className="w-4 h-4 mr-2" /> Add Restaurant
+        </button>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-left text-sm text-zinc-600 dark:text-zinc-400">
+          <thead className="text-xs text-zinc-500 uppercase bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-200 dark:border-zinc-800">
+            <tr>
+              <th className="px-6 py-4 font-medium">Name</th>
+              <th className="px-6 py-4 font-medium">Franchise Group</th>
+              <th className="px-6 py-4 font-medium">Timezone</th>
+              <th className="px-6 py-4 font-medium text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+            {isLoading ? (
+              <tr><td colSpan={4} className="px-6 py-12 text-center"><div className="inline-block h-6 w-6 animate-spin rounded-full border-2 border-solid border-blue-600 border-r-transparent" /></td></tr>
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={4} className="px-6 py-12 text-center text-zinc-500">
+                <Store className="w-12 h-12 mx-auto text-zinc-300 dark:text-zinc-700 mb-3" />
+                <p className="text-base font-medium text-zinc-900 dark:text-zinc-100">No restaurants found</p>
+                <p className="mt-1 mb-4">Create your first restaurant.</p>
+                <button onClick={() => setIsCreateOpen(true)} className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium text-sm transition-colors shadow-sm"><Plus className="w-4 h-4 mr-2" /> Add Restaurant</button>
+              </td></tr>
+            ) : (
+              filtered.map((r) => (
+                <tr key={r.id} className="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                  <td className="px-6 py-4 font-medium text-zinc-900 dark:text-zinc-100">{r.name}</td>
+                  <td className="px-6 py-4 text-zinc-500">{groupMap[r.franchiseGroupId] || r.franchiseGroupId.slice(0, 8)}</td>
+                  <td className="px-6 py-4 text-zinc-500">{r.timezone}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button className="p-1.5 rounded-lg text-zinc-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors" onClick={() => setEditingRestaurant(r)} title="Edit"><Pencil className="w-4 h-4" /></button>
+                      <button className="p-1.5 rounded-lg text-zinc-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors" onClick={() => setDeletingRestaurant(r)} title="Delete"><Trash2 className="w-4 h-4" /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {isCreateOpen && <CreateRestaurantDialog franchiseGroups={franchiseGroups} onOpenChange={setIsCreateOpen} onSuccess={fetchData} />}
+      {editingRestaurant && <EditRestaurantDialog restaurant={editingRestaurant} onOpenChange={(o) => !o && setEditingRestaurant(null)} onSuccess={fetchData} />}
+      {deletingRestaurant && (
+        <ConfirmDeleteModal
+          name={deletingRestaurant.name}
+          onConfirm={async () => {
+            try {
+              await apiClient(`/tenant/restaurants/${deletingRestaurant.id}`, { method: 'DELETE' });
+              setDeletingRestaurant(null);
+              fetchData();
+            } catch (err) { console.error('Failed to delete', err); }
+          }}
+          onCancel={() => setDeletingRestaurant(null)}
+        />
+      )}
+    </div>
+  );
+}

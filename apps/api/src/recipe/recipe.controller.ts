@@ -134,6 +134,7 @@ export class RecipeController {
     }
 
     const result = await this.recipeService.bulkCreateRecipes(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- parsedRows is built dynamically from XLSX headers which can't be statically typed
       parsedRows as any,
       user.restaurantId ?? null,
       user.franchiseGroupId ?? null,

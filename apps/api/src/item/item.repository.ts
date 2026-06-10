@@ -268,6 +268,7 @@ export class ItemRepository implements IItemRepository {
             .whereRef('items.category_id', '=', 'categories.id')
             .where('items.type', '=', itemType as import('@ims/types').ItemType)
         )
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Kysely expression builder returns complex generic that requires coercion for conditional query composition
       ) as any;
     }
 
