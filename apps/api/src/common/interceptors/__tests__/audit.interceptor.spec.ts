@@ -15,7 +15,7 @@ describe('AuditInterceptor', () => {
 
   beforeEach(() => {
     auditService = {
-      log: vi.fn().mockResolvedValue(undefined),
+      log: vi.fn().mockResolvedValue(undefined), listLogs: vi.fn(), findLogById: vi.fn(),
     };
 
     interceptor = new AuditInterceptor(auditService);

@@ -145,6 +145,8 @@
 | `updateItemSchema` | `ZodObject` | Partial of `createItemSchema` via `.partial()` |
 | `createCategorySchema` | `ZodObject` | `name`, `description?`, exactly one of `franchiseGroupId` or `restaurantId` via `.refine()` |
 | `createUomConversionSchema` | `ZodObject` | `{ itemId, fromUom, toUom, multiplierFactor: z.number().positive() }` |
+| `deleteItemsBulkSchema` | `ZodObject` | `{ itemIds: z.array(z.string().uuid()).min(1) }` |
+| `deleteCategoriesBulkSchema` | `ZodObject` | `{ categoryIds: z.array(z.string().uuid()).min(1) }` |
 
 ### Procurement Schemas
 
@@ -171,6 +173,7 @@
 | `submitCountRowSchema` | `ZodObject` | `{ itemId, actualQty: z.number().nonnegative() }` |
 | `createWasteLogSchema` | `ZodObject` | `{ itemId, quantity: z.number().positive(), reason? }` |
 | `createPrepLogSchema` | `ZodObject` | `{ prepItemId, yieldQtyProduced: z.number().positive() }` |
+| `createOpeningBalanceSchema` | `ZodObject` | `{ itemId, quantity: z.number().positive() }` |
 
 ### Sales Schemas
 
@@ -222,6 +225,9 @@ All Dependency Injection tokens must be `Symbol` objects exported from `core.sym
 |---|---|---|
 | `DB_CLIENT` | `Symbol` | Token for injecting the Kysely database instance |
 | `SUPABASE_ADMIN_CLIENT` | `Symbol` | Token for injecting the Supabase admin client |
+| `USER_REPOSITORY_TOKEN` | `Symbol` | Token for injecting the User repository |
+| `PERMISSION_REPOSITORY_TOKEN` | `Symbol` | Token for injecting the Permission repository |
+| `SETTINGS_REPOSITORY_TOKEN` | `Symbol` | Token for injecting the Settings repository |
 | `IAuthService` | `Symbol` | DI Token |
 | `ITenantService` | `Symbol` | DI Token |
 | `IItemReadService` | `Symbol` | DI Token |
@@ -233,14 +239,16 @@ All Dependency Injection tokens must be `Symbol` objects exported from `core.sym
 | Symbol | Kind | Module | Description |
 |---|---|---|---|
 | `IAuthService` | `interface` | `AuthModule` | `verifyAndEnrich`, `resolvePermissions`, `getProfile`, `updateProfile` |
+| `IAuthAdminService` | `interface` | `AuthModule` | `listRoles`, `createRole`, `updateRole`, `deleteRole`, `listPermissions`, `assignPermissionToRole`, `assignUserRestaurantRole`, etc. |
 | `ITenantService` | `interface` | `TenantModule` | `getRestaurant`, `getFranchiseGroup`, `listRestaurantsForUser` |
+| `ISettingsService` | `interface` | `SettingsModule` | `getFeatureFlag`, `getAllFeatureFlags`, `setFeatureFlag` |
 | `IItemReadService` | `interface` | `ItemModule` | `findById`, `convertUom`, `listParLevels` |
 | `IItemWriteService` | `interface` | `ItemModule` | Extends `IItemReadService` with CRUD operations: `createItem`, `updateItem`, etc. |
 | `CreateItemCommand` | `type` | `ItemModule` | Backend-only type: `CreateItemDto & { restaurantId: RestaurantId \| null; franchiseGroupId: FranchiseGroupId \| null }` |
 | `CreateCategoryCommand` | `type` | `ItemModule` | Backend-only type: `CreateCategoryDto & { restaurantId: RestaurantId \| null; franchiseGroupId: FranchiseGroupId \| null }` |
 | `IProcurementService` | `interface` | `ProcurementModule` | `createDraftPO`, `submitPO`, `receivePO`, `cancelPO` |
-| `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients`, `createRecipe`, `updateRecipe`, `createMenuItemMapping`, `bulkCreateRecipes` |
-| `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk` |
+| `IRecipeService` | `interface` | `RecipeModule` | `expandBOM`, `resolveRecipeByPosString`, `getIngredients`, `createRecipe`, `updateRecipe`, `createMenuItemMapping`, `bulkCreateRecipes`, `getUnmappedRows` |
+| `ILedgerService` | `interface` | `InventoryModule` | `record`, `getCurrentStock`, `getCurrentStockBulk`, `recordOpeningBalance` |
 | `IStockQueryService` | `interface` | `InventoryModule` | Read-only: `getCurrentStock`, `getCurrentStockBulk` (for Reporting) |
 | `IInventoryCountService` | `interface` | `InventoryModule` | `startBatch`, `submitActualCount`, `closeBatch`, `exportBatch`, `importBatch`, `listBatches`, `findBatchById`, `findRowsByBatchId` |
 | `IWasteService` | `interface` | `InventoryModule` | `logWaste`, `listWasteLogs` |

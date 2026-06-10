@@ -33,7 +33,7 @@ describe('ItemController', () => {
       updateOverride: vi.fn(),
       deleteItem: vi.fn(),
       deleteCategory: vi.fn(),
-      generateSku: vi.fn(),
+      generateSku: vi.fn(), deleteItemsBulk: vi.fn(), deleteCategoriesBulk: vi.fn(), findBySku: vi.fn(), ensureItemDependencies: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

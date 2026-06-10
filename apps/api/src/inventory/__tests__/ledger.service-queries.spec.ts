@@ -27,7 +27,7 @@ describe('LedgerService Queries', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    service = new LedgerService(mockLedgerRepository, mockItemReadService as never);
+    service = new LedgerService(mockLedgerRepository, mockItemReadService as never, {} as never);
   });
 
   describe('getLedgerEntries()', () => {

@@ -27,7 +27,7 @@ describe('InventoryCountController', () => {
       submitActualCount: vi.fn(),
       closeBatch: vi.fn(),
       listBatches: vi.fn(),
-      getBatchById: vi.fn(),
+      getBatchById: vi.fn(), exportBatch: vi.fn(), importBatch: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

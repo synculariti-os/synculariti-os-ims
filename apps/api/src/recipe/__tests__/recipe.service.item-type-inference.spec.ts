@@ -54,7 +54,7 @@ const mockRecipeRepo: IRecipeRepository = {
   findMenuRecipes:            vi.fn(),
   findAllMappings:            vi.fn(),
   deleteRecipe:               vi.fn(),
-  deleteMapping:              vi.fn(),
+  deleteMapping: vi.fn(), bulkCreateRecipes: vi.fn(), getUnmappedRows: vi.fn(),
 };
 
 const mockItemService: IItemWriteService = {
@@ -70,7 +70,7 @@ const mockItemService: IItemWriteService = {
   deleteCategory:      vi.fn(),
   upsertUomConversion: vi.fn(),
   updateOverride:      vi.fn(),
-  generateSku:         vi.fn(),
+  generateSku: vi.fn(), deleteItemsBulk: vi.fn(), deleteCategoriesBulk: vi.fn(), findBySku: vi.fn(), ensureItemDependencies: vi.fn(),
 };
 
 const mockDb = {

@@ -41,19 +41,21 @@ const mockRecipeRepo: IRecipeRepository = {
   create: vi.fn(),
   update: vi.fn(),
   upsertMapping: vi.fn(),
-  findAllRecipes:             vi.fn(),
-  findMenuRecipes:            vi.fn(),
-  findAllMappings:            vi.fn(),
-  deleteRecipe:               vi.fn(),
-  deleteMapping:              vi.fn(),
-};
+  findAllRecipes: vi.fn(),
+  findMenuRecipes: vi.fn(),
+  findAllMappings: vi.fn(),
+  deleteRecipe: vi.fn(),
+  deleteMapping: vi.fn(),
+  bulkCreateRecipes: vi.fn(),
+  getUnmappedRows: vi.fn(),
+} as any;
 
 const mockItemService: IItemWriteService = {
   findById: vi.fn(),
   convertUom: vi.fn(),
   listParLevels: vi.fn(),
   listCategories: vi.fn(),
-      getUomConversions: vi.fn(),
+  getUomConversions: vi.fn(),
   createItem: vi.fn(),
   updateItem: vi.fn(),
   deleteItem: vi.fn(),
@@ -63,7 +65,11 @@ const mockItemService: IItemWriteService = {
   upsertUomConversion: vi.fn(),
   updateOverride: vi.fn(),
   generateSku: vi.fn(),
-};
+  deleteItemsBulk: vi.fn(),
+  deleteCategoriesBulk: vi.fn(),
+  findBySku: vi.fn(),
+  ensureItemDependencies: vi.fn(),
+} as any;
 
 const mockDb = {
   transaction: vi.fn().mockReturnValue({

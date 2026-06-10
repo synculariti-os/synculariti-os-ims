@@ -44,14 +44,14 @@ const mockCountRepo: IInventoryCountRepository = {
   findRowsByBatchId: vi.fn() as never,
   updateCountRow: vi.fn() as never,
   createCountRows: vi.fn() as never,
-  listBatches: vi.fn() as never,
+  listBatches: vi.fn() as never, findRowsWithItemName: vi.fn() as never,
 };
 
 const mockLedgerService: ILedgerService = {
   record: vi.fn(),
   getCurrentStock: vi.fn(),
   getCurrentStockBulk: vi.fn(),
-      getLedgerEntries: vi.fn(),
+      getLedgerEntries: vi.fn(), recordOpeningBalance: vi.fn(),
 };
 
 // ---------------------------------------------------------------------------

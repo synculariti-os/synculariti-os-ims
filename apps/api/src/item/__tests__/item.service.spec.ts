@@ -68,7 +68,7 @@ describe('ItemService', () => {
       deleteItemsBulk: vi.fn(),
       deleteCategory: vi.fn(),
       deleteCategoriesBulk: vi.fn(),
-      generateSku: vi.fn(),
+      generateSku: vi.fn(), findBySku: vi.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

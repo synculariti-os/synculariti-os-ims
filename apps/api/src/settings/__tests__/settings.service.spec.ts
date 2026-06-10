@@ -1,11 +1,13 @@
+// @immutable-test
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Mocked } from 'vitest';
 import { SettingsService } from '../settings.service';
 import { ISettingsRepository } from '../interfaces/i-settings.repository';
 import type { FeatureFlag, FeatureFlagKey, RestaurantId } from '@ims/types';
 
 describe('SettingsService', () => {
   let service: SettingsService;
-  let repo: vitest.Mocked<ISettingsRepository>;
+  let repo: Mocked<ISettingsRepository>;
 
   beforeEach(() => {
     repo = {
