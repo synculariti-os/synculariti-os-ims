@@ -6,6 +6,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { SalesService } from '../sales.service';
 import { SALES_REPOSITORY_TOKEN } from '../interfaces/i-sales.repository';
 import { getQueueToken } from '@nestjs/bullmq';
+import { RECIPE_SERVICE_TOKEN } from '../../recipe/interfaces/i-recipe.service';
+import { LEDGER_SERVICE_TOKEN } from '../../inventory/interfaces/i-ledger.service';
+import { STORAGE_SERVICE_TOKEN } from '../interfaces/i-storage.service';
+import { DB_CLIENT } from '../../core/core.symbols';
 
 
 describe('SalesService', () => {
@@ -38,6 +42,10 @@ describe('SalesService', () => {
         { provide: SALES_REPOSITORY_TOKEN, useValue: repoMock },
         { provide: getQueueToken('sales_import'), useValue: queueMock },
         { provide: SUPABASE_ADMIN_CLIENT, useValue: supabaseMock },
+        { provide: RECIPE_SERVICE_TOKEN, useValue: {} },
+        { provide: LEDGER_SERVICE_TOKEN, useValue: {} },
+        { provide: STORAGE_SERVICE_TOKEN, useValue: {} },
+        { provide: DB_CLIENT, useValue: {} },
       ],
     }).compile();
 

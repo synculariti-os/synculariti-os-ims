@@ -4,7 +4,7 @@ import type {
   FranchiseGroupId, RestaurantId, ItemId, CategoryId, UserId, RoleId, 
   VendorId, PurchaseOrderId, PoLineItemId, InventoryBatchId, RecipeId, RecipeIngredientId, 
   MenuItemMappingId, LedgerEntryId, TransferId, CountBatchId, CountRowId, WasteLogId, PrepLogId, 
-  SalesImportBatchId, SalesImportRowId, SnapshotId 
+  SalesImportBatchId, SalesImportRowId, PosRawImportId, SnapshotId 
 } from './branded';
 import type { PermissionCode } from './constants/permissions';
 import type { ItemType } from './domain/item';
@@ -238,9 +238,18 @@ export interface Database {
     error_message: string | null;
     file_url: string | null;
     uploaded_by: string | null;
+    /** Path in Supabase Storage bucket (used for POS direct-processing flow) */
+    storage_path: string | null;
+    /** Original filename of the uploaded file */
+    original_file_name: string | null;
+    /** Total rows found in the uploaded file */
+    total_rows: number | null;
+    /** Number of rows successfully imported */
+    imported_rows: number | null;
     created_at: Generated<string>;
     updated_at: Generated<string>;
   };
+
   sales_import_rows: {
     id: SalesImportRowId;
     batch_id: SalesImportBatchId;
@@ -248,6 +257,33 @@ export interface Database {
     quantity_sold: number;
     is_mapped: Generated<boolean>;
     recipe_id: string | null;
+    created_at: Generated<string>;
+  };
+  pos_raw_imports: {
+    id: PosRawImportId;
+    batch_id: SalesImportBatchId;
+    plu: number | null;
+    charakteristika_1: string | null;
+    charakteristika_2: string | null;
+    barcode: string | null;
+    nazov: string | null;
+    plu_type_number: number | null;
+    plu_type_text: string | null;
+    group_number: number | null;
+    group_name: string | null;
+    outlet_number: number | null;
+    outlet_name: string | null;
+    quantity: number;
+    uom: string | null;
+    total_price_excl_vat: number | null;
+    total_price_incl_vat: number | null;
+    total_cogs: number | null;
+    original_price_incl_vat: number | null;
+    total_discount: number | null;
+    optional_text_1: string | null;
+    optional_text_2: string | null;
+    optional_text_3: string | null;
+    raw_json: Json | null;
     created_at: Generated<string>;
   };
   daily_inventory_snapshots: {
@@ -297,3 +333,4 @@ export interface Database {
 export type Tables<T extends keyof Database> = Selectable<Database[T]>;
 export type TablesInsert<T extends keyof Database> = Insertable<Database[T]>;
 export type TablesUpdate<T extends keyof Database> = Updateable<Database[T]>;
+export type PosRawImportInsert = TablesInsert<'pos_raw_imports'>;

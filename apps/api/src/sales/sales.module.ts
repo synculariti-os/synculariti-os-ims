@@ -9,7 +9,6 @@ import { SALES_FILE_PARSER_FACTORY_TOKEN } from './interfaces/i-sales-file-parse
 import { SalesParserFactory } from './parsers/sales-parser.factory';
 import { RecipeModule } from '../recipe/recipe.module';
 import { InventoryModule } from '../inventory/inventory.module';
-
 import { SalesImportProcessor } from './sales.processor';
 
 @Module({

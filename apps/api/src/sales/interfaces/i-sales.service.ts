@@ -8,6 +8,17 @@ export interface ISalesService {
     franchiseId: string,
     userId: string,
   ): Promise<{ batchId: string }>;
+  uploadPosFile(
+    file: Express.Multer.File,
+    dto: { businessDate: string },
+    restaurantId: string,
+    userId: string,
+  ): Promise<{ batchId: string }>;
+  processPosBatch(
+    batchId: string,
+    restaurantId: string,
+    franchiseGroupId: string,
+  ): Promise<{ importedRows: number }>;
   listBatches(restaurantId: string, page: number, limit: number): Promise<{ data: import('@ims/types').SalesImportBatch[], meta: import('@ims/types').PaginationMeta }>;
   getUnmappedRows(restaurantId: string, batchId: string): Promise<Array<{ id: string; rawItemName: string; quantitySold: number }>>;
 }

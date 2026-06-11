@@ -3,7 +3,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { ISalesRepository } from './interfaces/i-sales.repository';
 import { Kysely } from 'kysely';
 import { v4 as uuidv4 } from 'uuid';
-import { Database, SalesImportBatchId, SalesImportRowId, asRestaurantId, asSalesImportBatchId } from '@ims/types';
+import { Database, PosRawImportInsert, SalesImportBatchId, SalesImportRowId, PosRawImportId, asRestaurantId, asSalesImportBatchId } from '@ims/types';
 
 @Injectable()
 export class SalesRepository implements ISalesRepository {
@@ -14,6 +14,9 @@ export class SalesRepository implements ISalesRepository {
     businessDate: string;
     fileUrl: string;
     uploadedBy: string;
+    storagePath?: string | null;
+    originalFileName?: string | null;
+    totalRows?: number | null;
   }): Promise<{ id: string; status: string; restaurant_id: string; business_date: string }> {
     const [batch] = await this.db
       .insertInto('sales_import_batches')
@@ -24,6 +27,10 @@ export class SalesRepository implements ISalesRepository {
         status: 'PENDING',
         file_url: data.fileUrl,
         uploaded_by: data.uploadedBy,
+        storage_path: data.storagePath ?? null,
+        original_file_name: data.originalFileName ?? null,
+        total_rows: data.totalRows ?? null,
+        imported_rows: null,
       })
       .returningAll()
       .execute();
@@ -31,10 +38,57 @@ export class SalesRepository implements ISalesRepository {
     return batch;
   }
 
+  async findBatchById(batchId: string): Promise<{
+    id: string;
+    restaurantId: string;
+    businessDate: string;
+    status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
+    storagePath: string | null;
+    fileUrl: string | null;
+    uploadedBy: string | null;
+    originalFileName: string | null;
+    totalRows: number | null;
+    importedRows: number | null;
+    createdAt: string;
+    updatedAt: string;
+    errorMessage: string | null;
+  } | null> {
+    const row = await this.db
+      .selectFrom('sales_import_batches')
+      .selectAll()
+      .where('id', '=', asSalesImportBatchId(batchId))
+      .executeTakeFirst();
+
+    if (!row) return null;
+    return {
+      id: row.id,
+      restaurantId: row.restaurant_id,
+      businessDate: row.business_date,
+      status: row.status,
+      storagePath: row.storage_path ?? null,
+      fileUrl: row.file_url ?? null,
+      uploadedBy: row.uploaded_by ?? null,
+      originalFileName: row.original_file_name ?? null,
+      totalRows: row.total_rows ?? null,
+      importedRows: row.imported_rows ?? null,
+      createdAt: row.created_at,
+      updatedAt: row.updated_at,
+      errorMessage: row.error_message ?? null,
+    };
+  }
+
   async updateBatchStatus(batchId: string, status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED', errorMessage?: string): Promise<void> {
     await this.db
       .updateTable('sales_import_batches')
       .set({ status, error_message: errorMessage || null, updated_at: new Date().toISOString() })
+      .where('id', '=', asSalesImportBatchId(batchId))
+      .execute();
+  }
+
+  async updateBatchAfterUpload(batchId: string, data: { importedRows: number }): Promise<void> {
+    await this.db
+      .updateTable('sales_import_batches')
+      .set({ status: 'COMPLETED', imported_rows: data.importedRows, updated_at: new Date().toISOString() })
       .where('id', '=', asSalesImportBatchId(batchId))
       .execute();
   }
@@ -53,6 +107,16 @@ export class SalesRepository implements ISalesRepository {
           recipe_id: row.recipeId || null,
         }))
       )
+      .execute();
+  }
+
+  async insertPosRawImports(trx: Kysely<Database>, rows: PosRawImportInsert[]): Promise<void> {
+    if (rows.length === 0) return;
+    // Assign UUIDs if not provided
+    const withIds = rows.map(r => ({ ...r, id: (r.id ?? uuidv4()) as PosRawImportId }));
+    await trx
+      .insertInto('pos_raw_imports')
+      .values(withIds)
       .execute();
   }
 

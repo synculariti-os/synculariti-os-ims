@@ -247,6 +247,7 @@ COMMIT
 
 ### Inputs
 - `POST /recipes` — Create a new recipe with ingredients
+- `POST /recipes/bulk` — Bulk create recipes from parsed rows (CSV/XLSX imports)
 - `PUT /recipes/:id` — Update recipe yield/ingredients
 - `POST /recipes/mappings` — Map raw POS string to a recipe
 - `POST /recipes/upload` — Bulk upload recipes via CSV/XLSX
@@ -375,7 +376,9 @@ interface IPrepService {
 **Responsibility**: Accept XLSX/CSV/PDF POS export files, parse them asynchronously, map rows to recipes via `menu_item_mappings`, and trigger BOM-based inventory depletion.
 
 ### Inputs
-- `POST /sales-imports/upload` → multipart file upload (supports `.xlsx`, `.pdf`) with strict pre-flight validation to reject invalid formats
+- `POST /sales-imports/pos-upload` → direct upload for POS (XLSX) which creates a pending batch
+- `POST /sales-imports/:batchId/process` → synchronous processing of POS batch: downloads file, parses, inserts raw audits, maps rows, and depletes inventory
+- `POST /sales-imports/upload` → multipart file upload for background processing
 - `GET /sales-imports` → returns paginated list of batches for the current restaurant
 - BullMQ internal job queue messages
 
@@ -388,23 +391,25 @@ interface IPrepService {
 | Table | Access |
 |---|---|
 | `sales_import_batches` | INSERT + status UPDATE |
+| `pos_raw_imports` | INSERT (Raw POS audit log) |
 | `sales_import_rows` | INSERT + `is_mapped` UPDATE |
 
 ### UI Views
 - `/sales/import` — Sales POS file uploader and batch processing view.
 
-### Processing Pipeline (BullMQ Worker)
+### Processing Pipeline (POS Sync Processing)
 ```
-1. Parse file (xlsx/csv/pdf via ISalesFileParserFactory)
-2. Wrap execution in tenantContext.run(franchiseGroupId, restaurantId)
-3. BEGIN Kysely TRANSACTION
-   a. Upsert rows into sales_import_rows
-   b. For each row:
-      i.  resolveRecipeByPosString(restaurantId, raw_item_name)  ← RecipeAgent
+1. Download file from Supabase Storage
+2. Parse XLSX (via xlsx lib)
+3. Wrap execution in Kysely TRANSACTION
+   a. Insert raw rows into pos_raw_imports (Audit log)
+   b. Upsert rows into sales_import_rows (skipping anomalies)
+   c. For each valid row:
+      i.  resolveRecipesByPosStrings(...)                        ← RecipeAgent
       ii. expandBOM(recipeId, quantity_sold)                     ← RecipeAgent
       iii. LedgerService.record(trx, { reason_code: 'SALES_DEPLETION' }) ← InventoryAgent
 4. COMMIT TRANSACTION
-5. Update batch status
+5. Update batch status to COMPLETED with imported rows count
 ```
 
 ### SOLID Notes

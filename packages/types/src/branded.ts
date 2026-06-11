@@ -20,6 +20,7 @@ export type WasteLogId = string & { readonly __brand: 'WasteLogId' };
 export type PrepLogId = string & { readonly __brand: 'PrepLogId' };
 export type SalesImportBatchId = string & { readonly __brand: 'SalesImportBatchId' };
 export type SalesImportRowId = string & { readonly __brand: 'SalesImportRowId' };
+export type PosRawImportId = string & { readonly __brand: 'PosRawImportId' };
 export type SnapshotId = string & { readonly __brand: 'SnapshotId' };
 export type AuditLogId = string & { readonly __brand: 'AuditLogId' };
 export const asRestaurantId = (id: string): RestaurantId => id as RestaurantId;
@@ -33,6 +34,7 @@ export const asRecipeIngredientId = (id: string): RecipeIngredientId => id as Re
 export const asMenuItemMappingId = (id: string): MenuItemMappingId => id as MenuItemMappingId;
 export const asSalesImportBatchId = (id: string): SalesImportBatchId => id as SalesImportBatchId;
 export const asSalesImportRowId = (id: string): SalesImportRowId => id as SalesImportRowId;
+export const asPosRawImportId = (id: string): PosRawImportId => id as PosRawImportId;
 export const asCategoryId = (id: string): CategoryId => id as CategoryId;
 export const asCountBatchId = (id: string): CountBatchId => id as CountBatchId;
 export const asCountRowId = (id: string): CountRowId => id as CountRowId;
