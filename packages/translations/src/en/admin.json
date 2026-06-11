@@ -1,0 +1,11 @@
+{
+  "flagKey": "Flag Key",
+  "flagValue": "Flag Value",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
+  "toggle": "Toggle",
+  "multiLanguage": "Multi Language",
+  "featureFlagsDesc": "Enable or disable features for this restaurant",
+  "permissionLabel": "Permission",
+  "permissionDesc": "Feature flag management access"
+}

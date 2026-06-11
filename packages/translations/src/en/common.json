@@ -1,0 +1,23 @@
+{
+  "appName": "Synculariti",
+  "loading": "Loading...",
+  "error": "Error",
+  "save": "Save",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "edit": "Edit",
+  "create": "Create",
+  "search": "Search",
+  "noData": "No data available",
+  "confirm": "Confirm",
+  "close": "Close",
+  "back": "Back",
+  "next": "Next",
+  "yes": "Yes",
+  "no": "No",
+  "actions": "Actions",
+  "status": "Status",
+  "date": "Date",
+  "filter": "Filter",
+  "signOut": "Sign out"
+}

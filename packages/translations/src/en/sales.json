@@ -1,0 +1,13 @@
+{
+  "importSales": "Import Sales",
+  "uploadFile": "Upload File",
+  "batchStatus": "Batch Status",
+  "businessDate": "Business Date",
+  "totalRows": "Total Rows",
+  "mappedRows": "Mapped Rows",
+  "failedRows": "Failed Rows",
+  "pending": "Pending",
+  "processing": "Processing",
+  "completed": "Completed",
+  "failed": "Failed"
+}

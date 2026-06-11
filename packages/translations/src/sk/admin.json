@@ -1,0 +1,11 @@
+{
+  "flagKey": "Kľúč príznaku",
+  "flagValue": "Hodnota príznaku",
+  "enabled": "Zapnuté",
+  "disabled": "Vypnuté",
+  "toggle": "Prepnúť",
+  "multiLanguage": "Viacjazyčnosť",
+  "featureFlagsDesc": "Povoliť alebo zakázať funkcie pre túto reštauráciu",
+  "permissionLabel": "Oprávnenie",
+  "permissionDesc": "Prístup k správe funkčných príznakov"
+}

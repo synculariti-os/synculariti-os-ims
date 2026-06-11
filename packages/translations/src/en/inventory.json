@@ -1,0 +1,19 @@
+{
+  "currentStock": "Current Stock",
+  "expectedQty": "Expected Qty",
+  "actualQty": "Actual Qty",
+  "variance": "Variance",
+  "batch": "Batch",
+  "landedCost": "Landed Cost",
+  "unitCost": "Unit Cost",
+  "reasonCode": "Reason Code",
+  "referenceId": "Reference ID",
+  "changeAmount": "Change Amount",
+  "stockLevel": "Stock Level",
+  "parLevel": "Par Level",
+  "startCount": "Start Count",
+  "submitCount": "Submit Count",
+  "closeBatch": "Close Batch",
+  "recordWaste": "Record Waste",
+  "recordPrep": "Record Prep Production"
+}

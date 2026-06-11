@@ -1,0 +1,13 @@
+{
+  "importSales": "Import predaja",
+  "uploadFile": "Nahrať súbor",
+  "batchStatus": "Stav dávky",
+  "businessDate": "Dátum transakcie",
+  "totalRows": "Celkovo riadkov",
+  "mappedRows": "Mapovaných riadkov",
+  "failedRows": "Chybných riadkov",
+  "pending": "Čaká",
+  "processing": "Spracúva sa",
+  "completed": "Dokončené",
+  "failed": "Zlyhané"
+}

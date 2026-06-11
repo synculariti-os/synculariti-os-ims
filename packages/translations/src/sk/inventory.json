@@ -1,0 +1,19 @@
+{
+  "currentStock": "Aktuálny stav",
+  "expectedQty": "Očakávané množstvo",
+  "actualQty": "Skutočné množstvo",
+  "variance": "Odchýlka",
+  "batch": "Šarža",
+  "landedCost": "Nákladová cena",
+  "unitCost": "Jednotková cena",
+  "reasonCode": "Kód dôvodu",
+  "referenceId": "Referenčné ID",
+  "changeAmount": "Zmena množstva",
+  "stockLevel": "Stav skladu",
+  "parLevel": "Minimálna zásoba",
+  "startCount": "Spustiť inventúru",
+  "submitCount": "Odoslať inventúru",
+  "closeBatch": "Uzavrieť dávku",
+  "recordWaste": "Zaevidovať odpad",
+  "recordPrep": "Zaevidovať prípravu"
+}

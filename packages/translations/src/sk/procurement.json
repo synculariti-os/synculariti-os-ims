@@ -1,0 +1,20 @@
+{
+  "vendorName": "Názov dodávateľa",
+  "contactPerson": "Kontaktná osoba",
+  "email": "Email",
+  "phone": "Telefón",
+  "poNumber": "Číslo objednávky",
+  "lineItems": "Položky objednávky",
+  "quantity": "Množstvo",
+  "uom": "MJ",
+  "unitPrice": "Jednotková cena",
+  "totalPrice": "Celková cena",
+  "submit": "Odoslať",
+  "receive": "Prevziať",
+  "cancel": "Zrušiť",
+  "draft": "Koncept",
+  "submitted": "Odoslané",
+  "received": "Prevzaté",
+  "cancelled": "Zrušené",
+  "createPo": "Vytvoriť objednávku"
+}

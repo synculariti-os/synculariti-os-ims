@@ -1,0 +1,23 @@
+{
+  "appName": "Synculariti",
+  "loading": "Načítava sa...",
+  "error": "Chyba",
+  "save": "Uložiť",
+  "cancel": "Zrušiť",
+  "delete": "Vymazať",
+  "edit": "Upraviť",
+  "create": "Vytvoriť",
+  "search": "Hľadať",
+  "noData": "Žiadne údaje",
+  "confirm": "Potvrdiť",
+  "close": "Zatvoriť",
+  "back": "Späť",
+  "next": "Ďalej",
+  "yes": "Áno",
+  "no": "Nie",
+  "actions": "Akcie",
+  "status": "Stav",
+  "date": "Dátum",
+  "filter": "Filter",
+  "signOut": "Odhlásiť"
+}

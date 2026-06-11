@@ -1,0 +1,20 @@
+{
+  "vendorName": "Vendor Name",
+  "contactPerson": "Contact Person",
+  "email": "Email",
+  "phone": "Phone",
+  "poNumber": "PO Number",
+  "lineItems": "Line Items",
+  "quantity": "Quantity",
+  "uom": "UOM",
+  "unitPrice": "Unit Price",
+  "totalPrice": "Total Price",
+  "submit": "Submit",
+  "receive": "Receive",
+  "cancel": "Cancel",
+  "draft": "Draft",
+  "submitted": "Submitted",
+  "received": "Received",
+  "cancelled": "Cancelled",
+  "createPo": "Create Purchase Order"
+}
